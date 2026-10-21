@@ -4,7 +4,7 @@ A private, single-user web app for Evan Khosh (Northeastern CS BS, AI concentrat
 
 This is a **learning and portfolio project** as well as a daily tool. Code quality, readable history and clear decisions matter as much as features.
 
-Full spec (architecture, schema, sync design, phase checklists): https://claude.ai/artifact/X9YFjexfVhDtoeK9KaxvfG
+Full spec (architecture, schema, sync design, phase checklists): [`college-hub-spec.md`](college-hub-spec.md)
 
 ## How to work with me
 

@@ -1,0 +1,18 @@
+# dependencies
+node_modules
+
+# Next.js
+.next
+out
+
+# env files (keep the example)
+.env*
+!.env.example
+
+# misc
+.DS_Store
+*.log
+.vercel
+coverage
+playwright-report
+test-results

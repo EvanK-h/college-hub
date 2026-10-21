@@ -19,3 +19,10 @@ out
 coverage
 playwright-report
 test-results
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# certificates
+*.pem

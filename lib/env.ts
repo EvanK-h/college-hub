@@ -1,14 +1,10 @@
 import { z } from "zod";
 
-const publicEnvSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-});
+type RawEnv = Record<string, string | undefined>;
 
-export type PublicEnv = z.infer<typeof publicEnvSchema>;
-
-export function parsePublicEnv(raw: Record<string, string | undefined>): PublicEnv {
-  const result = publicEnvSchema.safeParse(raw);
+/** Validates raw env values and throws one readable error naming each bad variable (never its value). */
+export function parseEnv<S extends z.ZodType>(schema: S, raw: RawEnv): z.infer<S> {
+  const result = schema.safeParse(raw);
   if (result.success) return result.data;
 
   const problems = result.error.issues
@@ -17,6 +13,17 @@ export function parsePublicEnv(raw: Record<string, string | undefined>): PublicE
   throw new Error(
     `Missing or invalid environment variables:\n${problems}\nCopy .env.example to .env.local and fill them in.`,
   );
+}
+
+const publicEnvSchema = z.object({
+  NEXT_PUBLIC_SUPABASE_URL: z.url(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+});
+
+export type PublicEnv = z.infer<typeof publicEnvSchema>;
+
+export function parsePublicEnv(raw: RawEnv): PublicEnv {
+  return parseEnv(publicEnvSchema, raw);
 }
 
 export function getPublicEnv(): PublicEnv {

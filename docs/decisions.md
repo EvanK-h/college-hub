@@ -19,3 +19,23 @@
 **Notes.**
 - shadcn's generated `lib/utils.ts` re-exports `cn` from the `cn` npm package (published by shadcn-ui) instead of `clsx` + `tailwind-merge`. Checked and kept.
 - Dark mode is class-based (`.dark`). A theme toggle is not built yet.
+
+## 2026-10-24: Single-user sign-in with magic links
+
+**Decision.** Public sign-ups are off in Supabase (`[auth] enable_signup = false`), the email provider stays on (`[auth.email] enable_signup = true`), and the one user is created by hand in Studio. The login Server Action also checks the email against `ALLOWED_EMAIL`, and `shouldCreateUser: false` stops the OTP call from creating accounts.
+
+**Why.**
+- The database refuses new accounts even if the app check is bypassed, and the app check refuses other addresses even if a second user is ever created.
+- The login form gives the same reply for allowed and disallowed addresses, so it never reveals which email may sign in.
+- The proxy redirects signed-out visitors, and the home page re-checks the session as a second guard.
+
+**Gotcha.** `[auth.email] enable_signup` switches the whole email provider off, despite its name. Setting it to `false` made every magic link fail with `email_provider_disabled`. Only the top-level `[auth]` switch blocks new accounts.
+
+**Consequence.** `/api/sync/*` (bearer token) and the calendar feed (token in the URL) must be added to the proxy's public paths when those routes are built, with their own auth checks.
+
+## 2026-10-24: Request-time data lives behind Suspense (Cache Components)
+
+**Decision.** Keep `cacheComponents: true` from the scaffold. Any component that reads the session or `searchParams` sits inside a `<Suspense>` boundary, so the rest of the page prerenders as a static shell.
+
+**Why.** With Cache Components, reading cookies or `searchParams` outside a boundary is a production build error that dev mode does not show. Always run `npm run build` after adding a page that reads request data.
+

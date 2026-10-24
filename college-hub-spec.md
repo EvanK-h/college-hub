@@ -300,15 +300,15 @@ Five phases, each ending with something you can use; a phase is done when its la
 
 ### Phase 0: Setup
 
-- [ ] Revoke the token pasted into chat on 21 Oct and generate a fresh one
-- [ ] Create the GitHub repo (private for now), with secret scanning and push protection on
-- [ ] `npx create-next-app@latest` with TypeScript, App Router, Tailwind, ESLint
-- [ ] Add shadcn/ui and pick the warm palette as CSS variables
-- [ ] Add `.env.local` to `.gitignore`, commit `.env.example`, then fill `.env.local`
-- [ ] Create the Supabase project; install the Supabase CLI and run it locally with `supabase start`
-- [ ] Magic-link login restricted to `ALLOWED_EMAIL`; public sign-ups off
-- [ ] Connect the repo to Vercel and add the environment variables there
-- [ ] Copy `CLAUDE.md` into the repo root
+- [x] Revoke the token pasted into chat on 21 Oct and generate a fresh one
+- [x] Create the GitHub repo (private for now), with secret scanning and push protection on (GitHub's built-in scanning is not available for private repos on this plan, so a `gitleaks` pre-commit hook in `.githooks/` does this job instead)
+- [x] `npx create-next-app@latest` with TypeScript, App Router, Tailwind, ESLint
+- [x] Add shadcn/ui and pick the warm palette as CSS variables
+- [x] Add `.env.local` to `.gitignore`, commit `.env.example`, then fill `.env.local`
+- [x] Create the Supabase project; install the Supabase CLI and run it locally with `supabase start`
+- [x] Magic-link login restricted to `ALLOWED_EMAIL`; public sign-ups off
+- [x] Connect the repo to Vercel and add the environment variables there
+- [x] Copy `CLAUDE.md` into the repo root
 
 **Done when:** the deployed site shows a "Hello Evan" page only after signing in, and `gitleaks git` finds no secrets anywhere in the history.
 

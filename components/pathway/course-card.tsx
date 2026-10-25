@@ -1,6 +1,6 @@
-import { Circle, CircleCheck, CircleDot } from "lucide-react";
+import { StatusIcon } from "@/components/pathway/status-icon";
 import { cn } from "@/lib/utils";
-import { COURSE_STATUS_LABELS, type CourseStatus, type CourseType } from "@/lib/pathway/labels";
+import type { CourseType } from "@/lib/pathway/labels";
 import type { PathwayCourse } from "@/lib/pathway/summarize";
 
 // Tailwind only generates classes it can find as whole strings, so each type is spelled out.
@@ -13,15 +13,7 @@ export const COURSE_TYPE_BORDER: Record<CourseType, string> = {
   coop_program: "border-l-course-coop-program",
 };
 
-const STATUS_ICONS: Record<CourseStatus, typeof Circle> = {
-  planned: Circle,
-  in_progress: CircleDot,
-  done: CircleCheck,
-};
-
 export function CourseCard({ course }: { course: PathwayCourse }) {
-  const StatusIcon = STATUS_ICONS[course.status];
-
   return (
     <div
       className={cn(
@@ -34,8 +26,7 @@ export function CourseCard({ course }: { course: PathwayCourse }) {
         <p className="text-xs text-muted-foreground">{course.title}</p>
         <p className="mt-1 text-xs text-muted-foreground">{course.credits} SH</p>
       </div>
-      <StatusIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-      <span className="sr-only">{COURSE_STATUS_LABELS[course.status]}</span>
+      <StatusIcon status={course.status} className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
     </div>
   );
 }

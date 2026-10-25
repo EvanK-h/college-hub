@@ -17,3 +17,18 @@ export const COURSE_STATUS_LABELS: Record<CourseStatus, string> = {
   in_progress: "In progress",
   done: "Done",
 };
+
+export type ReqArea = Database["public"]["Enums"]["req_area"];
+
+export const REQ_AREA_LABELS: Record<ReqArea, string> = {
+  cs_overview: "CS overview",
+  cs_fundamentals: "CS fundamentals",
+  cs_required: "CS required",
+  security_presentation: "Security and presentation",
+  khoury_electives: "Khoury electives",
+  supporting: "Supporting courses",
+  writing: "Writing",
+  ai_concentration: "AI concentration",
+  physics_minor: "Physics minor",
+  universitywide: "Universitywide",
+};

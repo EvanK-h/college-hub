@@ -59,3 +59,9 @@
 **Decision.** `requirements` is unique on `(owner_id, name)`, added in a new migration.
 
 **Why.** The importer upserts requirements by name, and Postgres can only match an upsert against a unique constraint. Without one, every re-run would insert all 31 requirements again. The 31 names in the Notion export are distinct.
+
+## 2026-10-25: Term dates are deferred
+
+**Decision.** The terms seed sets names, kinds, campuses and time zones, but leaves `starts_on` and `ends_on` null.
+
+**Why.** The pathway pages only need the term order (`id`), and the real calendars are not published for every term yet. Dates matter from Phase 2, when the timetable and sync need term boundaries, so they get filled in then.

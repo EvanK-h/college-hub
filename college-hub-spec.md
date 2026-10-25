@@ -314,11 +314,11 @@ Five phases, each ending with something you can use; a phase is done when its la
 
 ### Phase 1: Data model and pathway
 
-- [ ] First migration: enums, `terms`, `courses`, `requirements`, `course_requirements`, `swap_options`, `swap_replaces`, RLS on all
-- [ ] Seed `terms` with dates and time zones
-- [ ] Import script (`scripts/import-notion.ts`) reading the Notion API or a CSV export
-- [ ] Import test: 56 courses, 171 SH total, 53 SH transfer credit, 31 requirements, 32 swaps
-- [ ] `requirement_progress` view
+- [x] First migration: enums, `terms`, `courses`, `requirements`, `course_requirements`, `swap_options`, `swap_replaces`, RLS on all
+- [x] Seed `terms` with time zones (dates deferred; see the 2026-10-25 decision)
+- [x] Import script (`scripts/import-notion.ts`) reading the Notion API or a CSV export
+- [x] Import test: 56 courses, 171 SH total, 53 SH transfer credit, 31 requirements, 32 swaps
+- [x] `requirement_progress` view
 - [ ] `/pathway`, `/pathway/requirements` and `/pathway/swaps` pages, read-only
 - [ ] Edit a course's status and term from the pathway page
 

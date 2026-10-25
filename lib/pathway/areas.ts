@@ -1,4 +1,4 @@
-import type { ReqArea } from "@/lib/pathway/labels";
+import type { CourseStatus, ReqArea } from "@/lib/pathway/labels";
 
 // What every progress ring draws: how many items are done, in progress, or neither.
 export type RingCounts = { done: number; inProgress: number; notStarted: number; total: number };
@@ -17,15 +17,23 @@ const AREA_ORDER: ReqArea[] = [
   "universitywide",
 ];
 
-// `status` comes from the requirement_progress view, where every column is typed nullable.
-export type AreaRequirement = { area: ReqArea; status: string | null };
+export type AreaCourse = { id: string; status: CourseStatus };
+export type AreaRequirement = { area: ReqArea; courses: AreaCourse[] };
 
-// Counts requirements per area by status. Areas with no requirements are left out.
+// Counts the courses that fill each area's requirements, by status. Each course is its own
+// slice, so a lecture and its lab count separately even when one requirement bundles them.
+// A course linked to several requirements in the same area is counted once.
+// Areas with no courses are left out.
 export function summarizeAreas(requirements: AreaRequirement[]): AreaSummary[] {
   return AREA_ORDER.map((area) => {
-    const inArea = requirements.filter((requirement) => requirement.area === area);
-    const done = inArea.filter((requirement) => requirement.status === "done").length;
-    const inProgress = inArea.filter((requirement) => requirement.status === "in_progress").length;
-    return { area, done, inProgress, notStarted: inArea.length - done - inProgress, total: inArea.length };
+    const courses = new Map<string, AreaCourse>();
+    for (const requirement of requirements) {
+      if (requirement.area !== area) continue;
+      for (const course of requirement.courses) courses.set(course.id, course);
+    }
+    const all = [...courses.values()];
+    const done = all.filter((course) => course.status === "done").length;
+    const inProgress = all.filter((course) => course.status === "in_progress").length;
+    return { area, done, inProgress, notStarted: all.length - done - inProgress, total: all.length };
   }).filter((summary) => summary.total > 0);
 }

@@ -38,7 +38,14 @@ async function Requirements() {
   const requirements = requirementsResult.data;
   const courseById = new Map(coursesResult.data.map((course) => [course.id, course]));
   const linksByRequirement = Map.groupBy(linksResult.data, (link) => link.requirement_id);
-  const areas = summarizeAreas(requirements);
+  const areas = summarizeAreas(
+    requirements.map((requirement) => ({
+      area: requirement.area,
+      courses: (linksByRequirement.get(requirement.requirement_id) ?? []).flatMap(
+        ({ course_id }) => courseById.get(course_id) ?? [],
+      ),
+    })),
+  );
   const nupath = summarizeNupath(coursesResult.data);
 
   // NUpath sits right after the headline areas, as the spec lists it.

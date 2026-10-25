@@ -101,6 +101,184 @@ export async function seedCourses(supabase: SupabaseClient<Database>, ownerId: s
   return rows.length;
 }
 
+const REQUIREMENT_AREAS = {
+  "CS overview": "cs_overview",
+  "CS fundamentals": "cs_fundamentals",
+  "CS required": "cs_required",
+  "Security and presentation": "security_presentation",
+  "Khoury electives": "khoury_electives",
+  "Supporting courses": "supporting",
+  Writing: "writing",
+  "AI concentration": "ai_concentration",
+  "Physics minor": "physics_minor",
+  Universitywide: "universitywide",
+} as const;
+
+const SWAP_SLOTS = [
+  "london_elective",
+  "khoury_elective",
+  "ai_elective",
+  "software_engineering",
+  "placement_substitute",
+  "physics_minor_elective",
+  "advanced_writing",
+] as const;
+
+const QUANTUM_RELEVANCE = ["none", "lower", "low", "medium", "high"] as const;
+
+// "Physics minor elective" -> "physics_minor_elective", checked against the enum values.
+const enumLabel = <T extends readonly [string, ...string[]]>(values: T) =>
+  z
+    .string()
+    .transform((label) => label.toLowerCase().replaceAll(" ", "_"))
+    .pipe(z.enum(values));
+
+const optionalText = z.string().transform((text) => text || null);
+
+// Notion exports a relation as "CS 3100 (https://app.notion.com/...), CS 3101 (...)".
+// Drop each URL, then what is left is a comma-separated list of course codes.
+export function extractCourseCodes(cell: string): string[] {
+  return cell
+    .replace(/\s*\(https?:\/\/[^)]*\)/g, "")
+    .split(",")
+    .map((code) => code.trim())
+    .filter(Boolean);
+}
+
+const courseCodes = z.string().transform(extractCourseCodes);
+
+const requirementRowSchema = z
+  .object({
+    Requirement: z.string().min(1),
+    Area: z.enum(Object.keys(REQUIREMENT_AREAS) as [keyof typeof REQUIREMENT_AREAS]),
+    Options: optionalText,
+    Notes: optionalText,
+    Courses: courseCodes,
+  })
+  .transform((row) => ({
+    name: row.Requirement,
+    area: REQUIREMENT_AREAS[row.Area],
+    options: row.Options,
+    notes: row.Notes,
+    courseCodes: row.Courses,
+  }));
+
+const swapRowSchema = z
+  .object({
+    "Swap in": z.string().min(1),
+    Slot: enumLabel(SWAP_SLOTS),
+    "Fits in": optionalText,
+    Prerequisites: optionalText,
+    "Quantum relevance": enumLabel(QUANTUM_RELEVANCE),
+    "Why consider it": optionalText,
+    "Why the current pick is better": optionalText,
+    Replaces: courseCodes,
+  })
+  .transform((row) => ({
+    swap_in: row["Swap in"],
+    slot: row.Slot,
+    fits_in: row["Fits in"],
+    prerequisites: row.Prerequisites,
+    quantum_relevance: row["Quantum relevance"],
+    why_consider: row["Why consider it"],
+    why_current_better: row["Why the current pick is better"],
+    courseCodes: row.Replaces,
+  }));
+
+export type ParsedRequirement = z.output<typeof requirementRowSchema>;
+export type ParsedSwap = z.output<typeof swapRowSchema>;
+
+function parseCsv<T>(csvText: string, schema: z.ZodType<T>): T[] {
+  const records: unknown[] = parse(csvText, { columns: true, bom: true, skip_empty_lines: true });
+  return records.map((record) => schema.parse(record));
+}
+
+export const parseRequirements = (csvText: string) => parseCsv(csvText, requirementRowSchema);
+export const parseSwaps = (csvText: string) => parseCsv(csvText, swapRowSchema);
+
+async function loadCourseIds(supabase: SupabaseClient<Database>, ownerId: string) {
+  const { data, error } = await supabase.from("courses").select("id, code").eq("owner_id", ownerId);
+  if (error) throw new Error(`Reading courses failed: ${error.message}`);
+  return new Map(data.map((course) => [course.code, course.id]));
+}
+
+// An unknown code throws, so a typo in the export can't silently drop a link.
+function resolveCourseIds(codes: string[], courseIds: Map<string, string>, owner: string): string[] {
+  return codes.map((code) => {
+    const id = courseIds.get(code);
+    if (id === undefined) throw new Error(`${owner}: unknown course "${code}"`);
+    return id;
+  });
+}
+
+export async function seedRequirements(supabase: SupabaseClient<Database>, ownerId: string, csvText: string) {
+  const parsed = parseRequirements(csvText);
+  const courseIds = await loadCourseIds(supabase, ownerId);
+
+  const rows = parsed.map((requirement) => ({
+    name: requirement.name,
+    area: requirement.area,
+    options: requirement.options,
+    notes: requirement.notes,
+    owner_id: ownerId,
+  }));
+  const { data: saved, error } = await supabase
+    .from("requirements")
+    .upsert(rows, { onConflict: "owner_id,name" })
+    .select("id, name");
+  if (error) throw new Error(`Seeding requirements failed: ${error.message}`);
+  const requirementIds = new Map(saved.map((requirement) => [requirement.name, requirement.id]));
+
+  const links = parsed.flatMap((requirement) =>
+    resolveCourseIds(requirement.courseCodes, courseIds, requirement.name).map((courseId) => ({
+      course_id: courseId,
+      requirement_id: requirementIds.get(requirement.name)!,
+      owner_id: ownerId,
+    })),
+  );
+  const { error: linkError } = await supabase
+    .from("course_requirements")
+    .upsert(links, { onConflict: "course_id,requirement_id" });
+  if (linkError) throw new Error(`Seeding course_requirements failed: ${linkError.message}`);
+  return { requirements: rows.length, links: links.length };
+}
+
+export async function seedSwaps(supabase: SupabaseClient<Database>, ownerId: string, csvText: string) {
+  const parsed = parseSwaps(csvText);
+  const courseIds = await loadCourseIds(supabase, ownerId);
+
+  const rows = parsed.map((swap) => ({
+    swap_in: swap.swap_in,
+    slot: swap.slot,
+    fits_in: swap.fits_in,
+    prerequisites: swap.prerequisites,
+    quantum_relevance: swap.quantum_relevance,
+    why_consider: swap.why_consider,
+    why_current_better: swap.why_current_better,
+    owner_id: ownerId,
+  }));
+  const { data: saved, error } = await supabase
+    .from("swap_options")
+    .upsert(rows, { onConflict: "owner_id,swap_in,slot" })
+    .select("id, swap_in, slot");
+  if (error) throw new Error(`Seeding swap_options failed: ${error.message}`);
+  // The same course can be a swap for two slots, so the key is swap_in + slot.
+  const swapIds = new Map(saved.map((swap) => [`${swap.swap_in}|${swap.slot}`, swap.id]));
+
+  const links = parsed.flatMap((swap) =>
+    resolveCourseIds(swap.courseCodes, courseIds, swap.swap_in).map((courseId) => ({
+      swap_option_id: swapIds.get(`${swap.swap_in}|${swap.slot}`)!,
+      course_id: courseId,
+      owner_id: ownerId,
+    })),
+  );
+  const { error: linkError } = await supabase
+    .from("swap_replaces")
+    .upsert(links, { onConflict: "swap_option_id,course_id" });
+  if (linkError) throw new Error(`Seeding swap_replaces failed: ${linkError.message}`);
+  return { swaps: rows.length, links: links.length };
+}
+
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Missing env var ${name}`);
@@ -116,7 +294,16 @@ async function main() {
   console.log(`Seeded ${TERMS.length} terms`);
 
   const coursesCsv = readFileSync("scripts/data/courses.csv", "utf-8");
-  console.log(`Seeded ${await seedCourses(supabase, requireEnv("OWNER_ID"), coursesCsv)} courses`);
+  const ownerId = requireEnv("OWNER_ID");
+  console.log(`Seeded ${await seedCourses(supabase, ownerId, coursesCsv)} courses`);
+
+  const requirementsCsv = readFileSync("scripts/data/requirements.csv", "utf-8");
+  const requirements = await seedRequirements(supabase, ownerId, requirementsCsv);
+  console.log(`Seeded ${requirements.requirements} requirements, ${requirements.links} course links`);
+
+  const swapsCsv = readFileSync("scripts/data/swap-options.csv", "utf-8");
+  const swaps = await seedSwaps(supabase, ownerId, swapsCsv);
+  console.log(`Seeded ${swaps.swaps} swap options, ${swaps.links} replaced-course links`);
 }
 
 // Run only when executed directly, so tests can import seedTerms without side effects.

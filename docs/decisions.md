@@ -53,3 +53,9 @@
 
 **Notes.** `Fits in` stays free text because values like "Spring 2030 (PHYS 5352 slot only)" are not term references. The Notion exports are personal data and live in the gitignored `scripts/data/`.
 
+
+## 2026-10-25: Requirements are unique per name
+
+**Decision.** `requirements` is unique on `(owner_id, name)`, added in a new migration.
+
+**Why.** The importer upserts requirements by name, and Postgres can only match an upsert against a unique constraint. Without one, every re-run would insert all 31 requirements again. The 31 names in the Notion export are distinct.

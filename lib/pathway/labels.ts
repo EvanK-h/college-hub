@@ -32,3 +32,24 @@ export const REQ_AREA_LABELS: Record<ReqArea, string> = {
   physics_minor: "Physics minor",
   universitywide: "Universitywide",
 };
+
+export type SwapSlot = Database["public"]["Enums"]["swap_slot"];
+export type QuantumRelevance = Database["public"]["Enums"]["quantum_relevance"];
+
+export const SWAP_SLOT_LABELS: Record<SwapSlot, string> = {
+  london_elective: "London elective",
+  khoury_elective: "Khoury elective",
+  ai_elective: "AI elective",
+  software_engineering: "Software engineering",
+  placement_substitute: "Placement substitute",
+  physics_minor_elective: "Physics minor elective",
+  advanced_writing: "Advanced writing",
+};
+
+export const QUANTUM_RELEVANCE_LABELS: Record<QuantumRelevance, string> = {
+  none: "None",
+  lower: "Lower",
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+};

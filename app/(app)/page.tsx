@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
-import { signOut } from "./actions";
+import { signOut } from "@/app/actions";
 
 export default function HomePage() {
   return (

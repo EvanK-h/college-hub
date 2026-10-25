@@ -29,3 +29,7 @@ next-env.d.ts
 
 # personal Notion exports used by scripts/import-notion.ts
 /scripts/data/
+
+# Claude Code worktrees and Supabase Studio SQL snippets
+/.claude/worktrees/
+/supabase/snippets/

@@ -65,3 +65,15 @@
 **Decision.** The terms seed sets names, kinds, campuses and time zones, but leaves `starts_on` and `ends_on` null.
 
 **Why.** The pathway pages only need the term order (`id`), and the real calendars are not published for every term yet. Dates matter from Phase 2, when the timetable and sync need term boundaries, so they get filled in then.
+
+## 2026-10-25: Pathway rings count courses; moves are not validated yet
+
+**Decision.**
+- The requirement-area rings on `/pathway/requirements` count courses by status, not requirements. A course linked to several requirements in the same area counts once. The NUpath ring counts the 13 codes, and a code is covered only when a completed course carries it.
+- Editing a course's status and term from the pathway page accepts any move, including into a co-op term.
+
+**Why.**
+- Some requirements bundle a lecture and its lab (Discrete Structures). Counting requirements hid progress until both were done. The lists under the rings still show them bundled.
+- Prerequisite, co-op and per-term SH checks belong with drag-and-drop planning in Phase 4.
+
+**Note.** All 13 NUpath codes are treated as required. `REQUIRED_NUPATH` in `lib/pathway/nupath.ts` is the one place to change that.

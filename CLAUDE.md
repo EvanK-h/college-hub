@@ -109,4 +109,4 @@ docs/decisions.md          decision log
 
 ## Current phase
 
-Phase 1 — data model and pathway (Phase 0 setup is done). See the spec's Phases section for the checklist; update this line when a phase is done.
+Phase 2 — Canvas sync (Phases 0 and 1 are done). See the spec's Phases section for the checklist; update this line when a phase is done.

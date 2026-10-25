@@ -319,8 +319,8 @@ Five phases, each ending with something you can use; a phase is done when its la
 - [x] Import script (`scripts/import-notion.ts`) reading the Notion API or a CSV export
 - [x] Import test: 56 courses, 171 SH total, 53 SH transfer credit, 31 requirements, 32 swaps
 - [x] `requirement_progress` view
-- [ ] `/pathway`, `/pathway/requirements` and `/pathway/swaps` pages, read-only
-- [ ] Edit a course's status and term from the pathway page
+- [x] `/pathway`, `/pathway/requirements` and `/pathway/swaps` pages, read-only
+- [x] Edit a course's status and term from the pathway page
 
 **Done when:** you'd rather open `/pathway` than the Notion Course Pathway.
 

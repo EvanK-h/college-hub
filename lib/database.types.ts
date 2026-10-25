@@ -1,0 +1,272 @@
+
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+
+export type Database = {
+  
+  "graphql_public": {
+          Tables: {
+            [_ in never]: never
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            "graphql":
+{ Args: { "extensions"?: Json,"operationName"?: string,"query"?: string,"variables"?: Json }; Returns: Json
+                           }
+          }
+          Enums: {
+            [_ in never]: never
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        },"public": {
+          Tables: {
+            "course_requirements": {
+                  Row: {
+                    "course_id": string,"owner_id": string,"requirement_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "course_id": string,"owner_id"?: string,"requirement_id": string
+                  }
+                  Update: {
+                    "course_id"?: string,"owner_id"?: string,"requirement_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "course_requirements_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "course_requirements_requirement_id_fkey"
+      columns: ["requirement_id"]
+isOneToOne: false
+      referencedRelation: "requirements"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"courses": {
+                  Row: {
+                    "canvas_course_id": number | null,"code": string,"credits": number,"id": string,"notes": string | null,"nupath": (Database["public"]['Enums']["nupath"])[],"owner_id": string,"status": Database["public"]['Enums']["course_status"],"term_id": number,"title": string,"type": Database["public"]['Enums']["course_type"]
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "canvas_course_id"?: number | null,"code": string,"credits": number,"id"?: string,"notes"?: string | null,"nupath"?: (Database["public"]['Enums']["nupath"])[],"owner_id"?: string,"status"?: Database["public"]['Enums']["course_status"],"term_id": number,"title": string,"type": Database["public"]['Enums']["course_type"]
+                  }
+                  Update: {
+                    "canvas_course_id"?: number | null,"code"?: string,"credits"?: number,"id"?: string,"notes"?: string | null,"nupath"?: (Database["public"]['Enums']["nupath"])[],"owner_id"?: string,"status"?: Database["public"]['Enums']["course_status"],"term_id"?: number,"title"?: string,"type"?: Database["public"]['Enums']["course_type"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "courses_term_id_fkey"
+      columns: ["term_id"]
+isOneToOne: false
+      referencedRelation: "terms"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"requirements": {
+                  Row: {
+                    "area": Database["public"]['Enums']["req_area"],"id": string,"name": string,"notes": string | null,"options": string | null,"owner_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "area": Database["public"]['Enums']["req_area"],"id"?: string,"name": string,"notes"?: string | null,"options"?: string | null,"owner_id"?: string
+                  }
+                  Update: {
+                    "area"?: Database["public"]['Enums']["req_area"],"id"?: string,"name"?: string,"notes"?: string | null,"options"?: string | null,"owner_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"swap_options": {
+                  Row: {
+                    "fits_in": string | null,"id": string,"owner_id": string,"prerequisites": string | null,"quantum_relevance": Database["public"]['Enums']["quantum_relevance"],"slot": Database["public"]['Enums']["swap_slot"],"swap_in": string,"why_consider": string | null,"why_current_better": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"quantum_relevance": Database["public"]['Enums']["quantum_relevance"],"slot": Database["public"]['Enums']["swap_slot"],"swap_in": string,"why_consider"?: string | null,"why_current_better"?: string | null
+                  }
+                  Update: {
+                    "fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"quantum_relevance"?: Database["public"]['Enums']["quantum_relevance"],"slot"?: Database["public"]['Enums']["swap_slot"],"swap_in"?: string,"why_consider"?: string | null,"why_current_better"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"swap_replaces": {
+                  Row: {
+                    "course_id": string,"owner_id": string,"swap_option_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "course_id": string,"owner_id"?: string,"swap_option_id": string
+                  }
+                  Update: {
+                    "course_id"?: string,"owner_id"?: string,"swap_option_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "swap_replaces_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "swap_replaces_swap_option_id_fkey"
+      columns: ["swap_option_id"]
+isOneToOne: false
+      referencedRelation: "swap_options"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"terms": {
+                  Row: {
+                    "campus": string | null,"ends_on": string | null,"id": number,"kind": Database["public"]['Enums']["term_kind"],"name": string,"owner_id": string,"starts_on": string | null,"time_zone": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "campus"?: string | null,"ends_on"?: string | null,"id": number,"kind": Database["public"]['Enums']["term_kind"],"name": string,"owner_id"?: string,"starts_on"?: string | null,"time_zone"?: string
+                  }
+                  Update: {
+                    "campus"?: string | null,"ends_on"?: string | null,"id"?: number,"kind"?: Database["public"]['Enums']["term_kind"],"name"?: string,"owner_id"?: string,"starts_on"?: string | null,"time_zone"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            "course_status": "planned"|"in_progress"|"done","course_type": "cs_core"|"ai_concentration"|"physics_minor"|"major_support"|"general_elective"|"coop_program","nupath": "ND"|"EI"|"IC"|"FQ"|"SI"|"AD"|"DD"|"ER"|"WF"|"WD"|"WI"|"EX"|"CE","quantum_relevance": "none"|"lower"|"low"|"medium"|"high","req_area": "cs_overview"|"cs_fundamentals"|"cs_required"|"security_presentation"|"khoury_electives"|"supporting"|"writing"|"ai_concentration"|"physics_minor"|"universitywide","swap_slot": "london_elective"|"khoury_elective"|"ai_elective"|"software_engineering"|"placement_substitute"|"physics_minor_elective"|"advanced_writing","term_kind": "transfer"|"semester"|"summer"|"coop"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+}
+
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never
+
+export const Constants = {
+  "graphql_public": {
+          Enums: {
+            
+          }
+        },"public": {
+          Enums: {
+            "course_status": ["planned", "in_progress", "done"],"course_type": ["cs_core", "ai_concentration", "physics_minor", "major_support", "general_elective", "coop_program"],"nupath": ["ND", "EI", "IC", "FQ", "SI", "AD", "DD", "ER", "WF", "WD", "WI", "EX", "CE"],"quantum_relevance": ["none", "lower", "low", "medium", "high"],"req_area": ["cs_overview", "cs_fundamentals", "cs_required", "security_presentation", "khoury_electives", "supporting", "writing", "ai_concentration", "physics_minor", "universitywide"],"swap_slot": ["london_elective", "khoury_elective", "ai_elective", "software_engineering", "placement_substitute", "physics_minor_elective", "advanced_writing"],"term_kind": ["transfer", "semester", "summer", "coop"]
+          }
+        }
+} as const

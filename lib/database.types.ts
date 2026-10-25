@@ -45,6 +45,12 @@ isOneToOne: false
       foreignKeyName: "course_requirements_requirement_id_fkey"
       columns: ["requirement_id"]
 isOneToOne: false
+      referencedRelation: "requirement_progress"
+      referencedColumns: ["requirement_id"]
+    },{
+      foreignKeyName: "course_requirements_requirement_id_fkey"
+      columns: ["requirement_id"]
+isOneToOne: false
       referencedRelation: "requirements"
       referencedColumns: ["id"]
     }
@@ -140,7 +146,15 @@ isOneToOne: false
                 }
           }
           Views: {
-            [_ in never]: never
+            "requirement_progress": {
+                  Row: {
+                    "area": Database["public"]['Enums']["req_area"],"done_courses": number | null,"done_pct": number | null,"done_sh": number | null,"name": string,"requirement_id": string,"started_courses": number | null,"started_pct": number | null,"status": string | null,"total_courses": number | null,"total_sh": number | null
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    
+                  ]
+                }
           }
           Functions: {
             [_ in never]: never

@@ -26,3 +26,6 @@ next-env.d.ts
 
 # certificates
 *.pem
+
+# personal Notion exports used by scripts/import-notion.ts
+/scripts/data/

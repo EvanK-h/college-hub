@@ -81,7 +81,7 @@ docs/decisions.md          decision log
 - Derived values (requirement progress, "due in", year, effective status, weighted grades) are computed in SQL views or TypeScript — never stored.
 - Closed sets are Postgres enums (course type, course status, NUpath code, requirement area, swap slot, quantum relevance, session type).
 - Store times as `timestamptz` in UTC. Display in the term's `time_zone` (`Europe/London` for London terms, `America/New_York` from Fall 2027). Format day names and time ranges at display time.
-- Import check: after importing from Notion there must be 56 courses, 171 SH total, 53 SH of transfer credit, 31 requirements and 31 swap options. Keep this as a test.
+- Import check: after importing from Notion there must be 56 courses, 171 SH total, 53 SH of transfer credit, 31 requirements and 32 swap options. Keep this as a test.
 
 ## Sync rules
 

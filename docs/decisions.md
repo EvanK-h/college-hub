@@ -39,3 +39,17 @@
 
 **Why.** With Cache Components, reading cookies or `searchParams` outside a boundary is a production build error that dev mode does not show. Always run `npm run build` after adding a page that reads request data.
 
+## 2026-10-25: Pathway schema shape
+
+**Decision.** The first migration adds the pathway tables as the spec describes, with these changes:
+- `swap_options` is unique on `(owner_id, swap_in, slot)`, not on the course name, and the swap count is 32, not 31.
+- `quantum_relevance` is a five-value enum declared worst to best: `none`, `lower`, `low`, `medium`, `high`.
+- `course_requirements` and `swap_replaces` get an `owner_id` and their own RLS policy.
+
+**Why.**
+- Three courses (CS 4810, CY 4770, CS 4130) are swaps for two different slots, each with its own replaced courses and reasoning. They are separate options, so the Notion export has 32 rows.
+- `lower` is a real level: INSH 1600 or PHIL 1115 in place of MATH 2341 loses prep for physics courses, which is worse than a neutral `low`. Enums sort by declaration order, so the swap explorer can sort by relevance in SQL.
+- The "every table has `owner_id` and RLS" rule has no exceptions, join tables included.
+
+**Notes.** `Fits in` stays free text because values like "Spring 2030 (PHYS 5352 slot only)" are not term references. The Notion exports are personal data and live in the gitignored `scripts/data/`.
+

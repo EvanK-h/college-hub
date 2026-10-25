@@ -22,7 +22,7 @@ College Hub is a private, single-user web app that replaces the Notion Course Pa
 
 | Source | What it holds | Becomes |
 | --- | --- | --- |
-| Notion Course Pathway | 56 courses (171 SH, 53 of them transfer credit), 31 requirements, 31 swap options | One-off import into Postgres; the site is then the source of truth |
+| Notion Course Pathway | 56 courses (171 SH, 53 of them transfer credit), 31 requirements, 32 swap options | One-off import into Postgres; the site is then the source of truth |
 | Notion Canvas Hub | Assignments, announcements, class schedule, to-dos, synced by a weekday task | Replaced by the site's own Canvas sync; to-dos imported once |
 | Canvas API (nulondon.instructure.com) | Courses, assignments, grades, announcements | Synced on a schedule with a personal access token |
 | Outlook calendar (Celcat timetable) | Class times, rooms, exams | Synced from a published ICS link |
@@ -219,7 +219,7 @@ create policy "owner only" on courses for all
 -- repeat enable + policy for every table
 ```
 
-**Import check.** After importing from Notion, these queries must match the Notion totals: 56 rows in `courses`, `sum(credits)` = 171, transfer-credit `sum(credits)` = 53, 31 rows in `requirements` and 31 in `swap_options`. Write them as a test so the import can be re-run safely.
+**Import check.** After importing from Notion, these queries must match the Notion totals: 56 rows in `courses`, `sum(credits)` = 171, transfer-credit `sum(credits)` = 53, 31 rows in `requirements` and 32 in `swap_options`. Write them as a test so the import can be re-run safely.
 
 ## Canvas and timetable sync
 
@@ -317,7 +317,7 @@ Five phases, each ending with something you can use; a phase is done when its la
 - [ ] First migration: enums, `terms`, `courses`, `requirements`, `course_requirements`, `swap_options`, `swap_replaces`, RLS on all
 - [ ] Seed `terms` with dates and time zones
 - [ ] Import script (`scripts/import-notion.ts`) reading the Notion API or a CSV export
-- [ ] Import test: 56 courses, 171 SH total, 53 SH transfer credit, 31 requirements, 31 swaps
+- [ ] Import test: 56 courses, 171 SH total, 53 SH transfer credit, 31 requirements, 32 swaps
 - [ ] `requirement_progress` view
 - [ ] `/pathway`, `/pathway/requirements` and `/pathway/swaps` pages, read-only
 - [ ] Edit a course's status and term from the pathway page

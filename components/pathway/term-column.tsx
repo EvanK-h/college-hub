@@ -1,7 +1,7 @@
 import { CourseCard } from "@/components/pathway/course-card";
 import type { TermSummary } from "@/lib/pathway/summarize";
 
-export function TermColumn({ term }: { term: TermSummary }) {
+export function TermColumn({ term, terms }: { term: TermSummary; terms: { id: number; name: string }[] }) {
   return (
     <li className="w-60 shrink-0">
       <div className="mb-2 flex items-baseline justify-between gap-2">
@@ -14,7 +14,7 @@ export function TermColumn({ term }: { term: TermSummary }) {
       <ul className="flex flex-col gap-2">
         {term.courses.map((course) => (
           <li key={course.id}>
-            <CourseCard course={course} />
+            <CourseCard course={course} termId={term.id} terms={terms} />
           </li>
         ))}
       </ul>

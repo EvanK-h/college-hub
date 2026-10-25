@@ -44,11 +44,14 @@ async function Terms() {
     .order("id");
   if (error) throw new Error(`Loading the pathway failed: ${error.message}`);
 
+  const summaries = summarizeTerms(data);
+  const termOptions = summaries.map(({ id, name }) => ({ id, name }));
+
   return (
     // Scrolls sideways inside its own box; focusable so keyboard users can scroll it too.
     <ol aria-label="Terms" tabIndex={0} className="flex gap-3 overflow-x-auto pb-4">
-      {summarizeTerms(data).map((term) => (
-        <TermColumn key={term.id} term={term} />
+      {summaries.map((term) => (
+        <TermColumn key={term.id} term={term} terms={termOptions} />
       ))}
     </ol>
   );

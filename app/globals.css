@@ -2,13 +2,23 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark mode follows the system unless a `.light` or `.dark` class on <html> overrides it. */
+@custom-variant dark {
+  &:where(.dark, .dark *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not(.light), :root:not(.light) *) {
+      @slot;
+    }
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -32,6 +42,9 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-separator: var(--separator);
+  --color-material: var(--material);
+  --color-done: var(--done);
   --color-success-foreground: var(--success-foreground);
   --color-success: var(--success);
   --color-warning-foreground: var(--warning-foreground);
@@ -50,114 +63,210 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.25);
+  --radius-2xl: calc(var(--radius) * 1.5);
+  --radius-3xl: calc(var(--radius) * 2);
+  --radius-4xl: calc(var(--radius) * 2.5);
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-sheet: var(--shadow-sheet);
+
+  /* Type scale: tracking tightens and leading closes up as size grows; small text opens slightly. */
+  --text-xs--letter-spacing: 0.006em;
+  --text-sm--letter-spacing: -0.006em;
+  --text-base--letter-spacing: -0.011em;
+  --text-headline: 1.0625rem;
+  --text-headline--line-height: 1.35;
+  --text-headline--letter-spacing: -0.014em;
+  --text-headline--font-weight: 600;
+  --text-title-3: 1.25rem;
+  --text-title-3--line-height: 1.3;
+  --text-title-3--letter-spacing: -0.016em;
+  --text-title-3--font-weight: 600;
+  --text-title-2: 1.375rem;
+  --text-title-2--line-height: 1.25;
+  --text-title-2--letter-spacing: -0.018em;
+  --text-title-2--font-weight: 700;
+  --text-large-title: clamp(1.875rem, 1.5rem + 1.5vw, 2.375rem);
+  --text-large-title--line-height: 1.1;
+  --text-large-title--letter-spacing: -0.022em;
+  --text-large-title--font-weight: 700;
+
+  /* A critically damped spring (damping 1.0, response 0.35s) sampled for CSS transitions.
+     CSS transitions retarget from the current value, so these stay interruptible. */
+  --ease-spring: linear(0, 0.058, 0.181, 0.321, 0.456, 0.574, 0.672, 0.751, 0.813, 0.861, 0.897, 0.924, 0.945, 0.96, 0.971, 0.979, 0.985, 0.989, 0.992, 0.994, 0.996, 0.997, 0.998, 0.999, 1);
+  --default-transition-duration: 160ms;
 }
 
 :root {
-  --background: oklch(0.955 0.03 85);
-  --foreground: oklch(0.32 0.044 57);
-  --card: oklch(0.975 0.02 85);
-  --card-foreground: oklch(0.32 0.044 57);
-  --popover: oklch(0.975 0.02 85);
-  --popover-foreground: oklch(0.32 0.044 57);
-  --primary: oklch(0.399 0.104 41);
-  --primary-foreground: oklch(0.975 0.02 85);
-  --secondary: oklch(0.9 0.04 98);
-  --secondary-foreground: oklch(0.3 0.04 100);
-  --muted: oklch(0.925 0.035 85);
-  --muted-foreground: oklch(0.47 0.045 60);
-  --accent: oklch(0.869 0.061 82);
-  --accent-foreground: oklch(0.32 0.044 57);
-  --success: oklch(0.82 0.085 120);
-  --success-foreground: oklch(0.27 0.05 120);
-  --warning: oklch(0.501 0.084 66);
-  --warning-foreground: oklch(0.975 0.02 85);
-  --destructive: oklch(0.52 0.19 27);
-  --destructive-foreground: oklch(0.975 0.02 85);
-  --border: oklch(0.86 0.035 82);
-  --input: oklch(0.62 0.045 75);
-  --ring: oklch(0.501 0.084 66);
-  --chart-1: oklch(0.58 0.07 100);
-  --chart-2: oklch(0.501 0.084 66);
-  --chart-3: oklch(0.399 0.104 41);
-  --chart-4: oklch(0.78 0.08 82);
-  --chart-5: oklch(0.32 0.044 57);
-  --sidebar: oklch(0.975 0.02 85);
-  --sidebar-foreground: oklch(0.32 0.044 57);
-  --sidebar-primary: oklch(0.399 0.104 41);
-  --sidebar-primary-foreground: oklch(0.975 0.02 85);
-  --sidebar-accent: oklch(0.869 0.061 82);
-  --sidebar-accent-foreground: oklch(0.32 0.044 57);
-  --sidebar-border: oklch(0.86 0.035 82);
-  --sidebar-ring: oklch(0.501 0.084 66);
-  --radius: 0.5rem;
-  --course-cs-core: oklch(0.5 0.1 41);
-  --course-ai-concentration: oklch(0.58 0.09 125);
-  --course-physics-minor: oklch(0.55 0.08 245);
-  --course-major-support: oklch(0.7 0.12 80);
-  --course-general-elective: oklch(0.65 0.04 70);
-  --course-coop-program: oklch(0.5 0.1 330);
+  color-scheme: light dark;
+  --background: light-dark(oklch(0.968 0.007 80), oklch(0.155 0.01 55));
+  --foreground: light-dark(oklch(0.255 0.028 55), oklch(0.94 0.015 85));
+  --card: light-dark(oklch(0.997 0.002 85), oklch(0.205 0.012 55));
+  --card-foreground: light-dark(oklch(0.255 0.028 55), oklch(0.94 0.015 85));
+  --popover: light-dark(oklch(0.995 0.003 85), oklch(0.225 0.013 55));
+  --popover-foreground: light-dark(oklch(0.255 0.028 55), oklch(0.94 0.015 85));
+  --primary: light-dark(oklch(0.43 0.12 38), oklch(0.87 0.065 82));
+  --primary-foreground: light-dark(oklch(0.985 0.01 85), oklch(0.2 0.03 55));
+  --secondary: light-dark(oklch(0.928 0.01 80), oklch(0.28 0.012 55));
+  --secondary-foreground: light-dark(oklch(0.255 0.028 55), oklch(0.94 0.015 85));
+  --muted: light-dark(oklch(0.945 0.007 80), oklch(0.235 0.01 55));
+  --muted-foreground: light-dark(oklch(0.48 0.022 60), oklch(0.73 0.02 75));
+  --accent: light-dark(oklch(0.925 0.04 82), oklch(0.32 0.03 75));
+  --accent-foreground: light-dark(oklch(0.28 0.04 55), oklch(0.93 0.045 82));
+  --success: light-dark(oklch(0.86 0.075 125), oklch(0.42 0.08 125));
+  --done: light-dark(oklch(0.56 0.13 145), oklch(0.72 0.14 145));
+  --success-foreground: light-dark(oklch(0.3 0.06 125), oklch(0.95 0.05 115));
+  --warning: light-dark(oklch(0.52 0.09 62), oklch(0.72 0.1 66));
+  --warning-foreground: light-dark(oklch(0.985 0.01 85), oklch(0.2 0.03 55));
+  --destructive: light-dark(oklch(0.53 0.19 27), oklch(0.68 0.17 28));
+  --destructive-foreground: light-dark(oklch(0.985 0.01 85), oklch(0.2 0.03 28));
+  --border: light-dark(oklch(0.255 0.028 55 / 0.1), oklch(0.94 0.015 85 / 0.1));
+  --separator: light-dark(oklch(0.255 0.028 55 / 0.08), oklch(0.94 0.015 85 / 0.09));
+  --input: light-dark(oklch(0.62 0.03 70), oklch(0.54 0.02 70));
+  --ring: light-dark(oklch(0.52 0.09 62), oklch(0.8 0.08 75));
+  --material: light-dark(oklch(0.968 0.007 80 / 0.72), oklch(0.155 0.01 55 / 0.7));
+  --chart-1: light-dark(oklch(0.66 0.11 70), oklch(0.6 0.09 58));
+  --chart-2: light-dark(oklch(0.52 0.09 62), oklch(0.72 0.1 66));
+  --chart-3: light-dark(oklch(0.43 0.12 38), oklch(0.62 0.12 41));
+  --chart-4: light-dark(oklch(0.79 0.1 78), oklch(0.87 0.065 82));
+  --chart-5: light-dark(oklch(0.255 0.028 55), oklch(0.6 0.04 57));
+  --sidebar: light-dark(oklch(0.997 0.002 85), oklch(0.205 0.012 55));
+  --sidebar-foreground: light-dark(oklch(0.255 0.028 55), oklch(0.94 0.015 85));
+  --sidebar-primary: light-dark(oklch(0.43 0.12 38), oklch(0.87 0.065 82));
+  --sidebar-primary-foreground: light-dark(oklch(0.985 0.01 85), oklch(0.2 0.03 55));
+  --sidebar-accent: light-dark(oklch(0.925 0.04 82), oklch(0.32 0.03 75));
+  --sidebar-accent-foreground: light-dark(oklch(0.28 0.04 55), oklch(0.93 0.045 82));
+  --sidebar-border: light-dark(oklch(0.255 0.028 55 / 0.1), oklch(0.94 0.015 85 / 0.1));
+  --sidebar-ring: light-dark(oklch(0.52 0.09 62), oklch(0.8 0.08 75));
+  --radius: 0.75rem;
+  --shadow-card-light: 0 0 0 0.5px oklch(0.255 0.028 55 / 0.08), 0 1px 2px oklch(0.255 0.028 55 / 0.05), 0 2px 6px -2px oklch(0.255 0.028 55 / 0.06);
+  --shadow-card-dark: 0 0 0 0.5px oklch(1 0 0 / 0.07), 0 1px 2px oklch(0 0 0 / 0.3);
+  --shadow-raised-light: 0 0 0 0.5px oklch(0.255 0.028 55 / 0.1), 0 2px 4px oklch(0.255 0.028 55 / 0.06), 0 8px 20px -6px oklch(0.255 0.028 55 / 0.14);
+  --shadow-raised-dark: 0 0 0 0.5px oklch(1 0 0 / 0.1), 0 8px 20px -6px oklch(0 0 0 / 0.5);
+  --shadow-sheet-light: 0 0 0 0.5px oklch(0.255 0.028 55 / 0.12), 0 12px 32px -8px oklch(0.255 0.028 55 / 0.25), 0 32px 64px -16px oklch(0.255 0.028 55 / 0.2);
+  --shadow-sheet-dark: 0 0 0 0.5px oklch(1 0 0 / 0.12), 0 24px 64px -12px oklch(0 0 0 / 0.65);
+  --course-cs-core: light-dark(oklch(0.5 0.1 41), oklch(0.65 0.11 41));
+  --course-ai-concentration: light-dark(oklch(0.58 0.09 125), oklch(0.7 0.1 125));
+  --course-physics-minor: light-dark(oklch(0.55 0.08 245), oklch(0.7 0.09 245));
+  --course-major-support: light-dark(oklch(0.7 0.12 80), oklch(0.78 0.12 80));
+  --course-general-elective: light-dark(oklch(0.65 0.04 70), oklch(0.72 0.04 70));
+  --course-coop-program: light-dark(oklch(0.5 0.1 330), oklch(0.68 0.11 330));
 }
 
-.dark {
-  --background: oklch(0.175 0.025 55);
-  --foreground: oklch(0.92 0.04 85);
-  --card: oklch(0.225 0.03 55);
-  --card-foreground: oklch(0.92 0.04 85);
-  --popover: oklch(0.225 0.03 55);
-  --popover-foreground: oklch(0.92 0.04 85);
-  --primary: oklch(0.869 0.061 82);
-  --primary-foreground: oklch(0.2 0.03 55);
-  --secondary: oklch(0.31 0.04 100);
-  --secondary-foreground: oklch(0.92 0.05 100);
-  --muted: oklch(0.265 0.032 55);
-  --muted-foreground: oklch(0.74 0.05 80);
-  --accent: oklch(0.4 0.06 85);
-  --accent-foreground: oklch(0.9 0.06 82);
-  --success: oklch(0.44 0.08 120);
-  --success-foreground: oklch(0.95 0.05 115);
-  --warning: oklch(0.501 0.084 66);
-  --warning-foreground: oklch(0.975 0.02 85);
-  --destructive: oklch(0.66 0.17 28);
-  --destructive-foreground: oklch(0.2 0.03 28);
-  --border: oklch(0.35 0.04 60);
-  --input: oklch(0.55 0.045 65);
-  --ring: oklch(0.869 0.061 82);
-  --chart-1: oklch(0.72 0.08 100);
-  --chart-2: oklch(0.68 0.09 66);
-  --chart-3: oklch(0.62 0.12 41);
-  --chart-4: oklch(0.869 0.061 82);
-  --chart-5: oklch(0.6 0.04 57);
-  --sidebar: oklch(0.225 0.03 55);
-  --sidebar-foreground: oklch(0.92 0.04 85);
-  --sidebar-primary: oklch(0.869 0.061 82);
-  --sidebar-primary-foreground: oklch(0.2 0.03 55);
-  --sidebar-accent: oklch(0.4 0.06 85);
-  --sidebar-accent-foreground: oklch(0.9 0.06 82);
-  --sidebar-border: oklch(0.35 0.04 60);
-  --sidebar-ring: oklch(0.869 0.061 82);
-  --course-cs-core: oklch(0.65 0.11 41);
-  --course-ai-concentration: oklch(0.7 0.1 125);
-  --course-physics-minor: oklch(0.7 0.09 245);
-  --course-major-support: oklch(0.78 0.12 80);
-  --course-general-elective: oklch(0.72 0.04 70);
-  --course-coop-program: oklch(0.68 0.11 330);
+/* Shadows are not colours, so light-dark() cannot pick them; switch them by scheme instead. */
+:root {
+  --shadow-card: var(--shadow-card-light);
+  --shadow-raised: var(--shadow-raised-light);
+  --shadow-sheet: var(--shadow-sheet-light);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --shadow-card: var(--shadow-card-dark);
+    --shadow-raised: var(--shadow-raised-dark);
+    --shadow-sheet: var(--shadow-sheet-dark);
+  }
+}
+:root.dark {
+  color-scheme: dark;
+  --shadow-card: var(--shadow-card-dark);
+  --shadow-raised: var(--shadow-raised-dark);
+  --shadow-sheet: var(--shadow-sheet-dark);
+}
+:root.light {
+  color-scheme: light;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    font-optical-sizing: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Ease light/dark switches instead of jumping brightness. */
+    transition: background-color 300ms ease, color 300ms ease;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Translucent chrome: a blurred layer that content scrolls underneath. */
+@utility material-bar {
+  background-color: var(--material);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* The hairline under the bar only appears once content scrolls beneath it. */
+@keyframes scroll-edge {
+  from {
+    border-bottom-color: transparent;
+  }
+  to {
+    border-bottom-color: var(--separator);
+  }
+}
+@utility scroll-edge {
+  border-bottom: 1px solid var(--separator);
+  @supports (animation-timeline: scroll()) {
+    animation: scroll-edge linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 24px;
+  }
+}
+
+/* Press feedback lands on pointer-down, fast, and springs back on release. */
+@utility press {
+  transition-property: scale, background-color, color, box-shadow, opacity;
+  transition-duration: 100ms;
+  transition-timing-function: ease-out;
+  &:active {
+    scale: 0.97;
+  }
+}
+
+/* Progress rings draw in from empty to their real length. */
+@keyframes ring-draw {
+  from {
+    stroke-dasharray: 0 1000;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .material-bar {
+    background-color: var(--background);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: light-dark(oklch(0.255 0.028 55 / 0.45), oklch(0.94 0.015 85 / 0.45));
+    --separator: light-dark(oklch(0.255 0.028 55 / 0.4), oklch(0.94 0.015 85 / 0.4));
+    --material: var(--background);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+  /* Keep feedback, drop the movement: no press-scale. */
+  .press:active {
+    scale: none !important;
   }
 }

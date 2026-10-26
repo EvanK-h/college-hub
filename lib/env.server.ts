@@ -34,6 +34,14 @@ export function getAdminEnv(): AdminEnv {
   });
 }
 
+// The shared secret for /api/sync/*. At least 32 characters, so a weak or empty value is refused
+// (`openssl rand -hex 32` gives 64).
+const cronEnvSchema = z.object({ CRON_SECRET: z.string().min(32) });
+
+export function getCronSecret(): string {
+  return parseEnv(cronEnvSchema, { CRON_SECRET: process.env.CRON_SECRET }).CRON_SECRET;
+}
+
 export type CanvasEnv = z.infer<typeof canvasEnvSchema>;
 
 export function getCanvasEnv(): CanvasEnv {

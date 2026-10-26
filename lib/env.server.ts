@@ -18,6 +18,22 @@ const canvasEnvSchema = z.object({
   CANVAS_TOKEN: z.string().min(1),
 });
 
+// For the sync, which writes with the service-role key. OWNER_ID is your user's id in auth.users:
+// the service role has no auth.uid(), so the sync has to say whose rows it is writing.
+const adminEnvSchema = z.object({
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  OWNER_ID: z.uuid(),
+});
+
+export type AdminEnv = z.infer<typeof adminEnvSchema>;
+
+export function getAdminEnv(): AdminEnv {
+  return parseEnv(adminEnvSchema, {
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    OWNER_ID: process.env.OWNER_ID,
+  });
+}
+
 export type CanvasEnv = z.infer<typeof canvasEnvSchema>;
 
 export function getCanvasEnv(): CanvasEnv {

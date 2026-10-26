@@ -16,7 +16,7 @@ export function ProgressRing({ label, counts }: { label: string; counts: RingCou
     <figure className="flex h-full flex-col items-center gap-3 rounded-2xl bg-card p-4 text-center shadow-card">
       <div className="relative size-24">
         <svg viewBox="0 0 100 100" aria-hidden className="size-full -rotate-90 fill-none" strokeWidth={10}>
-          <circle cx={50} cy={50} r={RADIUS} className="stroke-foreground/8" />
+          <circle cx={50} cy={50} r={RADIUS} className="stroke-fill" />
           {/* Round caps would show a zero-length arc as a dot, so empty arcs are not drawn. */}
           {done + inProgress > 0 && (
             <circle
@@ -24,7 +24,7 @@ export function ProgressRing({ label, counts }: { label: string; counts: RingCou
               cy={50}
               r={RADIUS}
               strokeLinecap="round"
-              className={`stroke-chart-1 ${ARC_CLASS}`}
+              className={`stroke-status-in-progress ${ARC_CLASS}`}
               strokeDasharray={`${arc(done + inProgress)} ${CIRCUMFERENCE}`}
             />
           )}
@@ -34,7 +34,7 @@ export function ProgressRing({ label, counts }: { label: string; counts: RingCou
               cy={50}
               r={RADIUS}
               strokeLinecap="round"
-              className={`stroke-done ${ARC_CLASS}`}
+              className={`stroke-status-done ${ARC_CLASS}`}
               strokeDasharray={`${arc(done)} ${CIRCUMFERENCE}`}
             />
           )}

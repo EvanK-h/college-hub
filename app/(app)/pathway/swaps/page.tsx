@@ -1,9 +1,20 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
-import { QUANTUM_RELEVANCE_LABELS, SWAP_SLOT_LABELS } from "@/lib/pathway/labels";
+import { QUANTUM_RELEVANCE_LABELS, SWAP_SLOT_LABELS, type QuantumRelevance } from "@/lib/pathway/labels";
 import { buildSwapGroups, type SwapWithReplaces } from "@/lib/pathway/swaps";
 import { createClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
+
+// Relevance is ranked, so the pill's strength follows the rank: the best fits stand out and the
+// weakest recede to an outline. The label carries the same information for anyone not seeing colour.
+const RELEVANCE_PILL: Record<QuantumRelevance, string> = {
+  high: "bg-accent font-semibold text-accent-foreground ring-1 ring-accent-foreground/30 ring-inset",
+  medium: "bg-accent font-medium text-accent-foreground",
+  low: "bg-fill-secondary font-medium text-muted-foreground",
+  lower: "bg-fill-secondary font-medium text-muted-foreground",
+  none: "font-medium text-tertiary-foreground ring-1 ring-border ring-inset",
+};
 
 export default function SwapsPage() {
   return (
@@ -63,7 +74,7 @@ function SwapCard({ swap }: { swap: SwapWithReplaces }) {
     <article className="rounded-2xl bg-card p-5 text-card-foreground shadow-card">
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
         <h3 className="text-headline">{swap.swap_in}</h3>
-        <p className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
+        <p className={cn("rounded-full px-2.5 py-0.5 text-xs", RELEVANCE_PILL[swap.quantum_relevance])}>
           <span className="sr-only">Quantum relevance: </span>
           {QUANTUM_RELEVANCE_LABELS[swap.quantum_relevance]}
         </p>
@@ -93,7 +104,7 @@ function Detail({ label, value }: { label: string; value: string | null }) {
 
 function Reason({ heading, text }: { heading: string; text: string | null }) {
   return (
-    <div className="rounded-xl bg-foreground/4 p-3.5">
+    <div className="rounded-xl bg-fill-tertiary p-3.5">
       <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{heading}</h4>
       <p className="mt-1.5 leading-relaxed">{text ?? "—"}</p>
     </div>

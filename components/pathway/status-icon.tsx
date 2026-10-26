@@ -8,11 +8,11 @@ const STATUS_ICONS: Record<CourseStatus, typeof Circle> = {
   done: CircleCheck,
 };
 
-// The shape already tells the states apart; the tint just makes finished work easier to scan.
+// The shape already tells the states apart; the status colours (see globals.css) make them scannable.
 const STATUS_TONE: Record<CourseStatus, string> = {
-  planned: "text-muted-foreground",
-  in_progress: "text-chart-1",
-  done: "text-done",
+  planned: "text-status-planned",
+  in_progress: "text-status-in-progress",
+  done: "text-status-done",
 };
 
 // The icon is decorative; the hidden text is what screen readers announce.

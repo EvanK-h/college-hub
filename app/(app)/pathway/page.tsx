@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
-import { COURSE_TYPE_SWATCH } from "@/components/pathway/course-card";
+import { COURSE_TYPE_COLOR } from "@/components/pathway/course-card";
 import { TermColumn } from "@/components/pathway/term-column";
 import { COURSE_TYPE_LABELS, type CourseType } from "@/lib/pathway/labels";
 import { summarizeTerms } from "@/lib/pathway/summarize";
@@ -26,7 +26,7 @@ function Legend() {
     <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
       {(Object.keys(COURSE_TYPE_LABELS) as CourseType[]).map((type) => (
         <li key={type} className="flex items-center gap-1.5">
-          <span className={`size-2 rounded-full ${COURSE_TYPE_SWATCH[type]}`} aria-hidden />
+          <span className={`size-2 rounded-full bg-(--course) ${COURSE_TYPE_COLOR[type]}`} aria-hidden />
           {COURSE_TYPE_LABELS[type]}
         </li>
       ))}

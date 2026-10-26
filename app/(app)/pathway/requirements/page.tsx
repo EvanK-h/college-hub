@@ -78,7 +78,7 @@ async function Requirements() {
                 <li key={requirement.requirement_id} className="px-4 py-3.5">
                   <div className="flex items-baseline justify-between gap-3">
                     <h3 className="text-sm font-semibold">{requirement.name}</h3>
-                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                    <span className="shrink-0 text-xs text-tertiary-foreground tabular-nums">
                       {requirement.done_courses}/{requirement.total_courses} courses done
                     </span>
                   </div>

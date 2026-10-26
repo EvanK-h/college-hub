@@ -23,7 +23,7 @@ export function MainNav() {
     // "user" swaps the spring for an instant change when the OS asks for reduced motion.
     <MotionConfig reducedMotion="user">
       <nav aria-label="Main" className="-mx-1 overflow-x-auto px-1 [scrollbar-width:none]">
-        <ul className="flex w-max gap-0.5 rounded-full bg-secondary/80 p-1">
+        <ul className="flex w-max gap-0.5 rounded-full bg-fill-secondary p-1">
           {LINKS.map(({ href, label }) => {
             const active = pathname === href;
             return (

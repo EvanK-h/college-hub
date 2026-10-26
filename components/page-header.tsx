@@ -14,7 +14,7 @@ export function PageHeader({
 }) {
   return (
     <header className="flex flex-col gap-2">
-      {eyebrow && <p className="text-xs font-semibold tracking-wide text-primary uppercase">{eyebrow}</p>}
+      {eyebrow && <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{eyebrow}</p>}
       <h1 className="text-large-title">{title}</h1>
       {description && <p className="max-w-prose text-base text-muted-foreground">{description}</p>}
       {children}

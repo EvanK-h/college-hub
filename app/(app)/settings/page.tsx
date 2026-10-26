@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { CourseLinks } from "@/components/settings/course-links";
 import { SyncCard } from "@/components/settings/sync-card";
 import { SyncHistory } from "@/components/settings/sync-history";
 import { summarizeTerms } from "@/lib/pathway/summarize";
@@ -60,6 +61,16 @@ async function SyncSections() {
           Canvas sync
         </h2>
         <SyncCard latest={runs[0] ?? null} lastSuccess={successResult.data} now={now} />
+      </section>
+
+      <section aria-labelledby="links-heading" className="flex flex-col gap-3">
+        <h2 id="links-heading" className="text-title-3">
+          Course links{currentTerm ? ` · ${currentTerm.name}` : ""}
+        </h2>
+        {/* Its own boundary: this one calls Canvas, so a slow answer must not hold up the rest. */}
+        <Suspense fallback={<p className="text-sm text-muted-foreground">Loading Canvas courses…</p>}>
+          <CourseLinks term={currentTerm ? { id: currentTerm.id, name: currentTerm.name } : null} />
+        </Suspense>
       </section>
 
       <section aria-labelledby="history-heading" className="flex flex-col gap-3">

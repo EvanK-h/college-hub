@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { SyncNowForm } from "@/components/settings/sync-now-form";
 import { SyncStatusIcon } from "@/components/settings/sync-status-badge";
 import { describeLatestRun, type SyncRun } from "@/lib/sync/format";
 
@@ -16,16 +17,19 @@ export function SyncCard({
 
   return (
     <Card>
-      <CardContent className="flex flex-col gap-1">
-        <p className="flex items-center gap-2 text-headline">
-          {latest && <SyncStatusIcon status={latest.status} className="size-5" />}
-          {headline}
-        </p>
-        {details.map((line) => (
-          <p key={line} className="text-sm text-muted-foreground">
-            {line}
+      <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <p className="flex items-center gap-2 text-headline">
+            {latest && <SyncStatusIcon status={latest.status} className="size-5" />}
+            {headline}
           </p>
-        ))}
+          {details.map((line) => (
+            <p key={line} className="text-sm text-muted-foreground">
+              {line}
+            </p>
+          ))}
+        </div>
+        <SyncNowForm />
       </CardContent>
     </Card>
   );

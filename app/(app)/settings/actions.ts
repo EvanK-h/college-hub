@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { parseCourseLink } from "@/lib/canvas/course-links";
+import { runCanvasSync } from "@/lib/canvas/run-sync";
 import { createClient } from "@/lib/supabase/server";
+import { describeSyncOutcome, type SyncNowState } from "@/lib/sync/format";
 
 export type CourseLinkState = {
   status: "idle" | "saved" | "error";
@@ -47,4 +49,28 @@ export async function linkCourse(_previous: CourseLinkState, formData: FormData)
 
   revalidatePath("/settings");
   return { status: "saved", message: canvasCourseId === null ? "Unlinked." : "Linked." };
+}
+
+/**
+ * The "Sync now" button. The sync writes with the service-role key, which bypasses row-level
+ * security, so the only thing that makes this safe to call is the session check below: it comes
+ * first, and nothing else runs without it. (The route at /api/sync/all takes the cron bearer
+ * token instead and never trusts a cookie.)
+ */
+export async function syncNow(): Promise<SyncNowState> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims) {
+    return { status: "error", message: "You're signed out. Sign in again to sync." };
+  }
+
+  try {
+    const outcome = await runCanvasSync();
+    revalidatePath("/settings");
+    return describeSyncOutcome(outcome);
+  } catch (error) {
+    // The cause goes to the server log (message only); the page gets a fixed sentence.
+    console.error("Sync now failed:", error instanceof Error ? error.message : "unknown error");
+    return { status: "error", message: "The sync could not run. Check the server logs." };
+  }
 }

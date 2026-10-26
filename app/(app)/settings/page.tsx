@@ -4,8 +4,13 @@ import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { CourseLinks } from "@/components/settings/course-links";
 import { SyncCard } from "@/components/settings/sync-card";
 import { SyncHistory } from "@/components/settings/sync-history";
+import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
+import { canvasSettingsUrl } from "@/lib/canvas/links";
 import { summarizeTerms } from "@/lib/pathway/summarize";
 import { createClient } from "@/lib/supabase/server";
+
+// The "Sync now" server action runs under this page's limit, so give a sync room to finish.
+export const maxDuration = 60;
 
 const HISTORY_LIMIT = 20;
 const RUN_COLUMNS = "id, status, started_at, finished_at, inserted, updated, unchanged, error_message";
@@ -54,13 +59,23 @@ async function SyncSections() {
   const currentTerm = summarizeTerms(termsResult.data).find((term) => term.phase === "current");
   const timeZone = termsResult.data.find((term) => term.id === currentTerm?.id)?.time_zone ?? "UTC";
 
+  const latest = runs[0] ?? null;
+
   return (
     <>
+      {latest?.status === "token_expired" && (
+        <TokenExpiredBanner
+          detectedAt={latest.finished_at ?? latest.started_at}
+          timeZone={timeZone}
+          settingsUrl={canvasSettingsUrl()}
+        />
+      )}
+
       <section aria-labelledby="sync-heading" className="flex flex-col gap-3">
         <h2 id="sync-heading" className="text-title-3">
           Canvas sync
         </h2>
-        <SyncCard latest={runs[0] ?? null} lastSuccess={successResult.data} now={now} />
+        <SyncCard latest={latest} lastSuccess={successResult.data} now={now} />
       </section>
 
       <section aria-labelledby="links-heading" className="flex flex-col gap-3">

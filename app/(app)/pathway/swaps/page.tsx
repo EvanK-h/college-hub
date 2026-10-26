@@ -1,13 +1,14 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { QUANTUM_RELEVANCE_LABELS, SWAP_SLOT_LABELS } from "@/lib/pathway/labels";
 import { buildSwapGroups, type SwapWithReplaces } from "@/lib/pathway/swaps";
 import { createClient } from "@/lib/supabase/server";
 
 export default function SwapsPage() {
   return (
-    <main className="flex flex-1 flex-col gap-6 p-4">
-      <h1 className="text-2xl font-semibold tracking-tight">Swap options</h1>
+    <main className={PAGE_CLASS}>
+      <PageHeader eyebrow="Degree plan" title="Swap options" />
       <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
         <Swaps />
       </Suspense>
@@ -41,7 +42,7 @@ async function Swaps() {
     <>
       {groups.map(({ slot, swaps }) => (
         <section key={slot} aria-labelledby={`slot-${slot}`} className="flex flex-col gap-3">
-          <h2 id={`slot-${slot}`} className="text-lg font-semibold">
+          <h2 id={`slot-${slot}`} className="px-1 text-title-3">
             {SWAP_SLOT_LABELS[slot]}
           </h2>
           <ul className="flex flex-col gap-3">
@@ -59,15 +60,20 @@ async function Swaps() {
 
 function SwapCard({ swap }: { swap: SwapWithReplaces }) {
   return (
-    <article className="rounded-md border bg-card p-4 text-card-foreground">
-      <h3 className="font-medium">{swap.swap_in}</h3>
-      <dl className="mt-1 flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
-        <Detail label="Quantum relevance" value={QUANTUM_RELEVANCE_LABELS[swap.quantum_relevance]} />
+    <article className="rounded-2xl bg-card p-5 text-card-foreground shadow-card">
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+        <h3 className="text-headline">{swap.swap_in}</h3>
+        <p className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">
+          <span className="sr-only">Quantum relevance: </span>
+          {QUANTUM_RELEVANCE_LABELS[swap.quantum_relevance]}
+        </p>
+      </div>
+      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
         <Detail label="Fits in" value={swap.fits_in} />
         <Detail label="Prerequisites" value={swap.prerequisites} />
         <Detail label="Replaces" value={swap.replaces.map((course) => `${course.code} · ${course.title}`).join(", ")} />
       </dl>
-      <div className="mt-3 grid gap-3 text-sm md:grid-cols-2">
+      <div className="mt-4 grid gap-2.5 text-sm md:grid-cols-2">
         <Reason heading="Why consider it" text={swap.why_consider} />
         <Reason heading="Why the current pick is better" text={swap.why_current_better} />
       </div>
@@ -78,18 +84,18 @@ function SwapCard({ swap }: { swap: SwapWithReplaces }) {
 function Detail({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
   return (
-    <div className="flex gap-1">
-      <dt className="font-medium">{label}:</dt>
+    <>
+      <dt className="text-muted-foreground">{label}</dt>
       <dd>{value}</dd>
-    </div>
+    </>
   );
 }
 
 function Reason({ heading, text }: { heading: string; text: string | null }) {
   return (
-    <div>
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{heading}</h4>
-      <p className="mt-1">{text ?? "—"}</p>
+    <div className="rounded-xl bg-foreground/4 p-3.5">
+      <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{heading}</h4>
+      <p className="mt-1.5 leading-relaxed">{text ?? "—"}</p>
     </div>
   );
 }

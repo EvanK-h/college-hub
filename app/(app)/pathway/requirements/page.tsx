@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { ProgressRing } from "@/components/pathway/progress-ring";
 import { StatusIcon } from "@/components/pathway/status-icon";
 import { HEADLINE_AREAS, summarizeAreas } from "@/lib/pathway/areas";
@@ -9,8 +10,8 @@ import { createClient } from "@/lib/supabase/server";
 
 export default function RequirementsPage() {
   return (
-    <main className="flex flex-1 flex-col gap-6 p-4">
-      <h1 className="text-2xl font-semibold tracking-tight">Requirements</h1>
+    <main className={PAGE_CLASS}>
+      <PageHeader eyebrow="Degree plan" title="Requirements" />
       <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
         <Requirements />
       </Suspense>
@@ -57,7 +58,7 @@ async function Requirements() {
 
   return (
     <>
-      <ul className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-4">
+      <ul className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-3">
         {rings.map((ring) => (
           <li key={ring.label}>
             <ProgressRing label={ring.label} counts={ring.counts} />
@@ -66,22 +67,22 @@ async function Requirements() {
       </ul>
 
       {areas.map(({ area }) => (
-        <section key={area} aria-labelledby={`area-${area}`} className="flex flex-col gap-2">
-          <h2 id={`area-${area}`} className="text-lg font-semibold">
+        <section key={area} aria-labelledby={`area-${area}`} className="flex flex-col gap-3">
+          <h2 id={`area-${area}`} className="px-1 text-title-3">
             {REQ_AREA_LABELS[area]}
           </h2>
-          <ul className="flex flex-col gap-2">
+          <ul className="divide-y divide-separator overflow-hidden rounded-2xl bg-card text-card-foreground shadow-card">
             {requirements
               .filter((requirement) => requirement.area === area)
               .map((requirement) => (
-                <li key={requirement.requirement_id} className="rounded-md border bg-card p-3 text-card-foreground">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="text-sm font-medium">{requirement.name}</h3>
-                    <span className="text-xs text-muted-foreground">
+                <li key={requirement.requirement_id} className="px-4 py-3.5">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <h3 className="text-sm font-semibold">{requirement.name}</h3>
+                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                       {requirement.done_courses}/{requirement.total_courses} courses done
                     </span>
                   </div>
-                  <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                  <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
                     {(linksByRequirement.get(requirement.requirement_id) ?? []).map(({ course_id }) => {
                       const course = courseById.get(course_id);
                       return course ? (

@@ -77,3 +77,23 @@
 - Prerequisite, co-op and per-term SH checks belong with drag-and-drop planning in Phase 4.
 
 **Note.** All 13 NUpath codes are treated as required. `REQUIRED_NUPATH` in `lib/pathway/nupath.ts` is the one place to change that.
+
+## 2026-10-26: Apple-style visual redesign
+
+**Decision.** Restyle the whole app along Apple's design guidance (WWDC *Designing Fluid Interfaces* and related talks) while keeping the warm palette from 2026-10-21, used with more restraint.
+
+**What changed.**
+- Surfaces are near-neutral (warm off-white / near-black cocoa) with white or raised cards on soft shadows instead of borders. Spiced Wine (light) and Golden Batter (dark) stay the only accent.
+- Tokens use CSS `light-dark()`, so one block covers both themes. Dark mode now follows the system, and a `.dark` / `.light` class on `<html>` overrides it for a future toggle.
+- The system font (SF Pro on Apple devices) replaces Geist. A named type scale (`text-large-title`, `text-title-2/3`, `text-headline`) tightens tracking as size grows; small text opens slightly.
+- The header is a sticky translucent bar (`material-bar`). Its hairline only fades in once content scrolls under it (`scroll-edge`, a scroll-driven animation).
+- Navigation is a segmented control. The active pill glides between tabs on a critically damped spring from `motion` (`layoutId`).
+- Presses give feedback on pointer-down (`press` utility: a quick 0.97 scale). The dialog dims the page and opens and closes with CSS transitions on a sampled spring curve (`--ease-spring`), which stay interruptible.
+- Requirements use inset grouped lists; term columns sit on a faint tint and snap when scrolled sideways.
+- `prefers-reduced-motion`, `prefers-reduced-transparency` and `prefers-contrast` are all handled in `globals.css`.
+
+**Why.** The app is used daily, so calm and fast matters more than decoration. Springs and pointer-down feedback make it feel responsive, and the restraint keeps colour meaningful (course types, status).
+
+**Contrast.** Text pairs still meet 4.5:1 and graphics 3:1 in both themes. The light "in progress" ring colour was darkened to `oklch(0.66 0.11 70)` to reach 3:1. "Done" uses its own green `--done` token (rings and status icons) rather than the wine primary, since green reads as finished at a glance. `--success` stays the pale pill fill.
+
+**Rejected.** An Apple-neutral gray/blue palette (it would discard the Canvas Hub feel) and a sidebar (a top bar is enough for four sections and works better on a phone).

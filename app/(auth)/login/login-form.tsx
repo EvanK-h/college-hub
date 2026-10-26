@@ -17,7 +17,7 @@ export function LoginForm() {
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" autoComplete="email" required />
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" size="lg" disabled={pending}>
         {pending ? "Sending…" : "Send sign-in link"}
       </Button>
       {state.message && (

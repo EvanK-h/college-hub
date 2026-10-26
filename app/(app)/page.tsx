@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/actions";
 
 export default function HomePage() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
+    <main className={PAGE_CLASS}>
       <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
         <Greeting />
       </Suspense>
@@ -21,14 +22,12 @@ async function Greeting() {
   if (!data?.claims) redirect("/login");
 
   return (
-    <>
-      <h1 className="text-3xl font-semibold tracking-tight">Hello Evan</h1>
-      {data.claims.email && <p className="text-muted-foreground">Signed in as {data.claims.email}</p>}
-      <form action={signOut}>
+    <PageHeader title="Hello, Evan" description={data.claims.email ? `Signed in as ${data.claims.email}` : undefined}>
+      <form action={signOut} className="mt-2">
         <Button type="submit" variant="outline">
           Sign out
         </Button>
       </form>
-    </>
+    </PageHeader>
   );
 }

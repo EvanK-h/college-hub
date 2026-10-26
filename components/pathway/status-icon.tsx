@@ -1,5 +1,6 @@
 import { Circle, CircleCheck, CircleDot } from "lucide-react";
 import { COURSE_STATUS_LABELS, type CourseStatus } from "@/lib/pathway/labels";
+import { cn } from "@/lib/utils";
 
 const STATUS_ICONS: Record<CourseStatus, typeof Circle> = {
   planned: Circle,
@@ -7,12 +8,19 @@ const STATUS_ICONS: Record<CourseStatus, typeof Circle> = {
   done: CircleCheck,
 };
 
+// The shape already tells the states apart; the tint just makes finished work easier to scan.
+const STATUS_TONE: Record<CourseStatus, string> = {
+  planned: "text-muted-foreground",
+  in_progress: "text-chart-1",
+  done: "text-done",
+};
+
 // The icon is decorative; the hidden text is what screen readers announce.
 export function StatusIcon({ status, className }: { status: CourseStatus; className?: string }) {
   const Icon = STATUS_ICONS[status];
   return (
     <>
-      <Icon aria-hidden className={className} />
+      <Icon aria-hidden className={cn(STATUS_TONE[status], className)} />
       <span className="sr-only">{COURSE_STATUS_LABELS[status]}</span>
     </>
   );

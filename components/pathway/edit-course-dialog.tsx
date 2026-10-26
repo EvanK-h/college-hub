@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { COURSE_STATUS_LABELS, type CourseStatus } from "@/lib/pathway/labels";
 
 const SELECT_CLASS =
-  "h-9 w-full rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-2 focus-visible:outline-ring";
+  "h-10 w-full rounded-xl border border-input bg-card px-3 text-sm focus-visible:border-ring focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none dark:bg-muted";
 
 type EditableCourse = { id: string; code: string; title: string; status: CourseStatus; termId: number };
 
@@ -49,7 +49,7 @@ export function EditCourseDialog({
         render={
           <button
             type="button"
-            className="w-full rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="press group/course w-full rounded-xl text-left"
           />
         }
       >

@@ -122,7 +122,14 @@ describe.skipIf(!local)("Canvas sync against the local database", () => {
     check(await db.from("courses").delete().eq("owner_id", OWNER));
   }
 
-  const runSync = () => syncCanvas({ db, canvas: fakeCanvas(world), ownerId: OWNER });
+  const attemptSync = () => syncCanvas({ db, canvas: fakeCanvas(world), ownerId: OWNER });
+
+  /** Like attemptSync, but fails the test if the sync was skipped. */
+  async function runSync() {
+    const outcome = await attemptSync();
+    if (outcome.status === "skipped") throw new Error(`sync was skipped: ${outcome.reason}`);
+    return outcome;
+  }
 
   async function assignmentRow(canvasId: number) {
     const { data, error } = await db.from("assignments").select("*").eq("canvas_id", canvasId).single();
@@ -286,6 +293,59 @@ describe.skipIf(!local)("Canvas sync against the local database", () => {
     expect(result.status).toBe("error");
     expect(result.error).toContain("TEST 2000");
     expect(await assignmentRow(PROBLEM_SET)).toMatchObject({ course_id: courseIds.first });
+  });
+
+  describe("only one sync runs at a time", () => {
+    const startRun = async (startedAt?: string) =>
+      check(
+        await db
+          .from("sync_runs")
+          .insert({ source: "canvas", status: "running", owner_id: OWNER, ...(startedAt && { started_at: startedAt }) }),
+      );
+
+    it("skips, and writes nothing, while another sync is running", async () => {
+      await startRun();
+
+      const outcome = await attemptSync();
+
+      expect(outcome).toEqual({ status: "skipped", reason: "another sync is already running" });
+      const { count: assignments } = await db
+        .from("assignments")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", OWNER);
+      const { count: runs } = await db
+        .from("sync_runs")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", OWNER);
+      expect(assignments).toBe(0);
+      expect(runs).toBe(1); // just the pretend running one; the skipped attempt left no row
+    });
+
+    it("closes a run that never finished and syncs anyway", async () => {
+      const anHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      await startRun(anHourAgo);
+
+      const outcome = await attemptSync();
+
+      expect(outcome.status).toBe("success");
+      const { data: runs } = await db.from("sync_runs").select("status, finished_at, error_message").eq("owner_id", OWNER);
+      expect(runs).toHaveLength(2);
+      expect(runs).toContainEqual(expect.objectContaining({ status: "error", error_message: expect.stringMatching(/did not finish/) }));
+      expect(runs?.every((run) => run.finished_at !== null)).toBe(true);
+    });
+
+    it("lets exactly one of two simultaneous syncs through", async () => {
+      const outcomes = await Promise.all([attemptSync(), attemptSync()]);
+
+      expect(outcomes.map((outcome) => outcome.status).sort()).toEqual(["skipped", "success"]);
+      const { count } = await db.from("assignments").select("id", { count: "exact", head: true }).eq("owner_id", OWNER);
+      expect(count).toBe(2);
+    });
+
+    it("allows the next sync once the previous one has finished", async () => {
+      await runSync();
+      expect((await attemptSync()).status).toBe("success");
+    });
   });
 
   it("refuses to write into a course that belongs to someone else", async () => {

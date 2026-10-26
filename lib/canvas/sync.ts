@@ -18,6 +18,11 @@ export type SyncResult = {
   error: string | null;
 };
 
+/** Another Canvas sync is already running, so this one did nothing and wrote no `sync_runs` row. */
+export type SyncSkipped = { status: "skipped"; reason: string };
+
+export type SyncOutcome = SyncResult | SyncSkipped;
+
 export type SyncOptions = {
   /** Supabase client with the service-role key (lib/supabase/admin.ts). */
   db: Db;
@@ -29,6 +34,9 @@ export type SyncOptions = {
 
 const ANNOUNCEMENT_WINDOW_DAYS = 60;
 const MAX_ERROR_LENGTH = 500;
+// A run still marked `running` after this long crashed or timed out, and must not block new ones.
+const STALE_RUN_MINUTES = 10;
+const UNIQUE_VIOLATION = "23505";
 
 // Row shapes sent to the SQL functions. They are `type`s, not interfaces, so they count as JSON.
 type GroupRow = { canvas_id: number; name: string; weight: number | null; position: number | null };
@@ -145,17 +153,35 @@ async function syncCourse(
  * Runs a full Canvas sync, one mapped course at a time, and records it in `sync_runs`.
  * Re-running it is always safe: the SQL functions only ever write synced columns.
  * A 401 stops the run and records `token_expired`; any other failure is recorded against
- * its course and the remaining courses still run.
+ * its course and the remaining courses still run. If another sync is already running it does
+ * nothing and returns `skipped`.
  */
-export async function syncCanvas(options: SyncOptions): Promise<SyncResult> {
+export async function syncCanvas(options: SyncOptions): Promise<SyncOutcome> {
   const { db, ownerId } = options;
   const resolved = { ...options, now: options.now ?? new Date() };
 
+  // First close out runs that never finished, so a crash can't block syncing forever.
+  const staleBefore = new Date(resolved.now.getTime() - STALE_RUN_MINUTES * 60 * 1000);
+  const { error: staleError } = await db
+    .from("sync_runs")
+    .update({
+      status: "error",
+      finished_at: resolved.now.toISOString(),
+      error_message: "run did not finish (it timed out or crashed)",
+    })
+    .eq("owner_id", ownerId)
+    .eq("source", "canvas")
+    .eq("status", "running")
+    .lt("started_at", staleBefore.toISOString());
+  if (staleError) throw new Error(`could not close stale sync runs: ${staleError.message}`);
+
+  // The unique index on running rows makes this insert the lock: only one run can hold it.
   const { data: run, error: runError } = await db
     .from("sync_runs")
     .insert({ source: "canvas", status: "running", owner_id: ownerId })
     .select("id")
     .single();
+  if (runError?.code === UNIQUE_VIOLATION) return { status: "skipped", reason: "another sync is already running" };
   if (runError) throw new Error(`could not record the sync run: ${runError.message}`);
 
   let counts: SyncCounts = { inserted: 0, updated: 0, unchanged: 0 };

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   describeCounts,
   describeLatestRun,
+  describeSyncOutcome,
   formatDuration,
   formatRelativeTime,
   formatRunTime,
@@ -68,6 +69,38 @@ describe("formatRunTime", () => {
     // 05:00 UTC is 06:00 in London during British Summer Time.
     expect(formatRunTime("2026-07-01T05:00:00Z", "Europe/London")).toMatch(/1 Jul.*06:00.*BST/);
     expect(formatRunTime("2026-12-01T05:00:00Z", "Europe/London")).toMatch(/1 Dec.*05:00.*GMT/);
+  });
+});
+
+describe("describeSyncOutcome", () => {
+  const counts = { inserted: 1, updated: 2, unchanged: 40 };
+
+  it("reports the counts after a successful sync", () => {
+    expect(describeSyncOutcome({ runId: "r", status: "success", counts, error: null })).toEqual({
+      status: "success",
+      message: "Synced: 1 new · 2 updated · 40 unchanged",
+    });
+  });
+
+  it("says when another sync was already running", () => {
+    const outcome = describeSyncOutcome({ status: "skipped", reason: "another sync is already running" });
+    expect(outcome.status).toBe("skipped");
+    expect(outcome.message).toMatch(/already running/);
+  });
+
+  it("tells you to replace an expired token", () => {
+    const outcome = describeSyncOutcome({ runId: "r", status: "token_expired", counts, error: "token detail" });
+    expect(outcome).toMatchObject({ status: "error" });
+    expect(outcome.message).toMatch(/token/);
+    expect(outcome.message).not.toContain("token detail");
+  });
+
+  it("passes on the recorded reason for a failed sync", () => {
+    const outcome = describeSyncOutcome({ runId: "r", status: "error", counts, error: "TEST 1000: Canvas request failed" });
+    expect(outcome).toEqual({
+      status: "error",
+      message: "Sync finished with errors: TEST 1000: Canvas request failed",
+    });
   });
 });
 

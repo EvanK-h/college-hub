@@ -1,3 +1,4 @@
+import type { SyncOutcome } from "@/lib/canvas/sync";
 import type { Database } from "@/lib/database.types";
 
 export type SyncStatus = Database["public"]["Enums"]["sync_status"];
@@ -15,6 +16,27 @@ export const SYNC_STATUS_LABELS: Record<SyncStatus, string> = {
   error: "Failed",
   token_expired: "Token expired",
 };
+
+/** What the "Sync now" button shows after it runs. */
+export type SyncNowState = {
+  status: "idle" | "success" | "skipped" | "error";
+  message: string;
+};
+
+/** The button's message for a finished sync. Only short, fixed phrases and counts; no raw errors. */
+export function describeSyncOutcome(outcome: SyncOutcome): SyncNowState {
+  switch (outcome.status) {
+    case "success":
+      return { status: "success", message: `Synced: ${describeCounts(outcome.counts)}` };
+    case "skipped":
+      return { status: "skipped", message: "Another sync is already running. Check back in a moment." };
+    case "token_expired":
+      return { status: "error", message: "Canvas rejected the token. Replace it, then sync again." };
+    case "error":
+      // error_message was written by the sync itself: course codes and short reasons, never secrets.
+      return { status: "error", message: `Sync finished with errors: ${outcome.error ?? "see the history below"}` };
+  }
+}
 
 /** "just now", "12 min ago", "3 h ago", "2 d ago". */
 export function formatRelativeTime(from: Date, now: Date): string {

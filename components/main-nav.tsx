@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/pathway", label: "Pathway" },
   { href: "/pathway/requirements", label: "Requirements" },
   { href: "/pathway/swaps", label: "Swaps" },
+  { href: "/settings", label: "Settings" },
 ] as const;
 
 // Critically damped (no overshoot): the pill is moved by a click, not thrown, so it should settle, not bounce.

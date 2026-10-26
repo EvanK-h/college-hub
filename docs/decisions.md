@@ -114,3 +114,20 @@
 
 **Also.** Wine is now reserved for actions, focus and the app icon (the page eyebrow became grey). Swap relevance pills are graded by rank. The pathway marks the current term and recedes finished ones, using a `phase` derived in `summarizeTerms`. Unused `sidebar-*`, `chart-*`, `success` and `warning` tokens are gone. Course cards carry a 4% tint of their type colour; 6% made the page read pink, since CS core is most of the plan.
 
+
+## 2026-10-26: Canvas upserts live in Postgres functions
+
+**Decision.** The sync writes through three SQL functions (`sync_assignment_groups`, `sync_assignments`, `sync_announcements`) called with `rpc`, not through supabase-js `.upsert()`. Each runs `insert ... on conflict (canvas_id) do update set <synced columns only>`.
+
+**Why.**
+- supabase-js `.upsert()` updates every column in the payload, so it cannot "guess `kind` on insert, then leave it alone". Either the payload omits `kind` (and inserts fail) or it includes it (and the update overwrites your correction).
+- The update list in SQL is the guarantee that `progress`, `priority`, `est_hours`, `notes`, `read`, `important` and a corrected `kind` survive a re-sync, and it sits next to the constraint it depends on.
+- A `where ... is distinct from` clause skips rows that haven't changed, so the function can report inserted, updated and unchanged counts for `sync_runs`; `xmax = 0` tells inserts from updates.
+- The soft-delete (`deleted_in_canvas = true` for assignments missing from a fully fetched course) runs in the same transaction as the upsert.
+
+**Security.** The functions write for whatever owner they are given, so `execute` is revoked from `public`, `anon` and `authenticated` and granted to `service_role` only. They also refuse a course that doesn't belong to the given owner. The service-role client has no `auth.uid()`, so `owner_id` is passed in explicitly.
+
+**Consequences.**
+- The "your columns survive" test has to run against a real Postgres (local Supabase), since a mocked client would prove nothing about SQL.
+- Announcements are never soft-deleted: the sync only fetches 60 days, so a missing old announcement doesn't mean it was removed.
+- Soft-deleted assignments are counted as `updated`. `sync_runs` has no separate column for them.

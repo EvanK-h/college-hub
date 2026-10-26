@@ -231,7 +231,21 @@ isOneToOne: false
                 }
           }
           Functions: {
-            [_ in never]: never
+            "sync_announcements":
+{ Args: { "p_course_id": string,"p_owner": string,"p_rows": Json }; Returns: {
+              "inserted": number,"unchanged": number,"updated": number
+            }[]
+                           },
+"sync_assignment_groups":
+{ Args: { "p_course_id": string,"p_owner": string,"p_rows": Json }; Returns: {
+              "inserted": number,"unchanged": number,"updated": number
+            }[]
+                           },
+"sync_assignments":
+{ Args: { "p_course_id": string,"p_owner": string,"p_rows": Json }; Returns: {
+              "inserted": number,"unchanged": number,"updated": number
+            }[]
+                           }
           }
           Enums: {
             "assignment_kind": "assignment"|"quiz"|"exam"|"discussion"|"lab"|"reading","assignment_priority": "low"|"medium"|"high","assignment_progress": "not_started"|"in_progress","course_status": "planned"|"in_progress"|"done","course_type": "cs_core"|"ai_concentration"|"physics_minor"|"major_support"|"general_elective"|"coop_program","nupath": "ND"|"EI"|"IC"|"FQ"|"SI"|"AD"|"DD"|"ER"|"WF"|"WD"|"WI"|"EX"|"CE","quantum_relevance": "none"|"lower"|"low"|"medium"|"high","req_area": "cs_overview"|"cs_fundamentals"|"cs_required"|"security_presentation"|"khoury_electives"|"supporting"|"writing"|"ai_concentration"|"physics_minor"|"universitywide","swap_slot": "london_elective"|"khoury_elective"|"ai_elective"|"software_engineering"|"placement_substitute"|"physics_minor_elective"|"advanced_writing","sync_source": "canvas"|"timetable","sync_status": "running"|"success"|"error"|"token_expired","term_kind": "transfer"|"semester"|"summer"|"coop"

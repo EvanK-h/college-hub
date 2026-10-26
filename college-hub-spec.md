@@ -100,7 +100,7 @@ The Canvas token can read every grade, submission and message in the account, so
 - Turn on GitHub secret scanning and push protection for the repo.
 - Row-level security is on for every table. Policies allow access only when `auth.uid()` matches the owner, and the sync job writes with the service-role key on the server.
 - Login is a Supabase magic link. The sign-in action refuses any email other than `ALLOWED_EMAIL`, and public sign-ups are turned off in Supabase.
-- `/api/sync/*` routes require `Authorization: Bearer <CRON_SECRET>` (Vercel Cron sends it automatically) or a signed-in session for the manual button.
+- `/api/sync/*` routes accept only `Authorization: Bearer <CRON_SECRET>` (Vercel Cron sends it automatically). The manual button is a server action that checks your session and runs the sync itself, so no route needs to trust a login cookie.
 - Log sync results, never request headers or the token.
 
 **Token rotation**

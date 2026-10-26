@@ -68,7 +68,7 @@ docs/decisions.md          decision log
 - Any module that reads those variables or calls Canvas starts with `import "server-only"`.
 - Never read, print or edit `.env.local`. Use `.env.example` (names only, empty values) to document variables.
 - `lib/supabase/admin.ts` (service role, bypasses RLS) is imported only by sync code under `app/api/sync` and `lib/canvas` / `lib/timetable`. Pages and server actions use `lib/supabase/server.ts`.
-- `/api/sync/*` must reject requests without `Authorization: Bearer ${CRON_SECRET}` or a signed-in session.
+- `/api/sync/*` accepts only `Authorization: Bearer ${CRON_SECRET}` and rejects everything else, including a signed-in browser. The "Sync now" button is a Server Action that checks the session and calls `runCanvasSync()` directly, not the route.
 - Every table has `owner_id uuid not null default auth.uid()`, RLS enabled, and a policy `owner_id = auth.uid()` in the same migration that creates it.
 - Sign-in is restricted to `ALLOWED_EMAIL`; public sign-ups are off.
 - The site only reads from Canvas. Never call a Canvas endpoint that creates, updates, submits or deletes anything.

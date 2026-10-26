@@ -131,3 +131,29 @@
 - The "your columns survive" test has to run against a real Postgres (local Supabase), since a mocked client would prove nothing about SQL.
 - Announcements are never soft-deleted: the sync only fetches 60 days, so a missing old announcement doesn't mean it was removed.
 - Soft-deleted assignments are counted as `updated`. `sync_runs` has no separate column for them.
+
+## 2026-10-26: `/api/sync/*` accepts the bearer token only
+
+**Decision.** The sync route checks `Authorization: Bearer ${CRON_SECRET}` and nothing else. A signed-in browser without the header gets a 401. The "Sync now" button and the dashboard-load refresh are Server Actions that check the session and call `runCanvasSync()` directly. This replaces the earlier rule "bearer token or a signed-in session".
+
+**Why.**
+- A route that trusts the session cookie can be triggered from another site. Supabase's cookies are `SameSite=Lax`, which browsers send on top-level navigations (a link or a redirect) but not on cross-site image loads or POSTs. A GET that starts a sync would therefore be reachable by getting you to open a URL.
+- The impact would be small, since a sync only reads from Canvas and is safe to repeat, but it would mean extra Canvas traffic at times you didn't choose.
+- Nothing needs the cookie path: every legitimate caller is either cron (bearer) or the app's own UI (Server Action).
+
+**Details.** The check compares SHA-256 hashes with `timingSafeEqual`, fails closed when `CRON_SECRET` is missing, and requires the secret to be at least 32 characters. The proxy lets `/api/sync/` through without a session because cron callers have none.
+
+**Considered and rejected.**
+- *Session accepted on POST only.* Lax cookies aren't sent on cross-site POSTs, so it would be reasonably safe, but it adds a second auth path to test and maintain with no caller that needs it.
+- *Session accepted on both methods plus an `Origin` check.* Same cost, and it follows the original wording only on paper.
+
+## 2026-10-26: Only one Canvas sync runs at a time
+
+**Decision.** A partial unique index on `sync_runs (owner_id, source) where status = 'running'` allows one running sync per source. `syncCanvas` first closes `running` rows older than 10 minutes, then inserts its own `running` row; if that insert hits the unique violation (`23505`) it returns `{ status: "skipped" }` without touching Canvas or writing a row. The route answers 200 for a skipped run.
+
+**Why.**
+- Vercel Cron, `pg_cron` and the "Sync now" button can fire close together, and Canvas throttles parallel requests harder than sequential ones.
+- A "look for a running row, then insert" check has a race: two requests can both see nothing running. The index lets the database decide, so exactly one insert wins.
+- A run that crashes or times out would leave its row `running` forever. The 10-minute cleanup keeps one failure from blocking every later sync; a real run finishes well inside the route's 60-second limit.
+
+**Consequences.** A skipped run is not an error, so it returns 200 and Vercel Cron does not show it as failed. If the final update of a finished run fails, its row stays `running` until the 10 minutes pass.

@@ -157,3 +157,19 @@
 - A run that crashes or times out would leave its row `running` forever. The 10-minute cleanup keeps one failure from blocking every later sync; a real run finishes well inside the route's 60-second limit.
 
 **Consequences.** A skipped run is not an error, so it returns 200 and Vercel Cron does not show it as failed. If the final update of a finished run fails, its row stays `running` until the 10 minutes pass.
+
+## 2026-10-26: Two schedulers call one sync route
+
+**Decision.** Vercel Cron calls `/api/sync/all` once a day (`0 6 * * *`, in `vercel.json`). A `pg_cron` job named `canvas-sync` calls the same route every two hours from 07:00 to 23:00 (`0 7-23/2 * * *`) through `pg_net`, via a `trigger_canvas_sync()` function. Both use `Authorization: Bearer ${CRON_SECRET}`. Neither knows about the other.
+
+**Why.**
+- Vercel's Hobby plan only allows cron jobs that run once a day, so on its own it would miss the "within two hours" goal.
+- One route means one place that checks the token, runs the sync and records `sync_runs`. The single-run guard (2026-10-26) makes an overlap harmless.
+
+**Secrets.** The app URL and `CRON_SECRET` live in Supabase Vault (`sync_app_url`, `sync_cron_secret`), added by hand in the SQL editor of each environment. The migration only creates the job and the function, so nothing secret is committed. Until both secrets exist the function skips with a notice, so local databases stay quiet. The function is `security definer` and executable only by the cron job's owner, not by `anon` or `authenticated`.
+
+**Details and limits.**
+- `pg_net` is asynchronous: the job fires the request and moves on. The response is kept in `net._http_response` for about six hours, which is where to look when a scheduled run seems missing. The request timeout is 60 s, matching the route's `maxDuration`.
+- Both schedulers run in UTC, so the daily Vercel run is 06:00 London time in winter and 07:00 in summer.
+- A failed or token-expired run answers 502, but nothing reads that status: failures show up in `sync_runs` and the token banner on `/settings`.
+- Production needs the migrations applied (`supabase db push`) before the job can do anything; the job is created by the same migration that adds the function.

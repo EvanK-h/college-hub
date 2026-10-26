@@ -362,13 +362,13 @@ Five phases, each ending with something you can use; a phase is done when its la
 
 ### Phase 2: Canvas sync
 
-- [ ] Canvas client with pagination, retries, 401 handling and Zod validation
-- [ ] Map each Fall 2026 course to its `canvas_course_id`
-- [ ] Migrations: `assignment_groups`, `assignments`, `announcements`, `sync_runs`
-- [ ] `/api/sync/all` route protected by `CRON_SECRET`
+- [x] Canvas client with pagination, retries, 401 handling and Zod validation
+- [x] Map each Fall 2026 course to its `canvas_course_id`
+- [x] Migrations: `assignment_groups`, `assignments`, `announcements`, `sync_runs`
+- [x] `/api/sync/all` route protected by `CRON_SECRET`
 - [ ] Vercel Cron (daily) and Supabase `pg_cron` (every 2 hours)
-- [ ] Unit tests for the upsert proving your own columns survive a re-sync
-- [ ] `/settings` with sync history and the token-expired banner
+- [x] Unit tests for the upsert proving your own columns survive a re-sync
+- [x] `/settings` with sync history and the token-expired banner
 
 **Done when:** a new Canvas assignment appears on the site within two hours without you doing anything.
 

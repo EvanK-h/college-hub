@@ -23,7 +23,67 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "course_requirements": {
+            "announcements": {
+                  Row: {
+                    "author": string | null,"canvas_id": number,"course_id": string,"deleted_in_canvas": boolean,"html_url": string,"id": string,"important": boolean,"message": string | null,"owner_id": string,"posted_at": string | null,"read": boolean,"synced_at": string,"title": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author"?: string | null,"canvas_id": number,"course_id": string,"deleted_in_canvas"?: boolean,"html_url": string,"id"?: string,"important"?: boolean,"message"?: string | null,"owner_id"?: string,"posted_at"?: string | null,"read"?: boolean,"synced_at"?: string,"title": string
+                  }
+                  Update: {
+                    "author"?: string | null,"canvas_id"?: number,"course_id"?: string,"deleted_in_canvas"?: boolean,"html_url"?: string,"id"?: string,"important"?: boolean,"message"?: string | null,"owner_id"?: string,"posted_at"?: string | null,"read"?: boolean,"synced_at"?: string,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "announcements_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"assignment_groups": {
+                  Row: {
+                    "canvas_id": number,"course_id": string,"id": string,"name": string,"owner_id": string,"position": number | null,"synced_at": string,"weight": number | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "canvas_id": number,"course_id": string,"id"?: string,"name": string,"owner_id"?: string,"position"?: number | null,"synced_at"?: string,"weight"?: number | null
+                  }
+                  Update: {
+                    "canvas_id"?: number,"course_id"?: string,"id"?: string,"name"?: string,"owner_id"?: string,"position"?: number | null,"synced_at"?: string,"weight"?: number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "assignment_groups_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"assignments": {
+                  Row: {
+                    "assignment_group_id": number | null,"canvas_id": number,"course_id": string,"deleted_in_canvas": boolean,"due_at": string | null,"est_hours": number | null,"html_url": string,"id": string,"kind": Database["public"]['Enums']["assignment_kind"],"notes": string | null,"owner_id": string,"points_possible": number | null,"priority": Database["public"]['Enums']["assignment_priority"] | null,"progress": Database["public"]['Enums']["assignment_progress"],"score": number | null,"submitted_at": string | null,"synced_at": string,"title": string,"workflow_state": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "assignment_group_id"?: number | null,"canvas_id": number,"course_id": string,"deleted_in_canvas"?: boolean,"due_at"?: string | null,"est_hours"?: number | null,"html_url": string,"id"?: string,"kind": Database["public"]['Enums']["assignment_kind"],"notes"?: string | null,"owner_id"?: string,"points_possible"?: number | null,"priority"?: Database["public"]['Enums']["assignment_priority"] | null,"progress"?: Database["public"]['Enums']["assignment_progress"],"score"?: number | null,"submitted_at"?: string | null,"synced_at"?: string,"title": string,"workflow_state"?: string | null
+                  }
+                  Update: {
+                    "assignment_group_id"?: number | null,"canvas_id"?: number,"course_id"?: string,"deleted_in_canvas"?: boolean,"due_at"?: string | null,"est_hours"?: number | null,"html_url"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["assignment_kind"],"notes"?: string | null,"owner_id"?: string,"points_possible"?: number | null,"priority"?: Database["public"]['Enums']["assignment_priority"] | null,"progress"?: Database["public"]['Enums']["assignment_progress"],"score"?: number | null,"submitted_at"?: string | null,"synced_at"?: string,"title"?: string,"workflow_state"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "assignments_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"course_requirements": {
                   Row: {
                     "course_id": string,"owner_id": string,"requirement_id": string
                   }
@@ -129,6 +189,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"sync_runs": {
+                  Row: {
+                    "error_message": string | null,"finished_at": string | null,"id": string,"inserted": number,"owner_id": string,"source": Database["public"]['Enums']["sync_source"],"started_at": string,"status": Database["public"]['Enums']["sync_status"],"unchanged": number,"updated": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "error_message"?: string | null,"finished_at"?: string | null,"id"?: string,"inserted"?: number,"owner_id"?: string,"source": Database["public"]['Enums']["sync_source"],"started_at"?: string,"status"?: Database["public"]['Enums']["sync_status"],"unchanged"?: number,"updated"?: number
+                  }
+                  Update: {
+                    "error_message"?: string | null,"finished_at"?: string | null,"id"?: string,"inserted"?: number,"owner_id"?: string,"source"?: Database["public"]['Enums']["sync_source"],"started_at"?: string,"status"?: Database["public"]['Enums']["sync_status"],"unchanged"?: number,"updated"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"terms": {
                   Row: {
                     "campus": string | null,"ends_on": string | null,"id": number,"kind": Database["public"]['Enums']["term_kind"],"name": string,"owner_id": string,"starts_on": string | null,"time_zone": string
@@ -160,7 +234,7 @@ isOneToOne: false
             [_ in never]: never
           }
           Enums: {
-            "course_status": "planned"|"in_progress"|"done","course_type": "cs_core"|"ai_concentration"|"physics_minor"|"major_support"|"general_elective"|"coop_program","nupath": "ND"|"EI"|"IC"|"FQ"|"SI"|"AD"|"DD"|"ER"|"WF"|"WD"|"WI"|"EX"|"CE","quantum_relevance": "none"|"lower"|"low"|"medium"|"high","req_area": "cs_overview"|"cs_fundamentals"|"cs_required"|"security_presentation"|"khoury_electives"|"supporting"|"writing"|"ai_concentration"|"physics_minor"|"universitywide","swap_slot": "london_elective"|"khoury_elective"|"ai_elective"|"software_engineering"|"placement_substitute"|"physics_minor_elective"|"advanced_writing","term_kind": "transfer"|"semester"|"summer"|"coop"
+            "assignment_kind": "assignment"|"quiz"|"exam"|"discussion"|"lab"|"reading","assignment_priority": "low"|"medium"|"high","assignment_progress": "not_started"|"in_progress","course_status": "planned"|"in_progress"|"done","course_type": "cs_core"|"ai_concentration"|"physics_minor"|"major_support"|"general_elective"|"coop_program","nupath": "ND"|"EI"|"IC"|"FQ"|"SI"|"AD"|"DD"|"ER"|"WF"|"WD"|"WI"|"EX"|"CE","quantum_relevance": "none"|"lower"|"low"|"medium"|"high","req_area": "cs_overview"|"cs_fundamentals"|"cs_required"|"security_presentation"|"khoury_electives"|"supporting"|"writing"|"ai_concentration"|"physics_minor"|"universitywide","swap_slot": "london_elective"|"khoury_elective"|"ai_elective"|"software_engineering"|"placement_substitute"|"physics_minor_elective"|"advanced_writing","sync_source": "canvas"|"timetable","sync_status": "running"|"success"|"error"|"token_expired","term_kind": "transfer"|"semester"|"summer"|"coop"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -280,7 +354,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "course_status": ["planned", "in_progress", "done"],"course_type": ["cs_core", "ai_concentration", "physics_minor", "major_support", "general_elective", "coop_program"],"nupath": ["ND", "EI", "IC", "FQ", "SI", "AD", "DD", "ER", "WF", "WD", "WI", "EX", "CE"],"quantum_relevance": ["none", "lower", "low", "medium", "high"],"req_area": ["cs_overview", "cs_fundamentals", "cs_required", "security_presentation", "khoury_electives", "supporting", "writing", "ai_concentration", "physics_minor", "universitywide"],"swap_slot": ["london_elective", "khoury_elective", "ai_elective", "software_engineering", "placement_substitute", "physics_minor_elective", "advanced_writing"],"term_kind": ["transfer", "semester", "summer", "coop"]
+            "assignment_kind": ["assignment", "quiz", "exam", "discussion", "lab", "reading"],"assignment_priority": ["low", "medium", "high"],"assignment_progress": ["not_started", "in_progress"],"course_status": ["planned", "in_progress", "done"],"course_type": ["cs_core", "ai_concentration", "physics_minor", "major_support", "general_elective", "coop_program"],"nupath": ["ND", "EI", "IC", "FQ", "SI", "AD", "DD", "ER", "WF", "WD", "WI", "EX", "CE"],"quantum_relevance": ["none", "lower", "low", "medium", "high"],"req_area": ["cs_overview", "cs_fundamentals", "cs_required", "security_presentation", "khoury_electives", "supporting", "writing", "ai_concentration", "physics_minor", "universitywide"],"swap_slot": ["london_elective", "khoury_elective", "ai_elective", "software_engineering", "placement_substitute", "physics_minor_elective", "advanced_writing"],"sync_source": ["canvas", "timetable"],"sync_status": ["running", "success", "error", "token_expired"],"term_kind": ["transfer", "semester", "summer", "coop"]
           }
         }
 } as const

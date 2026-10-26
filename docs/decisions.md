@@ -97,3 +97,20 @@
 **Contrast.** Text pairs still meet 4.5:1 and graphics 3:1 in both themes. The light "in progress" ring colour was darkened to `oklch(0.66 0.11 70)` to reach 3:1. "Done" uses its own green `--done` token (rings and status icons) rather than the wine primary, since green reads as finished at a glance. `--success` stays the pale pill fill.
 
 **Rejected.** An Apple-neutral gray/blue palette (it would discard the Canvas Hub feel) and a sidebar (a top bar is enough for four sections and works better on a phone).
+
+## 2026-10-26: Colour roles, status palette and course-type hues
+
+**Decision.** Give every colour one role and write the rules into the spec's Visual design section. Status uses grey / blue / green / amber / red (planned, in progress, done, due soon, overdue) for both courses and assignments. Course types move onto hues no status uses (rose 350, teal 195, violet 300, olive 90, plus two neutrals). Grey surfaces become three translucent fill tiers, text gets a third (tertiary) level, and the focus ring uses the tint.
+
+**Why.**
+- Measured in OKLab, the old AI-concentration olive was 5.8 ΔE from done green and Major support was 4.6 from the in-progress caramel, so a course's type and its status read as one signal on the same card.
+- The 2026-10-21 entry already set due soon to caramel. With in progress also caramel, the two would collide once assignments arrive. Blue for "active" follows Apple's convention and frees amber for attention.
+- The course hues came from a search that maximised the minimum distance to the status colours, the primary and each other in both themes; the best set keeps at least 10.3 ΔE.
+- The focus ring was the same caramel as warning, so focused elements would look flagged.
+
+**Considered and rejected.**
+- *A wine dark-mode primary to keep one brand hue.* Measured at 6.7 ΔE from due soon and 8.6 from overdue, so the tint would read as an alert. Golden Batter stays.
+- *Keeping in progress amber and making due soon orange.* Only 8.0 ΔE apart, and both warm.
+
+**Also.** Wine is now reserved for actions, focus and the app icon (the page eyebrow became grey). Swap relevance pills are graded by rank. The pathway marks the current term and recedes finished ones, using a `phase` derived in `summarizeTerms`. Unused `sidebar-*`, `chart-*`, `success` and `warning` tokens are gone. Course cards carry a 4% tint of their type colour; 6% made the page read pink, since CS core is most of the plan.
+

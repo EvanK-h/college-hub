@@ -99,6 +99,7 @@ docs/decisions.md          decision log
 - Server Components by default; add `"use client"` only for interactivity. Mutations go through Server Actions.
 - Keep business logic (grades, requirement progress, plan validation) in pure functions under `lib/` with Vitest tests next to them.
 - Use shadcn/ui components and Tailwind; colours come from CSS variables, never hard-coded hex in components.
+- Colour roles are fixed in the spec's Visual design section: status hues (grey/blue/green/amber/red) are never used for categories, and wine is only for things you can act on. Check contrast and ΔE before adding a colour.
 - Accessible by default: real buttons and links, labels on inputs, visible focus, sufficient contrast in both themes.
 
 ## Git

@@ -292,7 +292,43 @@ Seven pages cover everything: the dashboard answers "what do I do today", and th
 - **Prerequisite graph (Phase 4).** Courses as nodes, prerequisites as arrows, with the PHYS 4115 → PHYS 5352 quantum chain highlighted. React Flow handles the layout.
 - **Quantum / AI toggle (Phase 4).** Re-sorts swap options and highlights the courses that matter most for the chosen direction.
 - **What-if plans (Phase 4).** Save a copy of the plan, change it freely, and compare two plans side by side. The real plan is untouched until you make one the active plan.
-- **Polish.** Installable on your phone (PWA manifest and icons), dark mode, global search (⌘K) across courses, assignments and announcements, and the warm, cozy palette from the Canvas Hub.
+- **Polish.** Installable on your phone (PWA manifest and icons), global search (⌘K) across courses, assignments and announcements, and an optional light/dark toggle (dark mode already follows the system; see Visual design).
+
+## Visual design
+
+Apple-style restraint on the warm Canvas Hub palette. Tokens live in `app/globals.css` as `light-dark()` pairs, and dark mode follows the system. The 2026-10-26 entries in `docs/decisions.md` explain the reasoning; this section is the rulebook.
+
+**Colour roles.** Every colour has one job. Never use a role's colour for another role, and never use colour alone: pair it with an icon shape, a label or text.
+
+| Role | Tokens | Used for | Never used for |
+| --- | --- | --- | --- |
+| Tint | `primary` (wine light, Golden Batter dark), `ring` | Buttons, links, focus rings, the app icon | Decoration, headings, eyebrows, status |
+| Label | `accent` (Golden Batter tint) | Neutral labels: co-op term, swap relevance (graded by rank) | Status or warnings |
+| Status | `status-planned`, `status-in-progress`, `status-done`, `status-due-soon`, `status-overdue` | Course and assignment state | Categories |
+| Category | `course-*` (six course types) | The bar, faint card tint and legend dot that mark a course's type | Status |
+| Error | `destructive` (= `status-overdue`) | Form errors, destructive actions, overdue work | — |
+
+**Status palette.** Shared by courses (Phase 1) and assignments (Phases 2–3), so the same hue always means the same thing.
+
+| Status | Hue | Courses | Assignments |
+| --- | --- | --- | --- |
+| Planned / not started | Neutral grey | `planned` (empty circle) | Not started: outline-only neutral pill |
+| In progress | Blue (250) | `in_progress` (dotted circle), current term outline | Your `progress = in progress` |
+| Done | Green (145) | `done` (check) | Submitted or graded: filled green pill |
+| Due soon | Amber (70) | — | Due within 72 hours and not submitted |
+| Overdue | Red (27) | — | Past due and not submitted |
+
+Due soon and overdue are derived at display time from `due_at` and the displayed status, never stored. Each status colour passes 4.5:1 on cards in both themes, so it can colour text as well as icons and arcs.
+
+**Course types** use hues no status uses (rose 350 CS core, teal 195 AI concentration, violet 300 Physics minor, olive 90 Major support, neutral grey General elective, dark stone Co-op / program). Each is at least 10 ΔE (OKLab ×100) from every status colour and from the others. A new category must pass the same check.
+
+**Text levels.** `foreground` for primary text; `muted-foreground` for secondary text (titles under codes, descriptions, captions); `tertiary-foreground` for metadata (credits, counts) on cards or the page background only. On tinted fills, use `muted-foreground`, since tertiary drops below 4.5:1 there.
+
+**Fills.** Grey surfaces are translucent tints of the foreground, never solid greys: `fill` for tracks and pressed or hovered controls, `fill-secondary` for control backgrounds (nav track, close button), `fill-tertiary` for grouping backgrounds (term columns, reason panels). `secondary` and `muted` are aliases of these for shadcn components.
+
+**Wayfinding.** On the pathway, finished terms recede (no tint, flat cards, muted heading), and the current term gets the in-progress outline and a "Current term" label. Without term dates, the phase comes from course status (`summarizeTerms`).
+
+**Accessibility.** Text 4.5:1 and meaningful graphics 3:1 in both themes. `prefers-contrast: more` darkens secondary text, strengthens fills and hairlines, and thickens colour marks. `prefers-reduced-transparency` makes the header solid. `prefers-reduced-motion` removes movement but keeps feedback.
 
 ## Phases
 
@@ -354,7 +390,7 @@ Five phases, each ending with something you can use; a phase is done when its la
 - [ ] Prerequisite graph
 - [ ] Quantum / AI toggle
 - [ ] Saved what-if plans and side-by-side comparison
-- [ ] PWA, dark mode, ⌘K search
+- [ ] PWA, ⌘K search, light/dark toggle (system dark mode is done)
 - [ ] Playwright end-to-end test for the main flows
 
 **Done when:** you've used it to plan Spring 2027 registration.

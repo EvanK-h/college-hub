@@ -1,0 +1,89 @@
+import type { Database } from "@/lib/database.types";
+
+export type SyncStatus = Database["public"]["Enums"]["sync_status"];
+type SyncRunRow = Database["public"]["Tables"]["sync_runs"]["Row"];
+
+// Only the columns the settings page shows, so tests can build inputs without every field.
+export type SyncRun = Pick<
+  SyncRunRow,
+  "id" | "status" | "started_at" | "finished_at" | "inserted" | "updated" | "unchanged" | "error_message"
+>;
+
+export const SYNC_STATUS_LABELS: Record<SyncStatus, string> = {
+  running: "Running",
+  success: "Success",
+  error: "Failed",
+  token_expired: "Token expired",
+};
+
+/** "just now", "12 min ago", "3 h ago", "2 d ago". */
+export function formatRelativeTime(from: Date, now: Date): string {
+  const seconds = Math.max(0, Math.floor((now.getTime() - from.getTime()) / 1000));
+  if (seconds < 45) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${Math.max(minutes, 1)} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  return `${Math.floor(hours / 24)} d ago`;
+}
+
+/** "1 new · 2 updated · 40 unchanged", leaving out parts that are zero. */
+export function describeCounts({ inserted, updated, unchanged }: Pick<SyncRun, "inserted" | "updated" | "unchanged">): string {
+  const parts = [
+    inserted > 0 && `${inserted} new`,
+    updated > 0 && `${updated} updated`,
+    unchanged > 0 && `${unchanged} unchanged`,
+  ].filter((part): part is string => part !== false);
+  return parts.length > 0 ? parts.join(" · ") : "Nothing to sync";
+}
+
+/** "4 s" or "1 min 5 s"; null while the run has not finished. */
+export function formatDuration(startedAt: string, finishedAt: string | null): string | null {
+  if (!finishedAt) return null;
+  const seconds = Math.round((new Date(finishedAt).getTime() - new Date(startedAt).getTime()) / 1000);
+  if (seconds < 1) return "<1 s";
+  if (seconds < 60) return `${seconds} s`;
+  return `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
+}
+
+/** A run's start time in the given time zone, with the zone's short name so it is never ambiguous. */
+export function formatRunTime(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone,
+    timeZoneName: "short",
+  }).format(new Date(iso));
+}
+
+/** The headline and supporting lines for the sync card, from the latest run and the last good one. */
+export function describeLatestRun(
+  latest: SyncRun | null,
+  lastSuccess: SyncRun | null,
+  now: Date,
+): { headline: string; details: string[] } {
+  if (!latest) {
+    return { headline: "No syncs yet", details: ["Once your courses are linked to Canvas, syncs will show up here."] };
+  }
+
+  const ago = formatRelativeTime(new Date(latest.finished_at ?? latest.started_at), now);
+  const lastGood = lastSuccess
+    ? `Last successful sync ${formatRelativeTime(new Date(lastSuccess.finished_at ?? lastSuccess.started_at), now)}`
+    : "No successful sync yet";
+
+  switch (latest.status) {
+    case "running":
+      return { headline: "Syncing…", details: [`Started ${formatRelativeTime(new Date(latest.started_at), now)}`] };
+    case "success":
+      return { headline: `Synced ${ago}`, details: [describeCounts(latest)] };
+    case "token_expired":
+      return { headline: `Canvas token expired ${ago}`, details: [lastGood] };
+    case "error":
+      return {
+        headline: `Last sync failed ${ago}`,
+        details: [latest.error_message ?? "No details were recorded.", lastGood],
+      };
+  }
+}

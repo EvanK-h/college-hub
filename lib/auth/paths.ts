@@ -1,5 +1,7 @@
 const PUBLIC_PATHS = ["/login"];
-const PUBLIC_PREFIXES = ["/auth/"];
+// /api/sync/ is public to the proxy because cron callers have no session; each route there
+// checks `Authorization: Bearer ${CRON_SECRET}` itself and rejects everything else.
+const PUBLIC_PREFIXES = ["/auth/", "/api/sync/"];
 
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.includes(pathname) || PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));

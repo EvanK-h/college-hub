@@ -7,6 +7,12 @@ describe("isPublicPath", () => {
     expect(isPublicPath("/auth/callback")).toBe(true);
   });
 
+  it("lets cron callers reach the sync routes, which check the bearer token themselves", () => {
+    expect(isPublicPath("/api/sync/all")).toBe(true);
+    expect(isPublicPath("/api/sync")).toBe(false);
+    expect(isPublicPath("/api/syncing")).toBe(false);
+  });
+
   it("treats everything else as private", () => {
     expect(isPublicPath("/")).toBe(false);
     expect(isPublicPath("/pathway")).toBe(false);

@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { redirectTarget } from "@/lib/auth/paths";
+import type { Database } from "@/lib/database.types";
 import { getPublicEnv } from "@/lib/env";
 
 /** Refreshes the session cookie, then redirects signed-out visitors away from private pages. */
@@ -8,7 +9,7 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const env = getPublicEnv();
 
-  const supabase = createServerClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
+  const supabase = createServerClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

@@ -30,7 +30,8 @@ export async function linkCourse(_previous: CourseLinkState, formData: FormData)
     .eq("id", courseId)
     .select("id");
 
-  if (error?.code === UNIQUE_VIOLATION) {
+  // Only linking can hit the unique constraint; unlinking (null) never does.
+  if (error?.code === UNIQUE_VIOLATION && canvasCourseId !== null) {
     // canvas_course_id is unique, so one Canvas course can only back one course here.
     const { data: other } = await supabase
       .from("courses")

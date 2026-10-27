@@ -41,7 +41,7 @@ describe("buildCalendar", () => {
     expect(lines).toContain("DTEND:20261103T114000Z");
     expect(lines).toContain("SUMMARY:CS 2100 Lecture");
     expect(lines).toContain("LOCATION:Room 1.01\\, Main Building");
-    expect(lines).toContain("DESCRIPTION:Example Design\; Part 1");
+    expect(lines).toContain("DESCRIPTION:Example Design\\; Part 1");
     expect(lines).toContain("STATUS:CONFIRMED");
   });
 
@@ -60,7 +60,7 @@ describe("buildCalendar", () => {
 
 describe("text helpers", () => {
   it("escapes RFC 5545 specials", () => {
-    expect(escapeText("a\\b;c,d\ne")).toBe("a\\\\b\;c\\,d\\ne");
+    expect(escapeText("a\\b;c,d\ne")).toBe("a\\\\b\\;c\\,d\\ne");
   });
 
   it("formats UTC timestamps", () => {

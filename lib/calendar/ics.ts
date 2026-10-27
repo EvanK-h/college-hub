@@ -39,7 +39,7 @@ const SESSION_NAMES: Record<string, string> = {
 
 /** RFC 5545 text: backslash, semicolon, comma and newlines are escaped. */
 export function escapeText(text: string): string {
-  return text.replace(/\\/g, "\\\\").replace(/;/g, "\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  return text.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
 }
 
 /** "2026-10-27T12:00:00Z" → "20261027T120000Z". */

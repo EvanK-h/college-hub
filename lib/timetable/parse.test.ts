@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { guessSessionType } from "./kind";
+import { guessSessionType, sessionLabel } from "./kind";
 import { findCourseCode, parseTimetable } from "./parse";
 
 // An invented feed shaped like Outlook's: Windows time-zone names, CRLF line endings.
@@ -135,9 +135,17 @@ describe("parseTimetable", () => {
     });
   });
 
-  it("leaves out events that are not classes, and all-day events", () => {
-    expect(sessions.map((session) => session.icsUid)).not.toContain("other-1");
+  it("keeps events without a course code, with no course", () => {
+    expect(sessions.find((session) => session.icsUid === "other-1")).toMatchObject({ courseCode: null, title: "Dentist", kind: "other" });
+  });
+
+  it("leaves out all-day events", () => {
     expect(sessions.map((session) => session.icsUid)).not.toContain("holiday-1");
+  });
+
+  it("guesses the type of a non-class event from its whole title", () => {
+    const optional = event(["UID:w", "SUMMARY:Workshop; Optional class/workshop", "DTSTART:20261020T100000Z", "DTEND:20261020T110000Z"]);
+    expect(parseTimetable(feed(optional), window)[0]).toMatchObject({ courseCode: null, kind: "workshop" });
   });
 
   it("returns sessions in start order", () => {
@@ -200,5 +208,12 @@ describe("guessSessionType", () => {
     ["CS 2100", "", "other"],
   ] as const)("%s / %s → %s", (title, description, expected) => {
     expect(guessSessionType(title, description)).toBe(expected);
+  });
+});
+
+describe("sessionLabel", () => {
+  it("names a class by course and type, and any other event by its title", () => {
+    expect(sessionLabel({ kind: "lecture", title: "Example CS2100; Lecture", courses: { code: "CS 2100" } })).toBe("CS 2100 lecture");
+    expect(sessionLabel({ kind: "workshop", title: "Study Hub; Optional class/workshop", courses: null })).toBe("Study Hub; Optional class/workshop");
   });
 });

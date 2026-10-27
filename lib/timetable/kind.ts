@@ -32,5 +32,10 @@ export const SESSION_TYPE_LABELS: Record<SessionType, string> = {
   tutorial: "Tutorial",
   workshop: "Workshop",
   exam: "Exam",
-  other: "Class",
+  other: "Event",
 };
+
+/** "CS 2100 lecture" for a class; any other event (workshop, talk) is shown by its own title. */
+export function sessionLabel(session: { kind: SessionType; title: string; courses: { code: string } | null }): string {
+  return session.courses ? `${session.courses.code} ${SESSION_TYPE_LABELS[session.kind].toLowerCase()}` : session.title;
+}

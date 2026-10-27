@@ -2,7 +2,7 @@ import ical, { type EventInstance, type ParameterValue } from "node-ical";
 import { z } from "zod";
 import { guessSessionType, type SessionType } from "./kind";
 
-/** One dated occurrence of a class, ready to be matched to a course and written. */
+/** One dated occurrence of an event from the timetable feed, ready to be matched to a course and written. */
 export type ParsedSession = {
   icsUid: string;
   /**
@@ -10,8 +10,8 @@ export type ParsedSession = {
    * original start (its RECURRENCE-ID), which stays the same when the occurrence is moved.
    */
   recurrenceId: Date | null;
-  /** Normalised to the pathway's form, e.g. "CS 2100". */
-  courseCode: string;
+  /** Normalised to the pathway's form, e.g. "CS 2100"; null for events without a course code. */
+  courseCode: string | null;
   kind: SessionType;
   title: string;
   startsAt: Date;
@@ -65,8 +65,8 @@ export function findCourseCode(title: string): { code: string; rest: string } | 
 
 /**
  * Parses an ICS feed into class sessions starting within [from, to]. Repeating events are expanded
- * into their occurrences (skipping EXDATEs, applying moved instances). All-day events and events
- * without a course code in their title are left out. Throws if the text is not a calendar
+ * into their occurrences (skipping EXDATEs, applying moved instances). Every timed event is kept,
+ * classes and everything else on the calendar; all-day events (holidays, reading weeks) are left out. Throws if the text is not a calendar
  * or an event is malformed, so a broken feed never reaches the database.
  */
 export function parseTimetable(ics: string, { from, to }: { from: Date; to: Date }): ParsedSession[] {
@@ -93,14 +93,13 @@ export function parseTimetable(ics: string, { from, to }: { from: Date; to: Date
 
       const title = occurrence.summary.replace(CANCELLED_PREFIX, "");
       const found = findCourseCode(title);
-      if (!found) continue;
 
       sessions.push({
         icsUid: occurrence.uid,
         recurrenceId: occurrence.recurrenceId,
-        courseCode: found.code,
+        courseCode: found?.code ?? null,
         // Guessed from the words after the code, so a subject code or course name can't read as a type.
-        kind: guessSessionType(found.rest, occurrence.description),
+        kind: guessSessionType(found ? found.rest : title, occurrence.description),
         title,
         startsAt: occurrence.start,
         endsAt: occurrence.end,

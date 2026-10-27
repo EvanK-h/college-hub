@@ -10,6 +10,7 @@ const feed: Feed = {
     {
       id: SESSION_ID,
       kind: "lecture",
+      title: "Example Design CS2100; Lecture",
       starts_at: "2026-11-03T10:00:00+00:00",
       ends_at: "2026-11-03T11:40:00+00:00",
       location: "Room 1.01, Main Building",
@@ -50,6 +51,15 @@ describe("buildCalendar", () => {
     expect(lines).toContain("SUMMARY:Due: Problem Set 1 (CS 2100)");
     expect(ics.match(/DTSTART:20261104T235900Z\r\nDTEND:20261104T235900Z/)).not.toBeNull();
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+  });
+
+  it("names an event without a course by its own title, with no description", () => {
+    const other = buildCalendar(
+      { ...feed, sessions: [{ ...feed.sessions[0]!, title: "Study Hub; Optional class/workshop", course_code: null, course_title: null }] },
+      now,
+    );
+    expect(other).toContain("SUMMARY:Study Hub\\; Optional class/workshop");
+    expect(other).not.toContain("DESCRIPTION:");
   });
 
   it("marks a cancelled class as cancelled", () => {

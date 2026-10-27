@@ -220,3 +220,14 @@
 **Trade-off.** The link can't be shown again later, so adding a second device means making a new link and re-subscribing the first. For one phone that is fine.
 
 **Also.** The feed covers the last 60 days onwards. Classes are timed events with `STATUS:CANCELLED` when cancelled, and deadlines are zero-length events at the due time, as Canvas's own feed does. Responses are `Cache-Control: private, no-store` and `X-Robots-Tag: noindex`. `/api/calendar/` is a public path in the proxy, like `/api/sync/`.
+
+## 2026-10-27: The timetable keeps every Outlook event
+
+**Decision.** The timetable sync keeps every timed event in the Outlook feed, not only classes with a course code. `class_sessions.course_id` is now optional. Events with a code in the plan are linked to their course. Anything else (optional workshops, the Study Hub, E-Treks talks, an event whose code isn't in the plan) is kept unlinked and shown by its own title on the dashboard, the calendar and the phone feed. All-day events are still skipped. This replaces the "events with no code are skipped" note in the RECURRENCE-ID entry above.
+
+**Why.** Outlook is the source of truth for every class meeting and is more up to date than Canvas. The optional sessions are real meetings worth seeing. On the real feed this adds 17 events to the 66 classes.
+
+**Consequences.**
+- The safety guard now refuses a feed with no events at all. It used to refuse a feed with no matching classes, and an empty or broken download still can't cancel the timetable.
+- An event's type is guessed from the text after the course code, or from the whole title when there is no code ("Workshop; Optional class/workshop" → workshop). The catch-all type is labelled "Event", not "Class".
+- `sync_class_sessions` checks course ownership only for rows that have a course, and `calendar_feed` left-joins courses. Both are replaced in a new migration, which keeps their grants.

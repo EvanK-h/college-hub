@@ -45,6 +45,7 @@ const lecture: FeedEvent = {
 };
 const lab: FeedEvent = { uid: "lab", summary: "TEST 2000 Lab", start: "20261104T130000Z", end: "20261104T150000Z" };
 const unknownCourse: FeedEvent = { uid: "other", summary: "ZZZ 9999 Lecture", start: "20261105T090000Z", end: "20261105T100000Z" };
+const workshop: FeedEvent = { uid: "workshop", summary: "Workshop; Optional class/workshop", start: "20261106T140000Z", end: "20261106T150000Z" };
 
 describe.skipIf(!local)("timetable sync against the local database", () => {
   // The placeholders are never used: the suite is skipped when `local` is null.
@@ -58,7 +59,8 @@ describe.skipIf(!local)("timetable sync against the local database", () => {
   };
 
   async function cleanUp() {
-    // Deleting the courses cascades to their sessions.
+    // Sessions go first and by owner: those without a course aren't reached by the courses' cascade.
+    check(await db.from("class_sessions").delete().eq("owner_id", OWNER));
     check(await db.from("sync_runs").delete().eq("owner_id", OWNER));
     check(await db.from("courses").delete().eq("owner_id", OWNER));
   }
@@ -93,7 +95,7 @@ describe.skipIf(!local)("timetable sync against the local database", () => {
         { code: "TEST 2000", title: "Test Two", credits: 4, type: "cs_core", term_id: TERM_ID, owner_id: OWNER },
       ]),
     );
-    feed = ics([pastLecture, lecture, lab, unknownCourse]);
+    feed = ics([pastLecture, lecture, lab, unknownCourse, workshop]);
   });
 
   afterAll(async () => {
@@ -101,31 +103,37 @@ describe.skipIf(!local)("timetable sync against the local database", () => {
     check(await db.from("terms").delete().eq("id", TERM_ID));
   });
 
-  it("inserts the sessions of courses in your plan and records the run", async () => {
+  it("inserts every event, linking classes to the courses in your plan, and records the run", async () => {
     const result = await runSync();
 
-    expect(result).toMatchObject({ status: "success", error: null, counts: { inserted: 3, updated: 0, unchanged: 0 } });
+    expect(result).toMatchObject({ status: "success", error: null, counts: { inserted: 5, updated: 0, unchanged: 0 } });
     expect(await sessionRow("lecture")).toMatchObject({ kind: "lecture", location: "Room 101", cancelled: false, is_new: true });
+    expect((await sessionRow("lecture")).course_id).not.toBeNull();
     expect(await sessionRow("lab")).toMatchObject({ kind: "lab", location: null });
-    expect(await sessionCount()).toBe(3); // the ZZZ 9999 class is not in the plan
 
     const { data: run } = await db.from("sync_runs").select("*").eq("id", result.runId).single();
-    expect(run).toMatchObject({ source: "timetable", status: "success", inserted: 3 });
+    expect(run).toMatchObject({ source: "timetable", status: "success", inserted: 5 });
+  });
+
+  it("keeps events without a course in your plan, unlinked, with their type guessed from the title", async () => {
+    await runSync();
+    expect(await sessionRow("workshop")).toMatchObject({ course_id: null, kind: "workshop", title: "Workshop; Optional class/workshop" });
+    expect(await sessionRow("other")).toMatchObject({ course_id: null, kind: "lecture" }); // ZZZ 9999 is not in the plan
   });
 
   it("reports everything as unchanged when the feed did not change", async () => {
     await runSync();
-    expect((await runSync()).counts).toEqual({ inserted: 0, updated: 0, unchanged: 3 });
+    expect((await runSync()).counts).toEqual({ inserted: 0, updated: 0, unchanged: 5 });
   });
 
   it("updates times and room on a re-sync but never touches kind or is_new", async () => {
     await runSync();
     check(await db.from("class_sessions").update({ kind: "seminar", is_new: false }).eq("owner_id", OWNER).eq("ics_uid", "lecture"));
 
-    feed = ics([pastLecture, { ...lecture, start: "20261103T140000Z", end: "20261103T154000Z", location: "Room 204" }, lab]);
+    feed = ics([pastLecture, { ...lecture, start: "20261103T140000Z", end: "20261103T154000Z", location: "Room 204" }, lab, unknownCourse, workshop]);
     const result = await runSync();
 
-    expect(result.counts).toEqual({ inserted: 0, updated: 1, unchanged: 2 });
+    expect(result.counts).toEqual({ inserted: 0, updated: 1, unchanged: 4 });
     const row = await sessionRow("lecture");
     expect(new Date(row.starts_at).toISOString()).toBe("2026-11-03T14:00:00.000Z");
     expect(row).toMatchObject({ location: "Room 204", kind: "seminar", is_new: false });
@@ -134,14 +142,14 @@ describe.skipIf(!local)("timetable sync against the local database", () => {
   it("marks a future session that left the feed as cancelled, leaves past ones alone, and restores one that returns", async () => {
     await runSync();
 
-    feed = ics([lab]);
+    feed = ics([lab, unknownCourse, workshop]);
     const removed = await runSync();
     expect(removed.counts.updated).toBe(1);
     expect(await sessionRow("lecture")).toMatchObject({ cancelled: true });
     expect(await sessionRow("past")).toMatchObject({ cancelled: false });
-    expect(await sessionCount()).toBe(3); // never deleted
+    expect(await sessionCount()).toBe(5); // never deleted
 
-    feed = ics([pastLecture, lecture, lab]);
+    feed = ics([pastLecture, lecture, lab, unknownCourse, workshop]);
     await runSync();
     expect(await sessionRow("lecture")).toMatchObject({ cancelled: false });
   });
@@ -152,14 +160,14 @@ describe.skipIf(!local)("timetable sync against the local database", () => {
     expect(await sessionRow("lecture")).toMatchObject({ title: "TEST 1000 Lecture", cancelled: true });
   });
 
-  it("refuses a feed with no matching classes, and changes nothing", async () => {
+  it("refuses a feed with no events, and changes nothing", async () => {
     await runSync();
 
-    feed = ics([unknownCourse]);
+    feed = ics([]);
     const result = await runSync();
 
     expect(result.status).toBe("error");
-    expect(result.error).toMatch(/none of the feed's classes match/);
+    expect(result.error).toMatch(/no events in range/);
     expect(await sessionRow("lecture")).toMatchObject({ cancelled: false });
   });
 

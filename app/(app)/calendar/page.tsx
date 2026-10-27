@@ -12,7 +12,7 @@ import { addDays, daysBetween, monthGrid, weekAgenda } from "@/lib/dashboard/age
 import { summarizeTerms } from "@/lib/pathway/summarize";
 import { createClient } from "@/lib/supabase/server";
 import { dayKey, formatTime } from "@/lib/timetable/format";
-import { SESSION_TYPE_LABELS } from "@/lib/timetable/kind";
+import { SESSION_TYPE_LABELS, sessionLabel } from "@/lib/timetable/kind";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -55,7 +55,7 @@ async function Calendar({ searchParams }: { searchParams: Record<string, string 
   const [sessionsResult, assignmentsResult] = await Promise.all([
     supabase
       .from("class_sessions")
-      .select("id, kind, starts_at, ends_at, location, cancelled, courses(code)")
+      .select("id, kind, title, starts_at, ends_at, location, cancelled, courses(code)")
       .gte("starts_at", from)
       .lt("starts_at", to)
       .order("starts_at"),
@@ -119,7 +119,7 @@ async function Calendar({ searchParams }: { searchParams: Record<string, string 
 }
 
 type Day = ReturnType<typeof weekAgenda<CalendarSession, CalendarAssignment>>[number];
-type CalendarSession = { id: string; kind: keyof typeof SESSION_TYPE_LABELS; starts_at: string; ends_at: string; location: string | null; cancelled: boolean; courses: { code: string } | null };
+type CalendarSession = { id: string; kind: keyof typeof SESSION_TYPE_LABELS; title: string; starts_at: string; ends_at: string; location: string | null; cancelled: boolean; courses: { code: string } | null };
 type CalendarAssignment = {
   id: string;
   title: string;
@@ -163,8 +163,11 @@ function MonthView({
               {week.map((day, index) => {
                 if (!day) return <td key={`pad-${index}`} />;
                 const entry = byDay.get(day);
-                const classes = entry?.sessions.filter((s) => !s.cancelled && s.kind !== "exam").length ?? 0;
-                const exams = entry?.sessions.filter((s) => s.kind === "exam" && !s.cancelled) ?? [];
+                const live = entry?.sessions.filter((s) => !s.cancelled) ?? [];
+                // Classes of your courses are counted, not listed: there are several most weekdays.
+                const classes = live.filter((s) => s.courses && s.kind !== "exam").length;
+                const exams = live.filter((s) => s.kind === "exam");
+                const otherEvents = live.filter((s) => !s.courses && s.kind !== "exam");
                 return (
                   <td key={day} className={cn("h-28 rounded-xl bg-card p-2 align-top shadow-card", day < today && "bg-fill-tertiary shadow-none")}>
                     <Link
@@ -180,7 +183,12 @@ function MonthView({
                     <ul className="mt-1 flex flex-col gap-0.5">
                       {exams.map((exam) => (
                         <li key={exam.id} className="truncate font-semibold">
-                          {exam.courses?.code} exam
+                          {sessionLabel(exam)}
+                        </li>
+                      ))}
+                      {otherEvents.map((event) => (
+                        <li key={event.id} className="truncate">
+                          {event.title}
                         </li>
                       ))}
                       {entry?.due.map((assignment) => (
@@ -227,11 +235,15 @@ function WeekView({ days, today, timeZone, now }: { days: Day[]; today: string; 
                 </p>
                 <p className={cn(session.kind === "exam" ? "font-semibold" : "font-medium")}>
                   {session.courses ? (
-                    <Link href={coursePath(session.courses.code)} className="underline-offset-4 hover:underline">
-                      {session.courses.code}
-                    </Link>
-                  ) : null}{" "}
-                  {SESSION_TYPE_LABELS[session.kind].toLowerCase()}
+                    <>
+                      <Link href={coursePath(session.courses.code)} className="underline-offset-4 hover:underline">
+                        {session.courses.code}
+                      </Link>{" "}
+                      {SESSION_TYPE_LABELS[session.kind].toLowerCase()}
+                    </>
+                  ) : (
+                    session.title
+                  )}
                 </p>
                 {session.location && <p className="text-tertiary-foreground">{session.location}</p>}
                 {session.cancelled && <p>Cancelled</p>}

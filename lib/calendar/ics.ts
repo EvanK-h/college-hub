@@ -7,12 +7,14 @@ export const feedSchema = z.object({
     z.object({
       id: z.uuid(),
       kind: z.string(),
+      title: z.string(),
       starts_at: z.string(),
       ends_at: z.string(),
       location: z.string().nullable(),
       cancelled: z.boolean(),
-      course_code: z.string(),
-      course_title: z.string(),
+      // Null for events without a course (workshops, talks, anything else on the calendar).
+      course_code: z.string().nullable(),
+      course_title: z.string().nullable(),
     }),
   ),
   assignments: z.array(
@@ -85,15 +87,16 @@ export function buildCalendar(feed: Feed, now: Date): string {
   ];
 
   for (const session of feed.sessions) {
-    const name = SESSION_NAMES[session.kind] ?? "Class";
+    // A class reads "CS 2100 Lecture"; any other event keeps its own title from Outlook.
+    const summary = session.course_code ? `${session.course_code} ${SESSION_NAMES[session.kind] ?? "Class"}` : session.title;
     lines.push(
       "BEGIN:VEVENT",
       `UID:session-${session.id}@college-hub`,
       `DTSTAMP:${stamp}`,
       `DTSTART:${formatUtc(session.starts_at)}`,
       `DTEND:${formatUtc(session.ends_at)}`,
-      `SUMMARY:${escapeText(`${session.course_code} ${name}`)}`,
-      `DESCRIPTION:${escapeText(session.course_title)}`,
+      `SUMMARY:${escapeText(summary)}`,
+      ...(session.course_title ? [`DESCRIPTION:${escapeText(session.course_title)}`] : []),
       ...(session.location ? [`LOCATION:${escapeText(session.location)}`] : []),
       `STATUS:${session.cancelled ? "CANCELLED" : "CONFIRMED"}`,
       "END:VEVENT",

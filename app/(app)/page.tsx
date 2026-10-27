@@ -19,7 +19,7 @@ import { summarizeTerms } from "@/lib/pathway/summarize";
 import { createClient } from "@/lib/supabase/server";
 import { formatRelativeTime, isStale } from "@/lib/sync/format";
 import { dayKey, formatDay, formatTime, formatTimeRange } from "@/lib/timetable/format";
-import { SESSION_TYPE_LABELS } from "@/lib/timetable/kind";
+import { SESSION_TYPE_LABELS, sessionLabel } from "@/lib/timetable/kind";
 import { cn } from "@/lib/utils";
 
 const DUE_LIMIT = 8;
@@ -168,9 +168,9 @@ async function Dashboard() {
                           {formatTimeRange(new Date(session.starts_at), new Date(session.ends_at), timeZone)}
                         </span>
                         <span className="min-w-0">
-                          <CourseLink course={course} />
+                          {course ? <CourseLink course={course} /> : <span className="font-medium">{session.title}</span>}
                           <span className={cn("block text-xs text-tertiary-foreground", session.cancelled && "line-through")}>
-                            {[SESSION_TYPE_LABELS[session.kind], session.location].filter(Boolean).join(" · ")}
+                            {[course && SESSION_TYPE_LABELS[session.kind], session.location].filter(Boolean).join(" · ")}
                           </span>
                           {session.cancelled && <span className="text-xs">Cancelled</span>}
                         </span>
@@ -186,7 +186,7 @@ async function Dashboard() {
                     {formatCountdown(daysBetween(today, dayKey(new Date(exam.at), timeZone)))}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {examItem.courses?.code} · {formatDay(new Date(exam.at), timeZone)} {formatTime(new Date(exam.at), timeZone)}
+                    {examItem.courses?.code ?? examItem.title} · {formatDay(new Date(exam.at), timeZone)} {formatTime(new Date(exam.at), timeZone)}
                   </p>
                 </div>
               )}
@@ -292,7 +292,7 @@ async function Dashboard() {
                 {daySessions.map((session) => (
                   <p key={session.id} className={cn(session.cancelled && "text-muted-foreground line-through")}>
                     <span className="tabular-nums">{formatTime(new Date(session.starts_at), timeZone)}</span>{" "}
-                    {session.courses?.code} {SESSION_TYPE_LABELS[session.kind].toLowerCase()}
+                    {sessionLabel(session)}
                     {session.location && <span className="text-tertiary-foreground"> · {session.location}</span>}
                   </p>
                 ))}

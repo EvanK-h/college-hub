@@ -83,6 +83,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"calendar_feeds": {
+                  Row: {
+                    "created_at": string,"id": string,"owner_id": string,"token_hash": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"owner_id"?: string,"token_hash": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"owner_id"?: string,"token_hash"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"class_sessions": {
                   Row: {
                     "cancelled": boolean,"course_id": string,"ends_at": string,"ics_uid": string,"id": string,"is_new": boolean,"kind": Database["public"]['Enums']["session_type"],"location": string | null,"owner_id": string,"recurrence_id": string | null,"starts_at": string,"synced_at": string,"title": string
@@ -271,7 +285,10 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "sync_announcements":
+            "calendar_feed":
+{ Args: { "p_token": string }; Returns: Json
+                           },
+"sync_announcements":
 { Args: { "p_course_id": string,"p_owner": string,"p_rows": Json }; Returns: {
               "inserted": number,"unchanged": number,"updated": number
             }[]

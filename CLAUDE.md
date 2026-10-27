@@ -2,15 +2,14 @@
 
 A private, single-user web app for Evan Khosh (Northeastern CS BS, AI concentration + Physics minor; London Scholars 2026–27, then Boston). It combines a four-year degree planner with a live dashboard of Canvas classes, assignments, grades, announcements and the class timetable. It replaces two Notion pages (Course Pathway and Canvas Hub).
 
-This is a **learning and portfolio project** as well as a daily tool. Code quality, readable history and clear decisions matter as much as features.
+This is a daily tool and a portfolio project. The focus is on building it: shipping working features with good code quality, readable history and clear decisions.
 
 Full spec (architecture, schema, sync design, phase checklists): [`college-hub-spec.md`](college-hub-spec.md)
 
 ## How to work with me
 
-- I'm learning this stack. When you introduce a concept I probably haven't used (RLS policies, Server Actions, upserts, cron auth, Zod), explain it in two or three sentences before or after the code.
-- Work in small steps: one migration, one route or one component at a time, then stop so I can run it and read it.
-- For the core learning pieces — the schema, the Canvas client, the sync upsert and the grade calculator — propose the approach first and wait for my go-ahead before writing it all.
+- Build features end to end: carry a task through from migration to UI without stopping after each piece, and verify it works (lint, typecheck, tests) before handing back.
+- Pause for my input only on real design decisions or changes that are hard to reverse.
 - If something in this file or the spec looks wrong, say so rather than working around it.
 - When we make a real design decision, add a dated entry to `docs/decisions.md`.
 

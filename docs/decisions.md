@@ -185,6 +185,6 @@
 **Also.**
 - The sync parses the whole feed before writing, and refuses a feed with no classes matching a course in the plan. A login page or empty download therefore can't mark the whole timetable cancelled.
 - Only future sessions (now to one year ahead) can be marked cancelled, since feeds often drop past events. The last 14 days are still refreshed, so a late room change lands.
-- Events whose title doesn't start with a course code in the plan are skipped. All-day events are skipped too.
+- The real feed's titles read `Discrete Structures CS1800; Lecture`, not "CS 1800 …" as the spec assumed. The parser takes the last course code before the first semicolon (with or without a space) and guesses the type from the text after it. Events with no code (optional workshops, Study Hub, careers talks) and all-day events are skipped. Every one of the feed's 136 events is a one-off, with no RRULE.
 - `kind` (lecture, lab, seminar, tutorial, workshop, exam, other) is guessed from the words after the course code on first insert, then left alone, like an assignment's kind.
 - `sync_runs` bookkeeping (stale-run cleanup, the one-running-run lock) moved into `lib/sync/runs.ts` so both syncs share it. `/api/sync/all` and "Sync now" run Canvas, then the timetable. The timetable is skipped while `OUTLOOK_ICS_URL` is unset.

@@ -263,8 +263,8 @@ All requests send `Authorization: Bearer $CANVAS_TOKEN` to `$CANVAS_BASE_URL/api
 
 1. Publish your NU London Outlook calendar as an ICS link (Outlook on the web → Settings → Calendar → Shared calendars → Publish a calendar). If the university has disabled publishing, check whether Celcat itself offers a calendar subscription link.
 2. Store the link as `OUTLOOK_ICS_URL`. Anyone with it can read your calendar, so treat it like a password.
-3. Parse it with `node-ical`, keep events whose title starts with a course code (`/^[A-Z]{2,4} \d{4}/`), and map them to `courses`.
-4. Upsert into `class_sessions` by the event's `UID` plus start time. A future session that vanishes from the feed is marked `cancelled = true`, not deleted. A new session is flagged `is_new` until you've seen it, matching what the Notion sync does today.
+3. Parse it with `node-ical`, keep events with a course code in their title, and map them to `courses`. Celcat titles read `Discrete Structures CS1800; Lecture`: the code (with or without a space) ends the part before the semicolon, and the session type follows it.
+4. Upsert into `class_sessions` by the event's `UID` plus `RECURRENCE-ID` (see the 2026-10-27 decision). A future session that vanishes from the feed is marked `cancelled = true`, not deleted. A new session is flagged `is_new` until you've seen it, matching what the Notion sync does today.
 
 **Your own calendar feed**
 

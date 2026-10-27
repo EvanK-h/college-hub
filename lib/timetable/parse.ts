@@ -20,8 +20,9 @@ export type ParsedSession = {
   cancelled: boolean;
 };
 
-// "CS 2100 …" or "PHYS1151 …" at the start of the title.
-const COURSE_CODE = /^([A-Z]{2,4}) ?(\d{4})\b/;
+// "CS 2100" or "CS2100". Celcat titles read "Discrete Structures CS1800; Lecture": the code ends
+// the part before the semicolon and the session type follows it.
+const COURSE_CODE = /\b([A-Z]{2,4}) ?(\d{4})\b/g;
 // Outlook keeps a cancelled meeting in the feed and prefixes its title.
 const CANCELLED_PREFIX = /^cancell?ed\s*:\s*/i;
 
@@ -52,9 +53,20 @@ function recurrenceIdOf(instance: EventInstance): Date | null {
 }
 
 /**
+ * Finds the course code in a title: the last code before the first semicolon, so a code inside the
+ * course's name can't win. `rest` is the text after it, which names the session type.
+ */
+export function findCourseCode(title: string): { code: string; rest: string } | null {
+  const head = title.split(";")[0] ?? "";
+  const match = [...head.matchAll(COURSE_CODE)].at(-1);
+  if (!match) return null;
+  return { code: `${match[1]} ${match[2]}`, rest: title.slice(match.index + match[0].length) };
+}
+
+/**
  * Parses an ICS feed into class sessions starting within [from, to]. Repeating events are expanded
  * into their occurrences (skipping EXDATEs, applying moved instances). All-day events and events
- * whose title does not start with a course code are left out. Throws if the text is not a calendar
+ * without a course code in their title are left out. Throws if the text is not a calendar
  * or an event is malformed, so a broken feed never reaches the database.
  */
 export function parseTimetable(ics: string, { from, to }: { from: Date; to: Date }): ParsedSession[] {
@@ -80,15 +92,15 @@ export function parseTimetable(ics: string, { from, to }: { from: Date; to: Date
       });
 
       const title = occurrence.summary.replace(CANCELLED_PREFIX, "");
-      const code = COURSE_CODE.exec(title);
-      if (!code) continue;
+      const found = findCourseCode(title);
+      if (!found) continue;
 
       sessions.push({
         icsUid: occurrence.uid,
         recurrenceId: occurrence.recurrenceId,
-        courseCode: `${code[1]} ${code[2]}`,
-        // Guessed from the words after the code, so a subject code can't read as a type.
-        kind: guessSessionType(title.slice(code[0].length), occurrence.description),
+        courseCode: found.code,
+        // Guessed from the words after the code, so a subject code or course name can't read as a type.
+        kind: guessSessionType(found.rest, occurrence.description),
         title,
         startsAt: occurrence.start,
         endsAt: occurrence.end,

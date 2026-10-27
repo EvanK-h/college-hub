@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { guessSessionType } from "./kind";
-import { parseTimetable } from "./parse";
+import { findCourseCode, parseTimetable } from "./parse";
 
 // An invented feed shaped like Outlook's: Windows time-zone names, CRLF line endings.
 const TIMEZONE = [
@@ -116,6 +116,11 @@ describe("parseTimetable", () => {
     });
   });
 
+  it("reads Celcat's 'Name CODE; Type' titles", () => {
+    const celcat = event(["UID:c", "SUMMARY:Example Structures CS1802; Seminar", "DTSTART:20261020T100000Z", "DTEND:20261020T110000Z"]);
+    expect(parseTimetable(feed(celcat), window)[0]).toMatchObject({ courseCode: "CS 1802", kind: "seminar" });
+  });
+
   it("guesses the type from the words after the code", () => {
     const test = event(["UID:t", "SUMMARY:TEST 1000 Lecture", "DTSTART:20261020T100000Z", "DTEND:20261020T110000Z"]);
     expect(parseTimetable(feed(test), window)[0]).toMatchObject({ courseCode: "TEST 1000", kind: "lecture" });
@@ -155,6 +160,29 @@ describe("parseTimetable", () => {
   it("refuses an event that ends before it starts", () => {
     const broken = event(["UID:bad", "SUMMARY:CS 2100 Lecture", "DTSTART:20261020T100000Z", "DTEND:20261020T090000Z"]);
     expect(() => parseTimetable(feed(broken), window)).toThrow();
+  });
+});
+
+describe("findCourseCode", () => {
+  it.each([
+    // Celcat's format: name, code, then the session type after a semicolon.
+    ["Example Structures CS1800; Lecture", "CS 1800", "; Lecture"],
+    ["Seminar for Example Structures CS1802; Seminar", "CS 1802", "; Seminar"],
+    ["Example Design 1 CS2100; Autumn Mid Term Examination", "CS 2100", "; Autumn Mid Term Examination"],
+    // A code at the start, with or without a space.
+    ["CS 2100 Lecture", "CS 2100", " Lecture"],
+    ["PHYS1151 Lab", "PHYS 1151", " Lab"],
+  ])("%s → %s", (title, code, rest) => {
+    expect(findCourseCode(title)).toEqual({ code, rest });
+  });
+
+  it("finds nothing in events that are not classes", () => {
+    expect(findCourseCode("Workshop; Optional class/workshop")).toBeNull();
+    expect(findCourseCode("E-Treks - Example Co")).toBeNull();
+  });
+
+  it("ignores a code-like token after the semicolon", () => {
+    expect(findCourseCode("Study Hub; Room AB1234")).toBeNull();
   });
 });
 

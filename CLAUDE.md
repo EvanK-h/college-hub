@@ -110,4 +110,4 @@ docs/decisions.md          decision log
 
 ## Current phase
 
-Phase 3 — Dashboard, course pages and calendar (Phases 0, 1 and 2 are done). See the spec's Phases section for the checklist; update this line when a phase is done.
+Phase 4 — Planning tools and polish (Phases 0–3 are done). See the spec's Phases section for the checklist; update this line when a phase is done.

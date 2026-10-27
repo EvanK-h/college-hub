@@ -374,12 +374,12 @@ Five phases, each ending with something you can use; a phase is done when its la
 
 ### Phase 3: Dashboard, course pages and calendar
 
-- [ ] Timetable sync from the ICS link into `class_sessions`
-- [ ] `todos` table; import the Notion to-dos once
-- [ ] Dashboard at `/`, no scrolling on a laptop
-- [ ] Course pages with the grade calculator and its unit tests
-- [ ] `/calendar` month and week views
-- [ ] Personal ICS feed, subscribed on your phone
+- [x] Timetable sync from the ICS link into `class_sessions` (every timed Outlook event; see the 2026-10-27 decisions)
+- [x] `todos` table; import the Notion to-dos once (one row, re-entered by hand instead; see the 2026-10-27 decision)
+- [x] Dashboard at `/`, no scrolling on a laptop
+- [x] Course pages with the grade calculator and its unit tests
+- [x] `/calendar` month and week views
+- [x] Personal ICS feed, subscribed on your phone
 
 **Done when:** you stop opening the Notion Canvas Hub, and the Notion sync task can be switched off.
 

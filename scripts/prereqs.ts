@@ -5,6 +5,7 @@
 // Each list is an AND of OR-groups: every inner array must be met by one of its codes.
 // - prereq: finished in an earlier term.
 // - coreq: taken in the same term or earlier ("may be taken concurrently" counts as a coreq).
+// - recommended: advice, not a requirement. Drawn in the prerequisite graph, ignored by move checks.
 //
 // Left out on purpose, everywhere:
 // - Transfer-equivalent codes (CIS 200M, CIS 201M, CIS 250M, CIS 310M, MATH 209M, MATH 316M,
@@ -18,6 +19,7 @@ export type PrereqEntry = {
   course: string;
   prereq?: string[][];
   coreq?: string[][];
+  recommended?: string[][];
   /** Anything that needs a human eye: judgement calls, odd catalogue text, rules not modelled. */
   review?: string;
 };
@@ -88,19 +90,26 @@ export const PREREQS: PrereqEntry[] = [
   {
     course: "CY 2550",
     prereq: [["CS 2100", "CS 2500", "DS 2000", "DS 2500"]],
+    // Read as one "or" list: the catalogue text is split across two lines with no connective, and
+    // "and" would demand two intro courses, which no other course in the catalogue does.
     review: "The catalogue text is split across two lines with no 'or' or 'and' between them; read as one 'or' list.",
   },
   {
     course: "ECON 2350",
     coreq: [["CS 1100", "CS 2000", "CS 2100", "CS 2500", "DS 2000", "DS 2500", "MISM 2510"]],
-    review: "Unexpected for an economics course: the catalogue lists an intro programming course, which may be taken concurrently. Worth confirming.",
+    // Confirmed against the catalogue entry ("Statistics for Economists"): it lists intro
+    // programming, which may be taken concurrently. CS 2100 satisfies it.
+    review: "An intro programming course, which may be taken in the same term; confirmed in the catalogue.",
   },
   {
     course: "PHYS 5352",
-    review: "No prerequisite in the catalogue, though your plan treats PHYS 4115 as its lead-in. Not enforced.",
+    // Not in the catalogue, but the plan's quantum chain: quantum mechanics before quantum computation.
+    recommended: [["PHYS 4115"]],
+    review: "No prerequisite in the catalogue; PHYS 4115 is your plan's lead-in, so it is recommended, not required.",
   },
-  { course: "MATH 2321", review: "None required; the catalogue strongly recommends Calculus 2 (MATH 1342, done)." },
-  { course: "MATH 2341", review: "None required; the catalogue strongly recommends Calculus 2 (MATH 1342, done)." },
+  // The catalogue: "Prior completion of Calculus 2 is strongly recommended."
+  { course: "MATH 2321", recommended: [["MATH 1342"]] },
+  { course: "MATH 2341", recommended: [["MATH 1342"]] },
   // No prerequisites in the catalogue: CS 1200, CS 1210, DS 3050, ENGW 1111, COMM 1112.
   // Not looked up: ABRC 5005 (a London programme course) and the co-ops.
 ];

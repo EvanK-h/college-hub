@@ -79,6 +79,11 @@ describe("checkMove", () => {
     expect(checkMove(plan, "c", 3)).toEqual([]); // 4 SH fits a summer term
   });
 
+  it("ignores recommended links", () => {
+    const advised = { ...plan, prereqs: [...prereqs, { courseId: "c", requiresCode: "Z 5000", kind: "recommended" as const, group: 1 }] };
+    expect(checkMove(advised, "c", 5)).toEqual([]);
+  });
+
   it("ignores unknown courses or terms", () => {
     expect(checkMove(plan, "nope", 1)).toEqual([]);
     expect(checkMove(plan, "c", 99)).toEqual([]);

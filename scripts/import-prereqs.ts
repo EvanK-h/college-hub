@@ -21,7 +21,7 @@ export function toPrereqRows(
       missing.push(entry.course);
       continue;
     }
-    for (const kind of ["prereq", "coreq"] as const) {
+    for (const kind of ["prereq", "coreq", "recommended"] as const) {
       (entry[kind] ?? []).forEach((group, index) => {
         for (const code of group) {
           rows.push({ course_id: courseId, requires_code: code, kind, option_group: index + 1, owner_id: ownerId });

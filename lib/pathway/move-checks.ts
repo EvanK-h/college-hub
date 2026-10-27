@@ -9,7 +9,8 @@ export type TermKind = "transfer" | "semester" | "summer" | "coop";
 
 export type PlanTerm = { id: number; name: string; kind: TermKind };
 export type PlanCourse = { id: string; code: string; credits: number; type: string; termId: number };
-export type PlanPrereq = { courseId: string; requiresCode: string; kind: "prereq" | "coreq"; group: number };
+// "recommended" links are advice for the graph; the checks below only look at prereq and coreq.
+export type PlanPrereq = { courseId: string; requiresCode: string; kind: "prereq" | "coreq" | "recommended"; group: number };
 
 // Northeastern's normal maximum without an overload petition is 18 SH a semester. A summer half
 // term is assumed to hold about half that. Transfer credit has no limit.
@@ -23,7 +24,7 @@ export type MoveProblem =
   | { kind: "over_limit"; total: number; limit: number };
 
 /** Groups a course's requirement rows by kind and group: each inner list is one "any of these". */
-function groupsFor(prereqs: readonly PlanPrereq[], courseId: string, kind: PlanPrereq["kind"]): string[][] {
+function groupsFor(prereqs: readonly PlanPrereq[], courseId: string, kind: "prereq" | "coreq"): string[][] {
   const groups = new Map<number, string[]>();
   for (const row of prereqs) {
     if (row.courseId !== courseId || row.kind !== kind) continue;

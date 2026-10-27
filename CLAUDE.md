@@ -84,7 +84,7 @@ docs/decisions.md          decision log
 
 ## Sync rules
 
-- Upsert by `canvas_id` (Canvas) or ICS `UID` + start time (timetable). Re-running a sync must always be safe.
+- Upsert by `canvas_id` (Canvas) or ICS `UID` + `RECURRENCE-ID` (timetable; null for one-off events, see the 2026-10-27 decision). Re-running a sync must always be safe.
 - Synced columns and user-owned columns are separate. The upsert's column list never includes `progress`, `priority`, `est_hours`, `notes`, `read`, `important` or a corrected `kind`. Keep a test proving a re-sync leaves them unchanged.
 - Never delete rows that disappear upstream: set `deleted_in_canvas = true` or `cancelled = true`.
 - Canvas client: `per_page=100`, follow the `Link` header's `rel="next"`, one request at a time, retry 429s with backoff (max 3), stop on 401 and record "token expired" in `sync_runs`.

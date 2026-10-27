@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { parseCourseUpdate } from "@/lib/pathway/course-update";
+import { parseCourseMove, parseCourseUpdate } from "@/lib/pathway/course-update";
 import { createClient } from "@/lib/supabase/server";
 
 export type CourseUpdateState = {
@@ -34,4 +34,28 @@ export async function updateCourse(_previous: CourseUpdateState, formData: FormD
   revalidatePath("/pathway");
   revalidatePath("/pathway/requirements");
   return { status: "saved", message: "Saved." };
+}
+
+/**
+ * Moves a planned course to another term from the drag-and-drop board. The prerequisite, co-op
+ * and SH checks are advice shown before the drop is confirmed, so they are not enforced here.
+ * Done and in-progress courses can't be dragged, and this refuses them too.
+ */
+export async function moveCourse(input: { courseId: string; termId: number }): Promise<{ ok: boolean }> {
+  const parsed = parseCourseMove(input);
+  if (!parsed.success) return { ok: false };
+
+  // The user's session client, so RLS applies: a course that is not yours matches no row.
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("courses")
+    .update({ term_id: parsed.data.termId })
+    .eq("id", parsed.data.courseId)
+    .eq("status", "planned")
+    .select("id");
+  if (error || data.length === 0) return { ok: false };
+
+  revalidatePath("/pathway");
+  revalidatePath("/pathway/requirements");
+  return { ok: true };
 }

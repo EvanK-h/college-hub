@@ -16,3 +16,13 @@ export function parseCourseUpdate(formData: FormData) {
     termId: formData.get("termId"),
   });
 }
+
+const courseMoveSchema = z.object({
+  courseId: z.uuid(),
+  termId: z.number().int().min(0),
+});
+
+/** A drag-and-drop move, sent as plain values rather than a form. */
+export function parseCourseMove(input: unknown) {
+  return courseMoveSchema.safeParse(input);
+}

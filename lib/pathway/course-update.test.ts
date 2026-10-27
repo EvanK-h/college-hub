@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCourseUpdate } from "./course-update";
+import { parseCourseMove, parseCourseUpdate } from "./course-update";
 
 const ID = "3f2b8c1e-5a47-4d0e-9b1c-7a6d2e8f4c10";
 
@@ -24,5 +24,20 @@ describe("parseCourseUpdate", () => {
     ["missing fields", { courseId: ID }],
   ])("rejects %s", (_name, fields) => {
     expect(parseCourseUpdate(form(fields)).success).toBe(false);
+  });
+});
+
+describe("parseCourseMove", () => {
+  it("accepts a course id and a term id", () => {
+    expect(parseCourseMove({ courseId: ID, termId: 3 }).data).toEqual({ courseId: ID, termId: 3 });
+  });
+
+  it.each([
+    ["a bad course id", { courseId: "x", termId: 3 }],
+    ["a term id given as text", { courseId: ID, termId: "3" }],
+    ["a negative term", { courseId: ID, termId: -1 }],
+    ["nothing", null],
+  ])("rejects %s", (_name, input) => {
+    expect(parseCourseMove(input).success).toBe(false);
   });
 });

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { COURSE_TYPE_COLOR } from "@/components/pathway/course-card";
-import { TermColumn } from "@/components/pathway/term-column";
+import { PathwayBoard } from "@/components/pathway/pathway-board";
 import { COURSE_TYPE_LABELS, type CourseType } from "@/lib/pathway/labels";
 import { summarizeTerms } from "@/lib/pathway/summarize";
 import { createClient } from "@/lib/supabase/server";
@@ -40,28 +40,19 @@ async function Terms() {
   // The proxy already redirects signed-out visitors; this is a second check in case it is ever bypassed.
   if (!claims?.claims) redirect("/login");
 
-  const { data, error } = await supabase
-    .from("terms")
-    .select("id, name, kind, courses(id, code, title, credits, type, status)")
-    .order("id");
-  if (error) throw new Error(`Loading the pathway failed: ${error.message}`);
+  const [termsResult, prereqsResult] = await Promise.all([
+    supabase.from("terms").select("id, name, kind, courses(id, code, title, credits, type, status)").order("id"),
+    supabase.from("course_prereqs").select("course_id, requires_code, kind, option_group"),
+  ]);
+  if (termsResult.error) throw new Error(`Loading the pathway failed: ${termsResult.error.message}`);
+  if (prereqsResult.error) throw new Error(`Loading prerequisites failed: ${prereqsResult.error.message}`);
 
-  const summaries = summarizeTerms(data);
-  const termOptions = summaries.map(({ id, name }) => ({ id, name }));
+  const prereqs = prereqsResult.data.map((row) => ({
+    courseId: row.course_id,
+    requiresCode: row.requires_code,
+    kind: row.kind,
+    group: row.option_group,
+  }));
 
-  return (
-    // Scrolls sideways inside its own box; focusable so keyboard users can scroll it too. It bleeds to
-    // the page edges and snaps to columns so a flick lands on a whole term. `relative` makes it the
-    // containing block for the cards' absolutely positioned sr-only labels; without it they escape the
-    // scroll box and widen the whole page.
-    <ol
-      aria-label="Terms"
-      tabIndex={0}
-      className="relative -mx-4 flex snap-x snap-proximity scroll-px-4 items-start gap-3 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6"
-    >
-      {summaries.map((term) => (
-        <TermColumn key={term.id} term={term} terms={termOptions} />
-      ))}
-    </ol>
-  );
+  return <PathwayBoard terms={summarizeTerms(termsResult.data)} prereqs={prereqs} />;
 }

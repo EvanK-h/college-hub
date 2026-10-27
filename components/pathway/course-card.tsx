@@ -23,14 +23,17 @@ export function CourseCard({
   termId,
   terms,
   past = false,
+  checkTerm,
 }: {
   course: PathwayCourse;
   termId: number;
   terms: { id: number; name: string }[];
   past?: boolean;
+  /** Problems with moving this course to a term, shown in the dialog as the term is changed. */
+  checkTerm?: (termId: number) => string[];
 }) {
   return (
-    <EditCourseDialog course={{ ...course, termId }} terms={terms}>
+    <EditCourseDialog course={{ ...course, termId }} terms={terms} checkTerm={checkTerm}>
       <span
         className={cn(
           "flex items-stretch gap-3 rounded-xl bg-[color-mix(in_oklch,var(--course)_4%,var(--card))] p-3 text-card-foreground transition-shadow",

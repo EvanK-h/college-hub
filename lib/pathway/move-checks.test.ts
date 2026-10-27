@@ -1,0 +1,96 @@
+import { describe, expect, it } from "vitest";
+import { checkMove, describeProblem, type PlanCourse, type PlanPrereq, type PlanTerm } from "./move-checks";
+
+const terms: PlanTerm[] = [
+  { id: 0, name: "Transfer credit", kind: "transfer" },
+  { id: 1, name: "Fall 1", kind: "semester" },
+  { id: 2, name: "Spring 1", kind: "semester" },
+  { id: 3, name: "Summer 1", kind: "summer" },
+  { id: 4, name: "Co-op 1", kind: "coop" },
+  { id: 5, name: "Fall 2", kind: "semester" },
+];
+
+const course = (id: string, code: string, termId: number, credits = 4, type = "cs_core"): PlanCourse => ({ id, code, credits, type, termId });
+
+// An invented chain: A 1000 (transfer) → B 2000 (+ coreq B 2001) → C 3000, which accepts B 2000 or X 9999.
+const courses: PlanCourse[] = [
+  course("a", "A 1000", 0),
+  course("b", "B 2000", 1),
+  course("b-lab", "B 2001", 1, 1),
+  course("c", "C 3000", 2),
+  course("coop", "COOP 3945", 4, 0, "coop_program"),
+];
+const prereqs: PlanPrereq[] = [
+  { courseId: "b", requiresCode: "A 1000", kind: "prereq", group: 1 },
+  { courseId: "b", requiresCode: "B 2001", kind: "coreq", group: 1 },
+  { courseId: "b-lab", requiresCode: "B 2000", kind: "coreq", group: 1 },
+  { courseId: "c", requiresCode: "B 2000", kind: "prereq", group: 1 },
+  { courseId: "c", requiresCode: "X 9999", kind: "prereq", group: 1 },
+];
+const plan = { terms, courses, prereqs };
+
+describe("checkMove", () => {
+  it("allows a move that keeps every requirement", () => {
+    expect(checkMove(plan, "c", 5)).toEqual([]);
+  });
+
+  it("flags a prerequisite that would no longer come first", () => {
+    // C 3000 into Fall 1, the same term as B 2000: not earlier.
+    expect(checkMove(plan, "c", 1)).toContainEqual({ kind: "missing_prereq", options: ["B 2000", "X 9999"] });
+  });
+
+  it("accepts any course in an OR-group", () => {
+    const withAlternative = { ...plan, courses: [...courses, course("x", "X 9999", 0)] };
+    expect(checkMove(withAlternative, "c", 1)).toEqual([]);
+  });
+
+  it("allows a corequisite in the same term or earlier, not a later one", () => {
+    expect(checkMove(plan, "b-lab", 1)).toEqual([]);
+    // The lab moved before its lecture: the lab's own corequisite is now in a later term.
+    expect(checkMove(plan, "b-lab", 0)).toContainEqual({ kind: "missing_coreq", options: ["B 2000"] });
+  });
+
+  it("catches a lecture moved away from its lab through the lab's corequisite", () => {
+    const problems = checkMove(plan, "b", 2);
+    expect(problems).not.toContainEqual(expect.objectContaining({ kind: "missing_coreq" })); // its lab is earlier, which counts
+    expect(problems).toContainEqual({ kind: "breaks_dependent", course: "B 2001", requirement: "coreq" });
+  });
+
+  it("flags courses that depend on the moved one", () => {
+    // B 2000 moved after C 3000 breaks C 3000; moving it out of Fall 1 also strands its lab.
+    const problems = checkMove(plan, "b", 5);
+    expect(problems).toContainEqual({ kind: "breaks_dependent", course: "C 3000", requirement: "prereq" });
+    expect(problems).toContainEqual({ kind: "breaks_dependent", course: "B 2001", requirement: "coreq" });
+  });
+
+  it("doesn't blame the move for a dependent that was already broken", () => {
+    const alreadyBroken = { ...plan, courses: courses.map((c) => (c.id === "c" ? { ...c, termId: 1 } : c)) };
+    expect(checkMove(alreadyBroken, "b-lab", 1)).toEqual([]);
+  });
+
+  it("keeps ordinary courses out of co-op terms, but not the co-op itself", () => {
+    expect(checkMove(plan, "c", 4)).toContainEqual({ kind: "coop_term" });
+    expect(checkMove(plan, "coop", 4)).not.toContainEqual({ kind: "coop_term" });
+  });
+
+  it("flags a term over its SH limit", () => {
+    const full = { ...plan, courses: [...courses, course("d", "D 1", 5, 4), course("e", "E 1", 5, 4), course("f", "F 1", 5, 4), course("g", "G 1", 5, 4)] };
+    expect(checkMove(full, "c", 5)).toContainEqual({ kind: "over_limit", total: 20, limit: 18 });
+    expect(checkMove(plan, "c", 3)).toEqual([]); // 4 SH fits a summer term
+  });
+
+  it("ignores unknown courses or terms", () => {
+    expect(checkMove(plan, "nope", 1)).toEqual([]);
+    expect(checkMove(plan, "c", 99)).toEqual([]);
+  });
+});
+
+describe("describeProblem", () => {
+  it("writes one plain sentence per problem", () => {
+    expect(describeProblem({ kind: "missing_prereq", options: ["B 2000", "X 9999"] }, "Fall 1")).toBe("Needs one of B 2000, X 9999 in an earlier term.");
+    expect(describeProblem({ kind: "missing_coreq", options: ["B 2001"] }, "Fall 1")).toBe("Needs B 2001 in Fall 1 or earlier.");
+    expect(describeProblem({ kind: "breaks_dependent", course: "C 3000", requirement: "prereq" }, "Fall 2")).toBe("C 3000 needs this in an earlier term.");
+    expect(describeProblem({ kind: "coop_term" }, "Co-op 1")).toBe("Co-op 1 is a co-op term.");
+    expect(describeProblem({ kind: "over_limit", total: 20, limit: 18 }, "Fall 2")).toBe("Fall 2 would have 20 SH, over the 18 SH limit.");
+  });
+});

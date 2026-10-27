@@ -231,3 +231,22 @@
 - The safety guard now refuses a feed with no events at all. It used to refuse a feed with no matching classes, and an empty or broken download still can't cancel the timetable.
 - An event's type is guessed from the text after the course code, or from the whole title when there is no code ("Workshop; Optional class/workshop" → workshop). The catch-all type is labelled "Event", not "Class".
 - `sync_class_sessions` checks course ownership only for rows that have a course, and `calendar_feed` left-joins courses. Both are replaced in a new migration, which keeps their grants.
+
+## 2026-10-27: Prerequisites as an AND of OR-groups, checked as advice
+
+**Decision.** `course_prereqs` stores each requirement as rows of (course, required code, `prereq` or `coreq`, group). Codes in the same group are alternatives, and every group must be met. The required course is a code, not a foreign key. The data is drafted from the Northeastern catalogue into `scripts/prereqs.ts` and loaded with `scripts/import-prereqs.ts`, which replaces the listed courses' rows so it can be re-run after edits.
+
+**Why.**
+- The catalogue is full of alternatives ("CS 2100 or CS 2510 or DS 2500"). Flat pairs, as the spec first described, would flag moves that are fine. Nested rules are rewritten into this form by distribution: "(A and B) or C" becomes [A or C] and [B or C].
+- Alternatives are often courses that aren't in the plan, so they can't be foreign keys.
+- The list is public catalogue data, so unlike the Notion exports it is committed. A test checks its shape: real codes only, no empty or duplicate groups, no course requiring itself.
+
+**Rules.**
+- A prerequisite must be in an earlier term, with transfer credit first.
+- A corequisite (including the catalogue's "may be taken concurrently") must be in the same term or earlier.
+- Term limits are 18 SH for a semester (the normal maximum without an overload petition) and 9 SH for a summer half term, an assumption kept in `TERM_SH_LIMIT`.
+- Only planned courses can be moved.
+
+**Advice, not enforcement.** A clean move saves straight away. A move with problems lists them and asks before saving ("Move anyway"), since the catalogue data has gaps (grades, placement, transfer equivalents). On the current plan the only flag is CS 2100's CS 2000/2500 prerequisite, which you placed out of.
+
+**Drag and drop.** `@dnd-kit/core`, with a grip handle on each planned course so the card itself still opens the edit dialog. It works with a pointer, touch or the keyboard (Space, arrows, Space), with screen-reader announcements that read out the problems. The edit dialog runs the same checks as the term is changed.

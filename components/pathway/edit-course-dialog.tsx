@@ -27,13 +27,18 @@ const IDLE: CourseUpdateState = { status: "idle", message: "" };
 export function EditCourseDialog({
   course,
   terms,
+  checkTerm,
   children,
 }: {
   course: EditableCourse;
   terms: { id: number; name: string }[];
+  checkTerm?: (termId: number) => string[];
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [termId, setTermId] = useState(course.termId);
+  // Same checks as dragging, for a planned course moved to another term. Advice, not a block.
+  const problems = checkTerm && course.status === "planned" && termId !== course.termId ? checkTerm(termId) : [];
 
   // Close the dialog once a save succeeds; errors stay open so the message can be read.
   async function save(previous: CourseUpdateState, formData: FormData) {
@@ -44,7 +49,14 @@ export function EditCourseDialog({
   const [state, formAction, pending] = useActionState(save, IDLE);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        // Each opening starts from where the course is now.
+        if (next) setTermId(course.termId);
+        setOpen(next);
+      }}
+    >
       <DialogTrigger
         render={
           <button
@@ -74,13 +86,27 @@ export function EditCourseDialog({
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor={`term-${course.id}`}>Term</Label>
-            <select id={`term-${course.id}`} name="termId" defaultValue={course.termId} className={SELECT_CLASS}>
+            <select
+              id={`term-${course.id}`}
+              name="termId"
+              value={termId}
+              onChange={(event) => setTermId(Number(event.target.value))}
+              aria-describedby={problems.length > 0 ? `term-problems-${course.id}` : undefined}
+              className={SELECT_CLASS}
+            >
               {terms.map((term) => (
                 <option key={term.id} value={term.id}>
                   {term.name}
                 </option>
               ))}
             </select>
+            {problems.length > 0 && (
+              <ul id={`term-problems-${course.id}`} className="flex flex-col gap-1 text-sm text-destructive">
+                {problems.map((problem) => (
+                  <li key={problem}>{problem}</li>
+                ))}
+              </ul>
+            )}
           </div>
           {state.status === "error" && (
             <p role="alert" className="text-sm text-destructive">

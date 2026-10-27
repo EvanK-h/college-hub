@@ -1,20 +1,37 @@
-import { CourseCard } from "@/components/pathway/course-card";
+import type { ReactNode, Ref } from "react";
 import { cn } from "@/lib/utils";
 import type { TermSummary } from "@/lib/pathway/summarize";
 
 // Phase drives wayfinding: finished terms recede (no tint, flat cards), the current term is
 // outlined in the in-progress colour and labelled, so colour is never the only cue.
-export function TermColumn({ term, terms }: { term: TermSummary; terms: { id: number; name: string }[] }) {
+// While a course is dragged over it, the column shows whether the drop is clean (`drop="ok"`) or
+// would cause problems (`drop="problem"`, with `notice` saying what).
+export function TermColumn({
+  term,
+  children,
+  ref,
+  drop = null,
+  notice,
+}: {
+  term: TermSummary;
+  children: ReactNode;
+  ref?: Ref<HTMLLIElement>;
+  drop?: "ok" | "problem" | null;
+  notice?: ReactNode;
+}) {
   const past = term.phase === "past";
   const current = term.phase === "current";
 
   return (
     <li
+      ref={ref}
       aria-current={current ? "step" : undefined}
       className={cn(
-        "flex w-64 shrink-0 snap-start flex-col gap-2.5 rounded-2xl p-2.5",
+        "flex w-64 shrink-0 snap-start flex-col gap-2.5 rounded-2xl p-2.5 transition-shadow",
         past ? "ring-1 ring-separator ring-inset" : "bg-fill-tertiary",
         current && "ring-2 ring-status-in-progress/45 ring-inset contrast-more:ring-status-in-progress",
+        drop === "ok" && "ring-2 ring-primary ring-inset",
+        drop === "problem" && "ring-2 ring-destructive ring-inset",
       )}
     >
       <div className="flex items-baseline justify-between gap-2 px-1.5 pt-1">
@@ -33,13 +50,8 @@ export function TermColumn({ term, terms }: { term: TermSummary; terms: { id: nu
           )}
         </div>
       )}
-      <ul className="flex flex-col gap-2">
-        {term.courses.map((course) => (
-          <li key={course.id}>
-            <CourseCard course={course} termId={term.id} terms={terms} past={past} />
-          </li>
-        ))}
-      </ul>
+      {notice}
+      <ul className="flex flex-col gap-2">{children}</ul>
     </li>
   );
 }

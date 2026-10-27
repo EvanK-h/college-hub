@@ -122,7 +122,9 @@ export function PathwayBoard({ terms, prereqs }: { terms: TermSummary[]; prereqs
           {error}
         </p>
       )}
+      {/* A fixed id, so dnd-kit's generated aria ids match between server and client renders. */}
       <DndContext
+        id="pathway-board"
         sensors={sensors}
         accessibility={{
           announcements,

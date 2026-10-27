@@ -132,3 +132,12 @@ export function describeLatestRun(
       };
   }
 }
+
+/** Opening the dashboard starts a sync when the last successful one is older than this. */
+export const STALE_AFTER_MINUTES = 30;
+
+/** True when there has never been a successful sync, or the last one is older than 30 minutes. */
+export function isStale(lastSuccessAt: string | null, now: Date): boolean {
+  if (!lastSuccessAt) return true;
+  return now.getTime() - new Date(lastSuccessAt).getTime() > STALE_AFTER_MINUTES * 60_000;
+}

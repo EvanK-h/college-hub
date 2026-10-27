@@ -7,6 +7,7 @@ import {
   formatDuration,
   formatRelativeTime,
   formatRunTime,
+  isStale,
   type SyncRun,
 } from "./format";
 
@@ -161,5 +162,13 @@ describe("describeLatestRun", () => {
       headline: "Last sync failed 11 min ago",
       details: ["TEST 1000: Canvas request failed with status 500", "No successful sync yet"],
     });
+  });
+});
+
+describe("isStale", () => {
+  it("is stale with no successful sync, or one older than 30 minutes", () => {
+    expect(isStale(null, now)).toBe(true);
+    expect(isStale(ago(31 * 60).toISOString(), now)).toBe(true);
+    expect(isStale(ago(29 * 60).toISOString(), now)).toBe(false);
   });
 });

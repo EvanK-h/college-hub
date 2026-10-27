@@ -1,11 +1,13 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { signOut } from "@/app/actions";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { CourseLinks } from "@/components/settings/course-links";
 import { SyncCard } from "@/components/settings/sync-card";
 import { SyncHistory } from "@/components/settings/sync-history";
 import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
 import { SyncNowForm } from "@/components/settings/sync-now-form";
+import { Button } from "@/components/ui/button";
 import { canvasSettingsUrl } from "@/lib/canvas/links";
 import { getTimetableFeedUrl } from "@/lib/env.server";
 import { summarizeTerms } from "@/lib/pathway/summarize";
@@ -20,7 +22,13 @@ const RUN_COLUMNS = "id, source, status, started_at, finished_at, inserted, upda
 export default function SettingsPage() {
   return (
     <main className={PAGE_CLASS}>
-      <PageHeader eyebrow="Account" title="Settings" />
+      <PageHeader eyebrow="Account" title="Settings">
+        <form action={signOut} className="mt-1">
+          <Button type="submit" variant="outline" size="sm">
+            Sign out
+          </Button>
+        </form>
+      </PageHeader>
       <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
         <SyncSections />
       </Suspense>

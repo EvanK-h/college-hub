@@ -196,3 +196,14 @@
 **Why.** An importer and its test would be more code than the one row it moves. The Notion schema (Task, Course relation, Date, Done) maps onto `title`, `course_id`, `due_on` and `done_at` if more rows ever appear.
 
 **Shape.** `due_on` is a `date`, not a `timestamptz`, because to-dos are day-sized and the Notion dates were all date-only. "Done" is derived from `done_at` being set, so the dashboard can also show when a to-do was finished. `course_id` is `on delete set null`, so a to-do outlives its course link.
+
+## 2026-10-27: Dashboard layout and refresh-on-load
+
+**Decision.**
+- Three columns above the fold. Today's classes, the next-exam countdown and a compact month sit on the left, what's due in the middle, to-dos and unread announcements on the right. The next six days follow below the fold.
+- "Due" means unfinished work due in the next 72 hours plus overdue work from the past 7 days. Older overdue work stays on the course page only, so a paper assignment Canvas never marks as handed in doesn't sit on the dashboard all term.
+- The month starts on Monday (UK convention, matching the London timetable). Deadlines get a dot and exams a bar, both neutral. They are kinds of event, not statuses, so status hues are not used. Classes aren't marked, since they fall on nearly every weekday.
+- When the last successful Canvas sync is over 30 minutes old, a client component calls the `syncIfStale` Server Action once after the page opens, then refreshes the page. Cached data shows meanwhile. The action checks the session and reads the staleness from `sync_runs` itself, so calling it repeatedly can't sync more than once per half hour.
+- Sign out moved from the dashboard to Settings.
+
+**Why.** The dashboard answers "what do I do today" at a glance, so everything it shows comes from tested pure functions in `lib/dashboard/agenda.ts`: what counts as today, due soon, and the next exam. Days are calendar days in the current term's time zone.

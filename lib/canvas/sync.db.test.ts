@@ -1,35 +1,13 @@
-import { execFileSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Database } from "@/lib/database.types";
+import { readLocalSupabase } from "@/test/local-supabase";
 import { CanvasAuthError, type CanvasClient } from "./client";
 import type { CanvasAnnouncement, CanvasAssignment, CanvasAssignmentGroup } from "./schemas";
 import { syncCanvas } from "./sync";
 
 // These tests run the real SQL upsert functions, so they need the local Supabase stack
-// (`supabase start`). They ask the CLI for the local keys, which means they can only ever
-// point at the local database, never at production, and they skip themselves if it isn't running.
-function readLocalSupabase(): { url: string; serviceKey: string; anonKey: string } | null {
-  try {
-    const output = execFileSync("supabase", ["status", "-o", "env"], {
-      encoding: "utf-8",
-      stdio: ["ignore", "pipe", "ignore"],
-      timeout: 15_000,
-    });
-    const values = new Map<string, string>();
-    for (const line of output.split("\n")) {
-      const match = line.match(/^([A-Z_]+)="?(.*?)"?$/);
-      if (match?.[1] && match[2] !== undefined) values.set(match[1], match[2]);
-    }
-    const url = values.get("API_URL");
-    const serviceKey = values.get("SERVICE_ROLE_KEY");
-    const anonKey = values.get("ANON_KEY");
-    return url && serviceKey && anonKey ? { url, serviceKey, anonKey } : null;
-  } catch {
-    return null;
-  }
-}
-
+// (`supabase start`); see test/local-supabase.ts.
 const local = readLocalSupabase();
 
 // All data is invented. Owner ids are made up (owner_id has no foreign key to auth.users), so test

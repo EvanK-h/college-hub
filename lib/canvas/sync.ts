@@ -4,24 +4,9 @@ import type { Database } from "@/lib/database.types";
 import { CanvasAuthError, type CanvasClient } from "./client";
 import { guessKind } from "./kind";
 import type { CanvasAnnouncement, CanvasAssignmentGroup } from "./schemas";
+import { addCounts, describeError, NO_COUNTS, withSyncRun, type SyncCounts, type SyncOutcome } from "@/lib/sync/runs";
 
 type Db = SupabaseClient<Database>;
-type SyncStatus = Database["public"]["Enums"]["sync_status"];
-
-export type SyncCounts = { inserted: number; updated: number; unchanged: number };
-
-export type SyncResult = {
-  runId: string;
-  status: Exclude<SyncStatus, "running">;
-  counts: SyncCounts;
-  /** A short reason for `error` and `token_expired`; never headers or tokens. */
-  error: string | null;
-};
-
-/** Another Canvas sync is already running, so this one did nothing and wrote no `sync_runs` row. */
-export type SyncSkipped = { status: "skipped"; reason: string };
-
-export type SyncOutcome = SyncResult | SyncSkipped;
 
 export type SyncOptions = {
   /** Supabase client with the service-role key (lib/supabase/admin.ts). */
@@ -33,10 +18,6 @@ export type SyncOptions = {
 };
 
 const ANNOUNCEMENT_WINDOW_DAYS = 60;
-const MAX_ERROR_LENGTH = 500;
-// A run still marked `running` after this long crashed or timed out, and must not block new ones.
-const STALE_RUN_MINUTES = 10;
-const UNIQUE_VIOLATION = "23505";
 
 // Row shapes sent to the SQL functions. They are `type`s, not interfaces, so they count as JSON.
 type GroupRow = { canvas_id: number; name: string; weight: number | null; position: number | null };
@@ -99,19 +80,6 @@ export function toAnnouncementRows(announcements: CanvasAnnouncement[]): Announc
   }));
 }
 
-function addCounts(a: SyncCounts, b: SyncCounts): SyncCounts {
-  return {
-    inserted: a.inserted + b.inserted,
-    updated: a.updated + b.updated,
-    unchanged: a.unchanged + b.unchanged,
-  };
-}
-
-function describeError(error: unknown): string {
-  const message = error instanceof Error ? error.message : "unknown error";
-  return message.slice(0, MAX_ERROR_LENGTH);
-}
-
 type SyncFunction = "sync_assignment_groups" | "sync_assignments" | "sync_announcements";
 
 /** Calls one of the SQL upsert functions (see the add_canvas_sync_functions migration). */
@@ -142,8 +110,7 @@ async function syncCourse(
   const announcements = await canvas.listAnnouncements(course.canvasCourseId, since);
 
   // Groups first so each assignment's group exists by the time the assignment is written.
-  let counts: SyncCounts = { inserted: 0, updated: 0, unchanged: 0 };
-  counts = addCounts(counts, await callSyncFunction(db, "sync_assignment_groups", ownerId, course.id, toGroupRows(groups)));
+  let counts = await callSyncFunction(db, "sync_assignment_groups", ownerId, course.id, toGroupRows(groups));
   counts = addCounts(counts, await callSyncFunction(db, "sync_assignments", ownerId, course.id, toAssignmentRows(groups)));
   counts = addCounts(counts, await callSyncFunction(db, "sync_announcements", ownerId, course.id, toAnnouncementRows(announcements)));
   return counts;
@@ -160,35 +127,7 @@ export async function syncCanvas(options: SyncOptions): Promise<SyncOutcome> {
   const { db, ownerId } = options;
   const resolved = { ...options, now: options.now ?? new Date() };
 
-  // First close out runs that never finished, so a crash can't block syncing forever.
-  const staleBefore = new Date(resolved.now.getTime() - STALE_RUN_MINUTES * 60 * 1000);
-  const { error: staleError } = await db
-    .from("sync_runs")
-    .update({
-      status: "error",
-      finished_at: resolved.now.toISOString(),
-      error_message: "run did not finish (it timed out or crashed)",
-    })
-    .eq("owner_id", ownerId)
-    .eq("source", "canvas")
-    .eq("status", "running")
-    .lt("started_at", staleBefore.toISOString());
-  if (staleError) throw new Error(`could not close stale sync runs: ${staleError.message}`);
-
-  // The unique index on running rows makes this insert the lock: only one run can hold it.
-  const { data: run, error: runError } = await db
-    .from("sync_runs")
-    .insert({ source: "canvas", status: "running", owner_id: ownerId })
-    .select("id")
-    .single();
-  if (runError?.code === UNIQUE_VIOLATION) return { status: "skipped", reason: "another sync is already running" };
-  if (runError) throw new Error(`could not record the sync run: ${runError.message}`);
-
-  let counts: SyncCounts = { inserted: 0, updated: 0, unchanged: 0 };
-  let status: SyncResult["status"] = "success";
-  const failures: string[] = [];
-
-  try {
+  return withSyncRun(db, { ownerId, source: "canvas", now: resolved.now }, async () => {
     const { data: courses, error: coursesError } = await db
       .from("courses")
       .select("id, code, canvas_course_id")
@@ -196,34 +135,20 @@ export async function syncCanvas(options: SyncOptions): Promise<SyncOutcome> {
       .not("canvas_course_id", "is", null);
     if (coursesError) throw new Error(`could not read courses: ${coursesError.message}`);
 
+    let counts = NO_COUNTS;
+    const failures: string[] = [];
+
     for (const course of courses) {
       if (course.canvas_course_id === null) continue;
       try {
         counts = addCounts(counts, await syncCourse(resolved, { id: course.id, canvasCourseId: course.canvas_course_id }));
       } catch (error) {
         if (error instanceof CanvasAuthError) {
-          status = "token_expired";
-          failures.length = 0;
-          failures.push(error.message);
-          break;
+          return { status: "token_expired", counts, failures: [error.message] };
         }
         failures.push(`${course.code}: ${describeError(error)}`);
       }
     }
-    if (status === "success" && failures.length > 0) status = "error";
-  } catch (error) {
-    // Something outside a single course (e.g. reading the course list) failed.
-    status = "error";
-    failures.push(describeError(error));
-  }
-
-  const errorMessage = failures.length > 0 ? failures.join("; ").slice(0, MAX_ERROR_LENGTH) : null;
-
-  const { error: finishError } = await db
-    .from("sync_runs")
-    .update({ status, finished_at: new Date().toISOString(), ...counts, error_message: errorMessage })
-    .eq("id", run.id);
-  if (finishError) throw new Error(`could not finish the sync run: ${finishError.message}`);
-
-  return { runId: run.id, status, counts, error: errorMessage };
+    return { status: failures.length > 0 ? "error" : "success", counts, failures };
+  });
 }

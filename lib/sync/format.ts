@@ -1,4 +1,4 @@
-import type { SyncOutcome } from "@/lib/canvas/sync";
+import type { SyncOutcome } from "@/lib/sync/runs";
 import type { Database } from "@/lib/database.types";
 
 export type SyncStatus = Database["public"]["Enums"]["sync_status"];

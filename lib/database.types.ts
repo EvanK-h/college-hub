@@ -237,6 +237,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"todos": {
+                  Row: {
+                    "course_id": string | null,"created_at": string,"done_at": string | null,"due_on": string | null,"id": string,"owner_id": string,"title": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "course_id"?: string | null,"created_at"?: string,"done_at"?: string | null,"due_on"?: string | null,"id"?: string,"owner_id"?: string,"title": string
+                  }
+                  Update: {
+                    "course_id"?: string | null,"created_at"?: string,"done_at"?: string | null,"due_on"?: string | null,"id"?: string,"owner_id"?: string,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "todos_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {

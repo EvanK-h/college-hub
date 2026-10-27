@@ -188,3 +188,11 @@
 - The real feed's titles read `Discrete Structures CS1800; Lecture`, not "CS 1800 …" as the spec assumed. The parser takes the last course code before the first semicolon (with or without a space) and guesses the type from the text after it. Events with no code (optional workshops, Study Hub, careers talks) and all-day events are skipped. Every one of the feed's 136 events is a one-off, with no RRULE.
 - `kind` (lecture, lab, seminar, tutorial, workshop, exam, other) is guessed from the words after the course code on first insert, then left alone, like an assignment's kind.
 - `sync_runs` bookkeeping (stale-run cleanup, the one-running-run lock) moved into `lib/sync/runs.ts` so both syncs share it. `/api/sync/all` and "Sync now" run Canvas, then the timetable. The timetable is skipped while `OUTLOOK_ICS_URL` is unset.
+
+## 2026-10-27: No importer for the Notion to-dos
+
+**Decision.** The `todos` table is created, but the Notion To-dos database is not imported by script, despite the Phase 3 checklist item. It holds a single row ("Revise for CS 2100 midterm"), which is re-entered by hand on the dashboard.
+
+**Why.** An importer and its test would be more code than the one row it moves. The Notion schema (Task, Course relation, Date, Done) maps onto `title`, `course_id`, `due_on` and `done_at` if more rows ever appear.
+
+**Shape.** `due_on` is a `date`, not a `timestamptz`, because to-dos are day-sized and the Notion dates were all date-only. "Done" is derived from `done_at` being set, so the dashboard can also show when a to-do was finished. `course_id` is `on delete set null`, so a to-do outlives its course link.

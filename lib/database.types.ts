@@ -99,14 +99,14 @@ isOneToOne: false
                   ]
                 },"class_sessions": {
                   Row: {
-                    "cancelled": boolean,"course_id": string,"ends_at": string,"ics_uid": string,"id": string,"is_new": boolean,"kind": Database["public"]['Enums']["session_type"],"location": string | null,"owner_id": string,"recurrence_id": string | null,"starts_at": string,"synced_at": string,"title": string
+                    "cancelled": boolean,"course_id": string | null,"ends_at": string,"ics_uid": string,"id": string,"is_new": boolean,"kind": Database["public"]['Enums']["session_type"],"location": string | null,"owner_id": string,"recurrence_id": string | null,"starts_at": string,"synced_at": string,"title": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "cancelled"?: boolean,"course_id": string,"ends_at": string,"ics_uid": string,"id"?: string,"is_new"?: boolean,"kind": Database["public"]['Enums']["session_type"],"location"?: string | null,"owner_id"?: string,"recurrence_id"?: string | null,"starts_at": string,"synced_at"?: string,"title": string
+                    "cancelled"?: boolean,"course_id"?: string | null,"ends_at": string,"ics_uid": string,"id"?: string,"is_new"?: boolean,"kind": Database["public"]['Enums']["session_type"],"location"?: string | null,"owner_id"?: string,"recurrence_id"?: string | null,"starts_at": string,"synced_at"?: string,"title": string
                   }
                   Update: {
-                    "cancelled"?: boolean,"course_id"?: string,"ends_at"?: string,"ics_uid"?: string,"id"?: string,"is_new"?: boolean,"kind"?: Database["public"]['Enums']["session_type"],"location"?: string | null,"owner_id"?: string,"recurrence_id"?: string | null,"starts_at"?: string,"synced_at"?: string,"title"?: string
+                    "cancelled"?: boolean,"course_id"?: string | null,"ends_at"?: string,"ics_uid"?: string,"id"?: string,"is_new"?: boolean,"kind"?: Database["public"]['Enums']["session_type"],"location"?: string | null,"owner_id"?: string,"recurrence_id"?: string | null,"starts_at"?: string,"synced_at"?: string,"title"?: string
                   }
                   Relationships: [
                     {

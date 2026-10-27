@@ -366,7 +366,7 @@ Five phases, each ending with something you can use; a phase is done when its la
 - [x] Map each Fall 2026 course to its `canvas_course_id`
 - [x] Migrations: `assignment_groups`, `assignments`, `announcements`, `sync_runs`
 - [x] `/api/sync/all` route protected by `CRON_SECRET`
-- [ ] Vercel Cron (daily) and Supabase `pg_cron` (every 2 hours)
+- [x] Vercel Cron (daily) and Supabase `pg_cron` (every 2 hours)
 - [x] Unit tests for the upsert proving your own columns survive a re-sync
 - [x] `/settings` with sync history and the token-expired banner
 

@@ -110,4 +110,4 @@ docs/decisions.md          decision log
 
 ## Current phase
 
-Phase 2 — Canvas sync (Phases 0 and 1 are done). See the spec's Phases section for the checklist; update this line when a phase is done.
+Phase 3 — Dashboard, course pages and calendar (Phases 0, 1 and 2 are done). See the spec's Phases section for the checklist; update this line when a phase is done.

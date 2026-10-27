@@ -12,3 +12,12 @@ export function canvasSettingsUrl(): string | null {
     return null;
   }
 }
+
+/** The course's home page in Canvas, or null when CANVAS_BASE_URL isn't set. */
+export function canvasCourseUrl(canvasCourseId: number): string | null {
+  try {
+    return `${new URL(getCanvasEnv().CANVAS_BASE_URL).origin}/courses/${canvasCourseId}`;
+  } catch {
+    return null;
+  }
+}

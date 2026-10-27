@@ -24,3 +24,13 @@ export function guessSessionType(title: string, description = ""): SessionType {
   }
   return "other";
 }
+
+export const SESSION_TYPE_LABELS: Record<SessionType, string> = {
+  lecture: "Lecture",
+  lab: "Lab",
+  seminar: "Seminar",
+  tutorial: "Tutorial",
+  workshop: "Workshop",
+  exam: "Exam",
+  other: "Class",
+};

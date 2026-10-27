@@ -173,3 +173,18 @@
 - Both schedulers run in UTC, so the daily Vercel run is 06:00 London time in winter and 07:00 in summer.
 - A failed or token-expired run answers 502, but nothing reads that status: failures show up in `sync_runs` and the token banner on `/settings`.
 - Production needs the migrations applied (`supabase db push`) before the job can do anything; the job is created by the same migration that adds the function.
+
+## 2026-10-27: Timetable sessions are keyed by UID + RECURRENCE-ID
+
+**Decision.** `class_sessions` is unique on `(owner_id, ics_uid, recurrence_id)` with `nulls not distinct`, not on the UID plus start time the spec described. `recurrence_id` is null for a one-off event and the occurrence's original start for an occurrence of a repeating event, which is how iCalendar itself identifies an instance.
+
+**Why.**
+- Keyed on start time, a class moved to another slot became a new row, and the old one was marked cancelled. Your corrected `kind` and the `is_new` flag were lost, and the dashboard would show a cancellation that never happened. A DB test caught this for one-off events, which is likely how Celcat publishes every session.
+- A moved occurrence of a repeating event keeps its RECURRENCE-ID, so it updates in place too.
+
+**Also.**
+- The sync parses the whole feed before writing, and refuses a feed with no classes matching a course in the plan. A login page or empty download therefore can't mark the whole timetable cancelled.
+- Only future sessions (now to one year ahead) can be marked cancelled, since feeds often drop past events. The last 14 days are still refreshed, so a late room change lands.
+- Events whose title doesn't start with a course code in the plan are skipped. All-day events are skipped too.
+- `kind` (lecture, lab, seminar, tutorial, workshop, exam, other) is guessed from the words after the course code on first insert, then left alone, like an assignment's kind.
+- `sync_runs` bookkeeping (stale-run cleanup, the one-running-run lock) moved into `lib/sync/runs.ts` so both syncs share it. `/api/sync/all` and "Sync now" run Canvas, then the timetable. The timetable is skipped while `OUTLOOK_ICS_URL` is unset.

@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/canvas/run-sync", () => ({ runCanvasSync: vi.fn() }));
+vi.mock("@/lib/timetable/run-sync", () => ({ runTimetableSync: vi.fn() }));
 
 import { runCanvasSync } from "@/lib/canvas/run-sync";
+import { runTimetableSync } from "@/lib/timetable/run-sync";
 import { GET, POST } from "./route";
 
 // Made-up secret, long enough to pass the 32-character minimum.
 const SECRET = "a-made-up-secret-that-is-long-enough-0123456789";
 const mockedSync = vi.mocked(runCanvasSync);
+const mockedTimetable = vi.mocked(runTimetableSync);
 const request = (authorization?: string) =>
   new Request("https://hub.example.com/api/sync/all", {
     headers: authorization ? { authorization } : {},
@@ -19,10 +22,13 @@ const success = {
   counts: { inserted: 1, updated: 0, unchanged: 3 },
   error: null,
 };
+const notConfigured = { status: "skipped" as const, reason: "OUTLOOK_ICS_URL is not set" };
 
 beforeEach(() => {
   vi.stubEnv("CRON_SECRET", SECRET);
   mockedSync.mockReset();
+  mockedTimetable.mockReset();
+  mockedTimetable.mockResolvedValue(notConfigured);
 });
 
 afterEach(() => {
@@ -55,15 +61,16 @@ describe("/api/sync/all", () => {
     expect(mockedSync).not.toHaveBeenCalled();
   });
 
-  it("runs the sync and returns its result for the right secret, on GET and POST", async () => {
+  it("runs both syncs and returns their results for the right secret, on GET and POST", async () => {
     mockedSync.mockResolvedValue(success);
 
     for (const handler of [GET, POST]) {
       const response = await handler(request(`Bearer ${SECRET}`));
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual(success);
+      expect(await response.json()).toEqual({ canvas: success, timetable: notConfigured });
     }
     expect(mockedSync).toHaveBeenCalledTimes(2);
+    expect(mockedTimetable).toHaveBeenCalledTimes(2);
   });
 
   it("returns 200 when the run was skipped because another sync is already going", async () => {
@@ -73,7 +80,7 @@ describe("/api/sync/all", () => {
     const response = await GET(request(`Bearer ${SECRET}`));
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual(skipped);
+    expect(await response.json()).toEqual({ canvas: skipped, timetable: notConfigured });
   });
 
   it("returns 502 when the run ends in error or token_expired", async () => {
@@ -82,7 +89,26 @@ describe("/api/sync/all", () => {
     const response = await GET(request(`Bearer ${SECRET}`));
 
     expect(response.status).toBe(502);
-    expect(await response.json()).toMatchObject({ status: "token_expired" });
+    expect(await response.json()).toMatchObject({ canvas: { status: "token_expired" } });
+  });
+
+  it("returns 502 when the timetable sync fails, even if Canvas succeeded", async () => {
+    mockedSync.mockResolvedValue(success);
+    mockedTimetable.mockResolvedValue({ ...success, runId: "run-2", status: "error", error: "the feed is not an ICS calendar" });
+
+    const response = await GET(request(`Bearer ${SECRET}`));
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toMatchObject({ canvas: { status: "success" }, timetable: { status: "error" } });
+  });
+
+  it("still runs the timetable sync when the Canvas sync throws", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockedSync.mockRejectedValue(new Error("boom"));
+
+    await GET(request(`Bearer ${SECRET}`));
+
+    expect(mockedTimetable).toHaveBeenCalledTimes(1);
   });
 
   it("returns a generic 500, without the error text, if the sync throws", async () => {

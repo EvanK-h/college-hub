@@ -50,3 +50,13 @@ export function getCanvasEnv(): CanvasEnv {
     CANVAS_TOKEN: process.env.CANVAS_TOKEN,
   });
 }
+
+// The published Outlook calendar (the timetable). Anyone with this URL can read the calendar, so it
+// is a secret like the others. It is optional: until it is set the timetable sync is skipped.
+const timetableEnvSchema = z.object({ OUTLOOK_ICS_URL: z.url({ protocol: /^https$/ }).optional() });
+
+/** The feed URL, or null when it isn't set. Throws (without the value) if it is set but not an https URL. */
+export function getTimetableFeedUrl(): string | null {
+  const raw = process.env.OUTLOOK_ICS_URL;
+  return parseEnv(timetableEnvSchema, { OUTLOOK_ICS_URL: raw === "" ? undefined : raw }).OUTLOOK_ICS_URL ?? null;
+}

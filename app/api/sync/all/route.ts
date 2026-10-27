@@ -1,12 +1,27 @@
 import { isCronAuthorized } from "@/lib/auth/cron";
 import { runCanvasSync } from "@/lib/canvas/run-sync";
 import { getCronSecret } from "@/lib/env.server";
+import type { SyncOutcome } from "@/lib/sync/runs";
+import { runTimetableSync } from "@/lib/timetable/run-sync";
 
-// A sync of a few courses is a handful of sequential Canvas calls; this leaves room for retries.
+// A sync of a few courses is a handful of sequential Canvas calls plus one feed download; this
+// leaves room for retries.
 export const maxDuration = 60;
 
-// The only entry point to the Canvas sync for cron callers. The proxy lets /api/sync/* through
-// without a session, so this check is the only thing standing between the internet and Canvas.
+type SourceOutcome = SyncOutcome | { status: "crashed" };
+
+/** Runs one source's sync. A throw is logged (message only) and reported without its text. */
+async function runSource(name: string, run: () => Promise<SyncOutcome>): Promise<SourceOutcome> {
+  try {
+    return await run();
+  } catch (error) {
+    console.error(`${name} sync crashed:`, error instanceof Error ? error.message : "unknown error");
+    return { status: "crashed" };
+  }
+}
+
+// The only entry point to the syncs for cron callers. The proxy lets /api/sync/* through without
+// a session, so this check is the only thing standing between the internet and Canvas.
 async function handle(request: Request): Promise<Response> {
   let secret: string;
   try {
@@ -21,16 +36,19 @@ async function handle(request: Request): Promise<Response> {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  try {
-    const result = await runCanvasSync();
-    // Non-2xx on a failed or token-expired run, so Vercel Cron shows it as failed. A skipped run
-    // (another sync was already going) is fine: that sync is doing the work.
-    const ok = result.status === "success" || result.status === "skipped";
-    return Response.json(result, { status: ok ? 200 : 502 });
-  } catch (error) {
-    console.error("Canvas sync crashed:", error instanceof Error ? error.message : "unknown error");
-    return Response.json({ error: "sync failed" }, { status: 500 });
-  }
+  // One after the other, and the timetable runs even if Canvas failed: they are independent.
+  const canvas = await runSource("Canvas", runCanvasSync);
+  const timetable = await runSource("Timetable", runTimetableSync);
+  const statuses = [canvas.status, timetable.status];
+
+  // Non-2xx when any source failed, so Vercel Cron shows the run as failed. A skipped source
+  // (another run is going, or the timetable isn't configured) is fine.
+  const status = statuses.includes("crashed")
+    ? 500
+    : statuses.every((s) => s === "success" || s === "skipped")
+      ? 200
+      : 502;
+  return Response.json({ canvas, timetable }, { status });
 }
 
 // Vercel Cron and pg_net both call this with GET; POST is the same handler.

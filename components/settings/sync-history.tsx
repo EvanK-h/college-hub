@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { SyncStatusBadge } from "@/components/settings/sync-status-badge";
-import { describeCounts, formatDuration, formatRunTime, type SyncRun } from "@/lib/sync/format";
+import { describeCounts, formatDuration, formatRunTime, SYNC_SOURCE_LABELS, type SyncRun } from "@/lib/sync/format";
 
 export function SyncHistory({ runs, timeZone }: { runs: SyncRun[]; timeZone: string }) {
   if (runs.length === 0) {
@@ -15,6 +15,7 @@ export function SyncHistory({ runs, timeZone }: { runs: SyncRun[]; timeZone: str
           <thead>
             <tr className="text-xs font-semibold tracking-wide text-tertiary-foreground uppercase">
               <th scope="col" className="px-(--card-spacing) pb-2 font-semibold">When</th>
+              <th scope="col" className="pr-4 pb-2 font-semibold">Source</th>
               <th scope="col" className="pr-4 pb-2 font-semibold">Result</th>
               <th scope="col" className="pr-4 pb-2 font-semibold">Changes</th>
               <th scope="col" className="pr-(--card-spacing) pb-2 text-right font-semibold">Took</th>
@@ -26,6 +27,7 @@ export function SyncHistory({ runs, timeZone }: { runs: SyncRun[]; timeZone: str
                 <td className="px-(--card-spacing) py-2.5 whitespace-nowrap">
                   <time dateTime={run.started_at}>{formatRunTime(run.started_at, timeZone)}</time>
                 </td>
+                <td className="py-2.5 pr-4 text-muted-foreground">{SYNC_SOURCE_LABELS[run.source]}</td>
                 <td className="py-2.5 pr-4">
                   <SyncStatusBadge status={run.status} />
                   {run.error_message && (

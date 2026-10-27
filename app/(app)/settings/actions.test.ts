@@ -1,12 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }));
 vi.mock("@/lib/canvas/run-sync", () => ({ runCanvasSync: vi.fn() }));
+vi.mock("@/lib/timetable/run-sync", () => ({ runTimetableSync: vi.fn() }));
 
 import { revalidatePath } from "next/cache";
 import { runCanvasSync } from "@/lib/canvas/run-sync";
 import { createClient } from "@/lib/supabase/server";
+import { runTimetableSync } from "@/lib/timetable/run-sync";
 import { syncNow } from "./actions";
 
 const mockedSync = vi.mocked(runCanvasSync);
@@ -19,6 +21,11 @@ function signIn(signedIn: boolean) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv("OUTLOOK_ICS_URL", "");
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("syncNow", () => {
@@ -45,6 +52,20 @@ describe("syncNow", () => {
 
     expect(result).toEqual({ status: "success", message: "Synced: 1 new · 3 unchanged" });
     expect(revalidatePath).toHaveBeenCalledWith("/settings");
+    expect(runTimetableSync).not.toHaveBeenCalled(); // the feed isn't set up
+  });
+
+  it("syncs the timetable too once the feed is set up", async () => {
+    signIn(true);
+    vi.stubEnv("OUTLOOK_ICS_URL", "https://calendar.example.com/feed.ics");
+    const success = { runId: "run-1", status: "success" as const, counts: { inserted: 0, updated: 0, unchanged: 3 }, error: null };
+    mockedSync.mockResolvedValue(success);
+    vi.mocked(runTimetableSync).mockResolvedValue(success);
+
+    const result = await syncNow();
+
+    expect(runTimetableSync).toHaveBeenCalledTimes(1);
+    expect(result.message).toMatch(/^Canvas: .* Timetable: /);
   });
 
   it("reports a skipped sync without treating it as an error", async () => {

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   describeCounts,
   describeLatestRun,
+  describeSyncNow,
   describeSyncOutcome,
   formatDuration,
   formatRelativeTime,
@@ -14,6 +15,7 @@ const ago = (seconds: number) => new Date(now.getTime() - seconds * 1000);
 
 const run = (overrides: Partial<SyncRun> = {}): SyncRun => ({
   id: "run-1",
+  source: "canvas",
   status: "success",
   started_at: "2026-10-26T11:48:00Z",
   finished_at: "2026-10-26T11:48:04Z",
@@ -104,9 +106,33 @@ describe("describeSyncOutcome", () => {
   });
 });
 
+describe("describeSyncNow", () => {
+  const counts = { inserted: 1, updated: 0, unchanged: 3 };
+  const success = { runId: "r", status: "success" as const, counts, error: null };
+
+  it("reports Canvas alone while the timetable isn't set up", () => {
+    expect(describeSyncNow(success, null)).toEqual({ status: "success", message: "Synced: 1 new · 3 unchanged" });
+  });
+
+  it("reports both when both ran", () => {
+    expect(describeSyncNow(success, success)).toEqual({
+      status: "success",
+      message: "Canvas: Synced: 1 new · 3 unchanged Timetable: Synced: 1 new · 3 unchanged",
+    });
+  });
+
+  it("takes the worse status of the two", () => {
+    const failed = { ...success, status: "error" as const, error: "the feed is not an ICS calendar" };
+    const outcome = describeSyncNow(success, failed);
+    expect(outcome.status).toBe("error");
+    expect(outcome.message).toContain("the feed is not an ICS calendar");
+  });
+});
+
 describe("describeLatestRun", () => {
-  it("explains an empty history", () => {
+  it("explains an empty history, with the caller's hint", () => {
     expect(describeLatestRun(null, null, now).headline).toBe("No syncs yet");
+    expect(describeLatestRun(null, null, now, "Set it up first.").details).toEqual(["Set it up first."]);
   });
 
   it("summarises a successful run", () => {

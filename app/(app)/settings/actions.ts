@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { parseCourseLink } from "@/lib/canvas/course-links";
 import { runCanvasSync } from "@/lib/canvas/run-sync";
+import { getTimetableFeedUrl } from "@/lib/env.server";
 import { createClient } from "@/lib/supabase/server";
-import { describeSyncOutcome, type SyncNowState } from "@/lib/sync/format";
+import { describeSyncNow, type SyncNowState } from "@/lib/sync/format";
+import { runTimetableSync } from "@/lib/timetable/run-sync";
 
 export type CourseLinkState = {
   status: "idle" | "saved" | "error";
@@ -65,9 +67,10 @@ export async function syncNow(): Promise<SyncNowState> {
   }
 
   try {
-    const outcome = await runCanvasSync();
+    const canvas = await runCanvasSync();
+    const timetable = getTimetableFeedUrl() ? await runTimetableSync() : null;
     revalidatePath("/settings");
-    return describeSyncOutcome(outcome);
+    return describeSyncNow(canvas, timetable);
   } catch (error) {
     // The cause goes to the server log (message only); the page gets a fixed sentence.
     console.error("Sync now failed:", error instanceof Error ? error.message : "unknown error");

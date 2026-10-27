@@ -2,12 +2,13 @@ import type { SyncOutcome } from "@/lib/sync/runs";
 import type { Database } from "@/lib/database.types";
 
 export type SyncStatus = Database["public"]["Enums"]["sync_status"];
+export type SyncSource = Database["public"]["Enums"]["sync_source"];
 type SyncRunRow = Database["public"]["Tables"]["sync_runs"]["Row"];
 
 // Only the columns the settings page shows, so tests can build inputs without every field.
 export type SyncRun = Pick<
   SyncRunRow,
-  "id" | "status" | "started_at" | "finished_at" | "inserted" | "updated" | "unchanged" | "error_message"
+  "id" | "source" | "status" | "started_at" | "finished_at" | "inserted" | "updated" | "unchanged" | "error_message"
 >;
 
 export const SYNC_STATUS_LABELS: Record<SyncStatus, string> = {
@@ -36,6 +37,27 @@ export function describeSyncOutcome(outcome: SyncOutcome): SyncNowState {
       // error_message was written by the sync itself: course codes and short reasons, never secrets.
       return { status: "error", message: `Sync finished with errors: ${outcome.error ?? "see the history below"}` };
   }
+}
+
+export const SYNC_SOURCE_LABELS: Record<SyncSource, string> = {
+  canvas: "Canvas",
+  timetable: "Timetable",
+};
+
+/**
+ * The button's message after syncing everything: the Canvas result, plus the timetable's when it
+ * ran (`timetable` is null while the feed isn't set up). The worse of the two sets the status.
+ */
+export function describeSyncNow(canvas: SyncOutcome, timetable: SyncOutcome | null): SyncNowState {
+  const canvasState = describeSyncOutcome(canvas);
+  if (!timetable) return canvasState;
+
+  const timetableState = describeSyncOutcome(timetable);
+  const rank = { idle: 0, success: 1, skipped: 2, error: 3 } as const;
+  return {
+    status: rank[timetableState.status] > rank[canvasState.status] ? timetableState.status : canvasState.status,
+    message: `Canvas: ${canvasState.message} Timetable: ${timetableState.message}`,
+  };
 }
 
 /** "just now", "12 min ago", "3 h ago", "2 d ago". */
@@ -85,9 +107,10 @@ export function describeLatestRun(
   latest: SyncRun | null,
   lastSuccess: SyncRun | null,
   now: Date,
+  emptyHint = "Once your courses are linked to Canvas, syncs will show up here.",
 ): { headline: string; details: string[] } {
   if (!latest) {
-    return { headline: "No syncs yet", details: ["Once your courses are linked to Canvas, syncs will show up here."] };
+    return { headline: "No syncs yet", details: [emptyHint] };
   }
 
   const ago = formatRelativeTime(new Date(latest.finished_at ?? latest.started_at), now);

@@ -289,7 +289,7 @@ Seven pages cover everything: the dashboard answers "what do I do today", and th
 - **Grade calculator.** Uses Canvas's assignment-group weights to show the current weighted grade and what's needed on remaining work to reach a target grade. Pure TypeScript functions with unit tests, since the maths is easy to get subtly wrong.
 - **Announcements.** Unread count on the dashboard; mark read or important; full text on the course page.
 - **Drag-and-drop planning (Phase 4).** Move a course card to another term. The move is checked against `course_prereqs`, co-op terms and a per-term SH limit, and any conflict shows inline before you save.
-- **Prerequisite graph (Phase 4).** Courses as nodes, prerequisites as arrows, with the PHYS 4115 → PHYS 5352 quantum chain highlighted. React Flow handles the layout.
+- **Prerequisite graph (Phase 4).** Courses as nodes, prerequisites as arrows, with the PHYS 4115 → PHYS 5352 quantum chain highlighted. Laid out by term, one column each (see the 2026-10-27 decision).
 - **Quantum / AI toggle (Phase 4).** Re-sorts swap options and highlights the courses that matter most for the chosen direction.
 - **What-if plans (Phase 4).** Save a copy of the plan, change it freely, and compare two plans side by side. The real plan is untouched until you make one the active plan.
 - **Polish.** Installable on your phone (PWA manifest and icons), global search (⌘K) across courses, assignments and announcements, and an optional light/dark toggle (dark mode already follows the system; see Visual design).
@@ -387,7 +387,7 @@ Five phases, each ending with something you can use; a phase is done when its la
 
 - [ ] `course_prereqs` table, entered by hand from the course catalogue
 - [ ] Drag-and-drop pathway with live checks
-- [ ] Prerequisite graph
+- [x] Prerequisite graph
 - [ ] Quantum / AI toggle
 - [ ] Saved what-if plans and side-by-side comparison
 - [ ] PWA, ⌘K search, light/dark toggle (system dark mode is done)

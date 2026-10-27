@@ -250,3 +250,19 @@
 **Advice, not enforcement.** A clean move saves straight away. A move with problems lists them and asks before saving ("Move anyway"), since the catalogue data has gaps (grades, placement, transfer equivalents). On the current plan the only flag is CS 2100's CS 2000/2500 prerequisite, which you placed out of.
 
 **Drag and drop.** `@dnd-kit/core`, with a grip handle on each planned course so the card itself still opens the edit dialog. It works with a pointer, touch or the keyboard (Space, arrows, Space), with screen-reader announcements that read out the problems. The edit dialog runs the same checks as the term is changed.
+
+## 2026-10-27: Recommended links, and a prerequisite graph laid out by term
+
+**Decision.** `prereq_kind` gains a third value, `recommended`, for advice the catalogue gives but doesn't require. The prerequisite graph (`/pathway/graph`) puts each term in its own column and draws it with plain HTML and SVG, not React Flow.
+
+**Recommended links.**
+- MATH 2321 and MATH 2341 get MATH 1342 ("Prior completion of Calculus 2 is strongly recommended"), and PHYS 5352 gets PHYS 4115. The catalogue lists no prerequisite for PHYS 5352, but quantum mechanics is the plan's lead-in to it, and without the link the quantum chain wouldn't be a chain.
+- Move checks ignore them. The graph draws them dashed and never marks them out of order.
+- The other flagged entries were kept as drafted: CY 2550's two catalogue lines are read as one "or" list, and ECON 2350's programming corequisite is confirmed in the catalogue.
+
+**Why a term-column layout.** The question the graph answers is "does the plan take things in the right order?", so time is the x-axis and an arrow should always point right. A general graph layout (React Flow with dagre or ELK, as the spec suggested) would place courses by dependency depth instead, losing the terms, and would add two libraries for something about 40 lines of layout code does. Within a column, courses are ordered by the average row of what they need, which keeps most arrows short.
+
+**How it reads.**
+- Only courses with at least one link are drawn. Solid arrows are prerequisites, dotted lines corequisites, dashed arrows recommendations; a thin line is one of several alternatives in the plan; red is out of order.
+- The quantum chain is PHYS 5352 and everything it depends on (`chainTo`), shaded with the accent label colour and toggleable.
+- Selecting a course lights up everything it depends on and unlocks and dims the rest. The panel underneath says the same in words, including requirements with nothing in the plan (CS 2100's placement), so the drawing is never the only way to read it.

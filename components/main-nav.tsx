@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/pathway", label: "Pathway" },
   { href: "/pathway/requirements", label: "Requirements" },
   { href: "/pathway/swaps", label: "Swaps" },
+  { href: "/pathway/graph", label: "Prerequisites" },
   { href: "/settings", label: "Settings" },
 ] as const;
 

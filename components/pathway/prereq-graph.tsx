@@ -1,0 +1,270 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { CircleAlert } from "lucide-react";
+import { COURSE_TYPE_COLOR } from "@/components/pathway/course-card";
+import { StatusIcon } from "@/components/pathway/status-icon";
+import { ancestors, chainTo, descendants, type GraphEdge, type GraphNode, type PrereqGraph } from "@/lib/pathway/graph";
+import { cn } from "@/lib/utils";
+
+// The quantum computation course the plan builds towards; everything leading to it is the chain.
+const QUANTUM_GOAL = "PHYS 5352";
+
+const NODE_W = 168;
+const NODE_H = 58;
+const COL_GAP = 72;
+const ROW_GAP = 14;
+const HEADER_H = 36;
+
+const KIND_LABEL: Record<GraphEdge["kind"], string> = {
+  prereq: "prerequisite",
+  coreq: "corequisite",
+  recommended: "recommended",
+};
+
+// Dashes tell the kinds apart without colour: solid for a prerequisite, dotted for a corequisite,
+// dashed for advice.
+const KIND_DASH: Record<GraphEdge["kind"], string | undefined> = {
+  prereq: undefined,
+  coreq: "1 4",
+  recommended: "6 4",
+};
+
+const x = (node: GraphNode) => node.column * (NODE_W + COL_GAP);
+const y = (node: GraphNode) => HEADER_H + node.row * (NODE_H + ROW_GAP);
+
+// From the right edge of the required course to the left edge of the one that needs it. Two
+// courses in the same term (a lab and its lecture) are joined by a loop out to the right instead.
+function edgePath(from: GraphNode, to: GraphNode): string {
+  const y1 = y(from) + NODE_H / 2;
+  const y2 = y(to) + NODE_H / 2;
+  if (from.column === to.column) {
+    const x1 = x(from) + NODE_W;
+    return `M ${x1} ${y1} C ${x1 + 32} ${y1}, ${x1 + 32} ${y2}, ${x1} ${y2}`;
+  }
+  const x1 = x(from) + NODE_W;
+  const x2 = x(to) - 4; // leave room for the arrowhead
+  const bend = Math.max(36, Math.abs(x2 - x1) / 2);
+  return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
+}
+
+// The plan as a graph: one column per term, arrows from each requirement to the course that needs
+// it. Selecting a course (click, or Enter on the keyboard) lights up everything it depends on and
+// everything it unlocks, and the panel underneath says the same in words.
+export function PrereqGraphView({ graph }: { graph: PrereqGraph }) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [showChain, setShowChain] = useState(true);
+
+  const byId = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
+  const chain = useMemo(() => chainTo(QUANTUM_GOAL, graph.nodes, graph.edges), [graph.nodes, graph.edges]);
+  const related = useMemo(
+    () => (selected ? new Set([selected, ...ancestors(selected, graph.edges), ...descendants(selected, graph.edges)]) : null),
+    [selected, graph.edges],
+  );
+
+  const rows = Math.max(0, ...graph.nodes.map((node) => node.row + 1));
+  const width = graph.columns.length * NODE_W + Math.max(0, graph.columns.length - 1) * COL_GAP + 40;
+  const height = HEADER_H + rows * (NODE_H + ROW_GAP);
+  const inChain = (edge: GraphEdge) => showChain && chain.has(edge.from) && chain.has(edge.to);
+  const lit = (edge: GraphEdge) => (related ? related.has(edge.from) && related.has(edge.to) : false);
+  const problems = graph.edges.filter((edge) => edge.problem);
+
+  if (graph.nodes.length === 0) {
+    return <p className="text-muted-foreground">No prerequisites yet. Run the prerequisite import to fill the graph.</p>;
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Legend />
+        {chain.size > 0 && (
+          <button
+            type="button"
+            aria-pressed={showChain}
+            onClick={() => setShowChain((on) => !on)}
+            className={cn(
+              "press rounded-full px-3 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring",
+              showChain ? "bg-accent text-accent-foreground" : "bg-fill-secondary text-muted-foreground hover:text-foreground",
+            )}
+          >
+            Quantum chain
+          </button>
+        )}
+      </div>
+
+      {/* Scrolls sideways in its own box, like the board; focusable so the keyboard can scroll it. */}
+      <div tabIndex={0} aria-label="Prerequisite graph" role="group" className="-mx-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6">
+        <div className="relative" style={{ width, height }}>
+          {graph.columns.map((term, column) => (
+            <h2
+              key={term.id}
+              className="absolute top-0 truncate px-1 text-sm font-semibold text-muted-foreground"
+              style={{ left: column * (NODE_W + COL_GAP), width: NODE_W }}
+            >
+              {term.name}
+            </h2>
+          ))}
+
+          {/* The arrows are drawing only; the panel below carries the same links as text. */}
+          <svg aria-hidden className="pointer-events-none absolute inset-0 overflow-visible" width={width} height={height}>
+            <defs>
+              <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+                <path d="M 0 0 L 8 4 L 0 8 z" fill="context-stroke" />
+              </marker>
+            </defs>
+            {graph.edges.map((edge) => {
+              const from = byId.get(edge.from);
+              const to = byId.get(edge.to);
+              if (!from || !to) return null;
+              const strong = lit(edge) || inChain(edge);
+              return (
+                <path
+                  key={edge.id}
+                  d={edgePath(from, to)}
+                  fill="none"
+                  strokeDasharray={KIND_DASH[edge.kind]}
+                  strokeLinecap="round"
+                  markerEnd={from.column === to.column ? undefined : "url(#arrow)"}
+                  className={cn(
+                    "transition-opacity",
+                    edge.problem
+                      ? "stroke-destructive"
+                      : lit(edge)
+                        ? "stroke-foreground"
+                        : inChain(edge)
+                          ? "stroke-accent-foreground"
+                          : "stroke-tertiary-foreground",
+                    strong ? "[stroke-width:2.25]" : edge.alternative ? "[stroke-width:1]" : "[stroke-width:1.5]",
+                    related && !lit(edge) && "opacity-20",
+                  )}
+                />
+              );
+            })}
+          </svg>
+
+          {graph.nodes.map((node) => (
+            <button
+              key={node.id}
+              type="button"
+              aria-pressed={selected === node.id}
+              onClick={() => setSelected((current) => (current === node.id ? null : node.id))}
+              className={cn(
+                "absolute flex gap-2 rounded-xl p-2 text-left shadow-card transition-opacity focus-visible:outline-2 focus-visible:outline-ring",
+                showChain && chain.has(node.id) ? "bg-accent ring-1 ring-accent-foreground/30 ring-inset" : "bg-card",
+                selected === node.id && "ring-2 ring-ring ring-inset",
+                related && !related.has(node.id) && "opacity-35",
+                COURSE_TYPE_COLOR[node.type],
+              )}
+              style={{ left: x(node), top: y(node), width: NODE_W, height: NODE_H }}
+            >
+              <span className="w-1 shrink-0 rounded-full bg-(--course) contrast-more:w-1.5" aria-hidden />
+              <span className="block min-w-0 flex-1">
+                <span className="block text-sm font-semibold">{node.code}</span>
+                <span className="block truncate text-xs text-muted-foreground">{node.title}</span>
+              </span>
+              <StatusIcon status={node.status} className="mt-0.5 size-3.5 shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div aria-live="polite" className="rounded-2xl bg-fill-tertiary p-4 text-sm">
+        {selected && byId.get(selected) ? (
+          <Details node={byId.get(selected) as GraphNode} graph={graph} byId={byId} />
+        ) : problems.length > 0 ? (
+          <ul className="flex flex-col gap-1.5">
+            {problems.map((edge) => (
+              <li key={edge.id} className="flex gap-2 text-destructive">
+                <CircleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
+                {byId.get(edge.from)?.code} should come before {byId.get(edge.to)?.code} ({KIND_LABEL[edge.kind]}).
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground">No arrow is out of order. Select a course to see what it needs and unlocks.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Details({ node, graph, byId }: { node: GraphNode; graph: PrereqGraph; byId: Map<string, GraphNode> }) {
+  const describe = (edge: GraphEdge, other: string) => {
+    const course = byId.get(other);
+    const term = graph.columns[course?.column ?? -1]?.name;
+    return `${course?.code ?? "?"}${term ? ` (${term})` : ""}, ${KIND_LABEL[edge.kind]}${edge.alternative ? ", one of several" : ""}`;
+  };
+  const needs = graph.edges.filter((edge) => edge.to === node.id);
+  const unlocks = graph.edges.filter((edge) => edge.from === node.id);
+  const unmet = graph.unmet.get(node.id) ?? [];
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-headline">
+        {node.code} <span className="font-normal text-muted-foreground">{node.title}</span>
+      </p>
+      <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+        <div>
+          <dt className="font-medium">Needs</dt>
+          <dd className="text-muted-foreground">
+            {needs.length === 0 && unmet.length === 0 ? (
+              "Nothing in the plan."
+            ) : (
+              <ul>
+                {needs.map((edge) => (
+                  <li key={edge.id} className={cn(edge.problem && "text-destructive")}>
+                    {describe(edge, edge.from)}
+                    {edge.problem && ": too late"}
+                  </li>
+                ))}
+                {unmet.map((group) => (
+                  <li key={group}>{group}, not in the plan</li>
+                ))}
+              </ul>
+            )}
+          </dd>
+        </div>
+        <div>
+          <dt className="font-medium">Unlocks</dt>
+          <dd className="text-muted-foreground">
+            {unlocks.length === 0 ? (
+              "Nothing in the plan."
+            ) : (
+              <ul>
+                {unlocks.map((edge) => (
+                  <li key={edge.id}>{describe(edge, edge.to)}</li>
+                ))}
+              </ul>
+            )}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
+function Legend() {
+  const items = [
+    { kind: "prereq", label: "Prerequisite" },
+    { kind: "coreq", label: "Corequisite" },
+    { kind: "recommended", label: "Recommended" },
+  ] as const;
+  return (
+    <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+      {items.map(({ kind, label }) => (
+        <li key={kind} className="flex items-center gap-1.5">
+          <svg aria-hidden width="24" height="6" className="overflow-visible">
+            <line x1="0" y1="3" x2="24" y2="3" strokeDasharray={KIND_DASH[kind]} strokeLinecap="round" className="stroke-tertiary-foreground [stroke-width:1.5]" />
+          </svg>
+          {label}
+        </li>
+      ))}
+      <li className="flex items-center gap-1.5">
+        <svg aria-hidden width="24" height="6">
+          <line x1="0" y1="3" x2="24" y2="3" className="stroke-destructive [stroke-width:1.5]" />
+        </svg>
+        Out of order
+      </li>
+    </ul>
+  );
+}

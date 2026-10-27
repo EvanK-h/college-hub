@@ -83,6 +83,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"class_sessions": {
+                  Row: {
+                    "cancelled": boolean,"course_id": string,"ends_at": string,"ics_uid": string,"id": string,"is_new": boolean,"kind": Database["public"]['Enums']["session_type"],"location": string | null,"owner_id": string,"recurrence_id": string | null,"starts_at": string,"synced_at": string,"title": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cancelled"?: boolean,"course_id": string,"ends_at": string,"ics_uid": string,"id"?: string,"is_new"?: boolean,"kind": Database["public"]['Enums']["session_type"],"location"?: string | null,"owner_id"?: string,"recurrence_id"?: string | null,"starts_at": string,"synced_at"?: string,"title": string
+                  }
+                  Update: {
+                    "cancelled"?: boolean,"course_id"?: string,"ends_at"?: string,"ics_uid"?: string,"id"?: string,"is_new"?: boolean,"kind"?: Database["public"]['Enums']["session_type"],"location"?: string | null,"owner_id"?: string,"recurrence_id"?: string | null,"starts_at"?: string,"synced_at"?: string,"title"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "class_sessions_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"course_requirements": {
                   Row: {
                     "course_id": string,"owner_id": string,"requirement_id": string
@@ -245,10 +265,18 @@ isOneToOne: false
 { Args: { "p_course_id": string,"p_owner": string,"p_rows": Json }; Returns: {
               "inserted": number,"unchanged": number,"updated": number
             }[]
+                           },
+"sync_class_sessions":
+{ Args: { "p_cancel_from": string,"p_cancel_to": string,"p_owner": string,"p_rows": Json }; Returns: {
+              "inserted": number,"unchanged": number,"updated": number
+            }[]
+                           },
+"trigger_canvas_sync":
+{ Args: Record<PropertyKey, never>; Returns: number
                            }
           }
           Enums: {
-            "assignment_kind": "assignment"|"quiz"|"exam"|"discussion"|"lab"|"reading","assignment_priority": "low"|"medium"|"high","assignment_progress": "not_started"|"in_progress","course_status": "planned"|"in_progress"|"done","course_type": "cs_core"|"ai_concentration"|"physics_minor"|"major_support"|"general_elective"|"coop_program","nupath": "ND"|"EI"|"IC"|"FQ"|"SI"|"AD"|"DD"|"ER"|"WF"|"WD"|"WI"|"EX"|"CE","quantum_relevance": "none"|"lower"|"low"|"medium"|"high","req_area": "cs_overview"|"cs_fundamentals"|"cs_required"|"security_presentation"|"khoury_electives"|"supporting"|"writing"|"ai_concentration"|"physics_minor"|"universitywide","swap_slot": "london_elective"|"khoury_elective"|"ai_elective"|"software_engineering"|"placement_substitute"|"physics_minor_elective"|"advanced_writing","sync_source": "canvas"|"timetable","sync_status": "running"|"success"|"error"|"token_expired","term_kind": "transfer"|"semester"|"summer"|"coop"
+            "assignment_kind": "assignment"|"quiz"|"exam"|"discussion"|"lab"|"reading","assignment_priority": "low"|"medium"|"high","assignment_progress": "not_started"|"in_progress","course_status": "planned"|"in_progress"|"done","course_type": "cs_core"|"ai_concentration"|"physics_minor"|"major_support"|"general_elective"|"coop_program","nupath": "ND"|"EI"|"IC"|"FQ"|"SI"|"AD"|"DD"|"ER"|"WF"|"WD"|"WI"|"EX"|"CE","quantum_relevance": "none"|"lower"|"low"|"medium"|"high","req_area": "cs_overview"|"cs_fundamentals"|"cs_required"|"security_presentation"|"khoury_electives"|"supporting"|"writing"|"ai_concentration"|"physics_minor"|"universitywide","session_type": "lecture"|"lab"|"seminar"|"tutorial"|"workshop"|"exam"|"other","swap_slot": "london_elective"|"khoury_elective"|"ai_elective"|"software_engineering"|"placement_substitute"|"physics_minor_elective"|"advanced_writing","sync_source": "canvas"|"timetable","sync_status": "running"|"success"|"error"|"token_expired","term_kind": "transfer"|"semester"|"summer"|"coop"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -368,7 +396,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "assignment_kind": ["assignment", "quiz", "exam", "discussion", "lab", "reading"],"assignment_priority": ["low", "medium", "high"],"assignment_progress": ["not_started", "in_progress"],"course_status": ["planned", "in_progress", "done"],"course_type": ["cs_core", "ai_concentration", "physics_minor", "major_support", "general_elective", "coop_program"],"nupath": ["ND", "EI", "IC", "FQ", "SI", "AD", "DD", "ER", "WF", "WD", "WI", "EX", "CE"],"quantum_relevance": ["none", "lower", "low", "medium", "high"],"req_area": ["cs_overview", "cs_fundamentals", "cs_required", "security_presentation", "khoury_electives", "supporting", "writing", "ai_concentration", "physics_minor", "universitywide"],"swap_slot": ["london_elective", "khoury_elective", "ai_elective", "software_engineering", "placement_substitute", "physics_minor_elective", "advanced_writing"],"sync_source": ["canvas", "timetable"],"sync_status": ["running", "success", "error", "token_expired"],"term_kind": ["transfer", "semester", "summer", "coop"]
+            "assignment_kind": ["assignment", "quiz", "exam", "discussion", "lab", "reading"],"assignment_priority": ["low", "medium", "high"],"assignment_progress": ["not_started", "in_progress"],"course_status": ["planned", "in_progress", "done"],"course_type": ["cs_core", "ai_concentration", "physics_minor", "major_support", "general_elective", "coop_program"],"nupath": ["ND", "EI", "IC", "FQ", "SI", "AD", "DD", "ER", "WF", "WD", "WI", "EX", "CE"],"quantum_relevance": ["none", "lower", "low", "medium", "high"],"req_area": ["cs_overview", "cs_fundamentals", "cs_required", "security_presentation", "khoury_electives", "supporting", "writing", "ai_concentration", "physics_minor", "universitywide"],"session_type": ["lecture", "lab", "seminar", "tutorial", "workshop", "exam", "other"],"swap_slot": ["london_elective", "khoury_elective", "ai_elective", "software_engineering", "placement_substitute", "physics_minor_elective", "advanced_writing"],"sync_source": ["canvas", "timetable"],"sync_status": ["running", "success", "error", "token_expired"],"term_kind": ["transfer", "semester", "summer", "coop"]
           }
         }
 } as const

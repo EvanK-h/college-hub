@@ -266,3 +266,13 @@
 - Only courses with at least one link are drawn. Solid arrows are prerequisites, dotted lines corequisites, dashed arrows recommendations; a thin line is one of several alternatives in the plan; red is out of order.
 - The quantum chain is PHYS 5352 and everything it depends on (`chainTo`), shaded with the accent label colour and toggleable.
 - Selecting a course lights up everything it depends on and unlocks and dims the rest. The panel underneath says the same in words, including requirements with nothing in the plan (CS 2100's placement), so the drawing is never the only way to read it.
+
+## 2026-10-27: The Quantum / AI focus re-sorts swaps only
+
+**Decision.** A Quantum / AI switch on the Swaps page, kept in a cookie. Swap options gain an `ai_relevance` column on the same scale as quantum relevance; the enum is renamed from `quantum_relevance` to `relevance` so both columns can use it. Swaps sort by the chosen relevance, with the other breaking ties, and each card shows both.
+
+**Why only swaps.** The spec also asked the switch to highlight the courses each direction depends on. Built and tried, it added little: the quantum chain is six courses already shaded in the prerequisite graph, and the AI path was mostly required courses you take either way. Ranking 32 swap options by AI as well as quantum is the new information, so that is what was kept.
+
+**Data.** AI ratings are drafted in `scripts/ai-relevance.ts` from the catalogue descriptions and loaded with `scripts/import-ai-relevance.ts`, the same draft-and-review flow as the prerequisites. Quantum relevance still comes from Notion, and the Notion import never writes `ai_relevance`, so re-importing keeps the ratings. A swap missing from the list is reported by the import and stays at "None" until it is added.
+
+**Why a cookie.** The server sorts before rendering, and the choice should survive visits without living in every link.

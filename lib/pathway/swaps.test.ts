@@ -8,6 +8,7 @@ const swap = (id: string, slot: Swap["slot"]): Swap => ({
   fits_in: null,
   prerequisites: null,
   quantum_relevance: "low",
+  ai_relevance: "none",
   why_consider: null,
   why_current_better: null,
 });

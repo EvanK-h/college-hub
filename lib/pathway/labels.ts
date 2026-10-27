@@ -34,7 +34,7 @@ export const REQ_AREA_LABELS: Record<ReqArea, string> = {
 };
 
 export type SwapSlot = Database["public"]["Enums"]["swap_slot"];
-export type QuantumRelevance = Database["public"]["Enums"]["quantum_relevance"];
+export type Relevance = Database["public"]["Enums"]["relevance"];
 
 export const SWAP_SLOT_LABELS: Record<SwapSlot, string> = {
   london_elective: "London elective",
@@ -46,7 +46,7 @@ export const SWAP_SLOT_LABELS: Record<SwapSlot, string> = {
   advanced_writing: "Advanced writing",
 };
 
-export const QUANTUM_RELEVANCE_LABELS: Record<QuantumRelevance, string> = {
+export const RELEVANCE_LABELS: Record<Relevance, string> = {
   none: "None",
   lower: "Lower",
   low: "Low",

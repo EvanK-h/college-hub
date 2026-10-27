@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { parseCourseMove, parseCourseUpdate } from "@/lib/pathway/course-update";
+import { FOCUS_COOKIE, parseFocus } from "@/lib/pathway/focus";
 import { createClient } from "@/lib/supabase/server";
 
 export type CourseUpdateState = {
@@ -58,4 +60,13 @@ export async function moveCourse(input: { courseId: string; termId: number }): P
   revalidatePath("/pathway");
   revalidatePath("/pathway/requirements");
   return { ok: true };
+}
+
+/**
+ * Saves the Quantum / AI focus. A preference, not data, so it lives in a cookie; setting a cookie
+ * in a Server Action re-renders the current page with it.
+ */
+export async function setFocus(value: string): Promise<void> {
+  const store = await cookies();
+  store.set(FOCUS_COOKIE, parseFocus(value), { path: "/", sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 365 });
 }

@@ -205,14 +205,14 @@ isOneToOne: false
                   ]
                 },"swap_options": {
                   Row: {
-                    "fits_in": string | null,"id": string,"owner_id": string,"prerequisites": string | null,"quantum_relevance": Database["public"]['Enums']["quantum_relevance"],"slot": Database["public"]['Enums']["swap_slot"],"swap_in": string,"why_consider": string | null,"why_current_better": string | null
+                    "ai_relevance": Database["public"]['Enums']["relevance"],"fits_in": string | null,"id": string,"owner_id": string,"prerequisites": string | null,"quantum_relevance": Database["public"]['Enums']["relevance"],"slot": Database["public"]['Enums']["swap_slot"],"swap_in": string,"why_consider": string | null,"why_current_better": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"quantum_relevance": Database["public"]['Enums']["quantum_relevance"],"slot": Database["public"]['Enums']["swap_slot"],"swap_in": string,"why_consider"?: string | null,"why_current_better"?: string | null
+                    "ai_relevance"?: Database["public"]['Enums']["relevance"],"fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"quantum_relevance": Database["public"]['Enums']["relevance"],"slot": Database["public"]['Enums']["swap_slot"],"swap_in": string,"why_consider"?: string | null,"why_current_better"?: string | null
                   }
                   Update: {
-                    "fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"quantum_relevance"?: Database["public"]['Enums']["quantum_relevance"],"slot"?: Database["public"]['Enums']["swap_slot"],"swap_in"?: string,"why_consider"?: string | null,"why_current_better"?: string | null
+                    "ai_relevance"?: Database["public"]['Enums']["relevance"],"fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"quantum_relevance"?: Database["public"]['Enums']["relevance"],"slot"?: Database["public"]['Enums']["swap_slot"],"swap_in"?: string,"why_consider"?: string | null,"why_current_better"?: string | null
                   }
                   Relationships: [
                     
@@ -333,7 +333,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "assignment_kind": "assignment"|"quiz"|"exam"|"discussion"|"lab"|"reading","assignment_priority": "low"|"medium"|"high","assignment_progress": "not_started"|"in_progress","course_status": "planned"|"in_progress"|"done","course_type": "cs_core"|"ai_concentration"|"physics_minor"|"major_support"|"general_elective"|"coop_program","nupath": "ND"|"EI"|"IC"|"FQ"|"SI"|"AD"|"DD"|"ER"|"WF"|"WD"|"WI"|"EX"|"CE","prereq_kind": "prereq"|"coreq"|"recommended","quantum_relevance": "none"|"lower"|"low"|"medium"|"high","req_area": "cs_overview"|"cs_fundamentals"|"cs_required"|"security_presentation"|"khoury_electives"|"supporting"|"writing"|"ai_concentration"|"physics_minor"|"universitywide","session_type": "lecture"|"lab"|"seminar"|"tutorial"|"workshop"|"exam"|"other","swap_slot": "london_elective"|"khoury_elective"|"ai_elective"|"software_engineering"|"placement_substitute"|"physics_minor_elective"|"advanced_writing","sync_source": "canvas"|"timetable","sync_status": "running"|"success"|"error"|"token_expired","term_kind": "transfer"|"semester"|"summer"|"coop"
+            "assignment_kind": "assignment"|"quiz"|"exam"|"discussion"|"lab"|"reading","assignment_priority": "low"|"medium"|"high","assignment_progress": "not_started"|"in_progress","course_status": "planned"|"in_progress"|"done","course_type": "cs_core"|"ai_concentration"|"physics_minor"|"major_support"|"general_elective"|"coop_program","nupath": "ND"|"EI"|"IC"|"FQ"|"SI"|"AD"|"DD"|"ER"|"WF"|"WD"|"WI"|"EX"|"CE","prereq_kind": "prereq"|"coreq"|"recommended","relevance": "none"|"lower"|"low"|"medium"|"high","req_area": "cs_overview"|"cs_fundamentals"|"cs_required"|"security_presentation"|"khoury_electives"|"supporting"|"writing"|"ai_concentration"|"physics_minor"|"universitywide","session_type": "lecture"|"lab"|"seminar"|"tutorial"|"workshop"|"exam"|"other","swap_slot": "london_elective"|"khoury_elective"|"ai_elective"|"software_engineering"|"placement_substitute"|"physics_minor_elective"|"advanced_writing","sync_source": "canvas"|"timetable","sync_status": "running"|"success"|"error"|"token_expired","term_kind": "transfer"|"semester"|"summer"|"coop"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -453,7 +453,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "assignment_kind": ["assignment", "quiz", "exam", "discussion", "lab", "reading"],"assignment_priority": ["low", "medium", "high"],"assignment_progress": ["not_started", "in_progress"],"course_status": ["planned", "in_progress", "done"],"course_type": ["cs_core", "ai_concentration", "physics_minor", "major_support", "general_elective", "coop_program"],"nupath": ["ND", "EI", "IC", "FQ", "SI", "AD", "DD", "ER", "WF", "WD", "WI", "EX", "CE"],"prereq_kind": ["prereq", "coreq", "recommended"],"quantum_relevance": ["none", "lower", "low", "medium", "high"],"req_area": ["cs_overview", "cs_fundamentals", "cs_required", "security_presentation", "khoury_electives", "supporting", "writing", "ai_concentration", "physics_minor", "universitywide"],"session_type": ["lecture", "lab", "seminar", "tutorial", "workshop", "exam", "other"],"swap_slot": ["london_elective", "khoury_elective", "ai_elective", "software_engineering", "placement_substitute", "physics_minor_elective", "advanced_writing"],"sync_source": ["canvas", "timetable"],"sync_status": ["running", "success", "error", "token_expired"],"term_kind": ["transfer", "semester", "summer", "coop"]
+            "assignment_kind": ["assignment", "quiz", "exam", "discussion", "lab", "reading"],"assignment_priority": ["low", "medium", "high"],"assignment_progress": ["not_started", "in_progress"],"course_status": ["planned", "in_progress", "done"],"course_type": ["cs_core", "ai_concentration", "physics_minor", "major_support", "general_elective", "coop_program"],"nupath": ["ND", "EI", "IC", "FQ", "SI", "AD", "DD", "ER", "WF", "WD", "WI", "EX", "CE"],"prereq_kind": ["prereq", "coreq", "recommended"],"relevance": ["none", "lower", "low", "medium", "high"],"req_area": ["cs_overview", "cs_fundamentals", "cs_required", "security_presentation", "khoury_electives", "supporting", "writing", "ai_concentration", "physics_minor", "universitywide"],"session_type": ["lecture", "lab", "seminar", "tutorial", "workshop", "exam", "other"],"swap_slot": ["london_elective", "khoury_elective", "ai_elective", "software_engineering", "placement_substitute", "physics_minor_elective", "advanced_writing"],"sync_source": ["canvas", "timetable"],"sync_status": ["running", "success", "error", "token_expired"],"term_kind": ["transfer", "semester", "summer", "coop"]
           }
         }
 } as const

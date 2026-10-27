@@ -117,7 +117,7 @@ Twelve Postgres tables cover everything in the six Notion databases, plus sync h
 | `courses` | Every course in the plan: code, title, SH, type, NUpath, status, Canvas course ID | Import, then edited in the app | Courses |
 | `requirements` | Each degree requirement, its area and the courses that can fill it | Import | Requirements |
 | `course_requirements` | Which course fills which requirement (many-to-many) | Import | Courses ↔ Fills requirement |
-| `swap_options` | Alternative courses, their slot, quantum relevance and the reasoning | Import | Swap options |
+| `swap_options` | Alternative courses, their slot, quantum and AI relevance and the reasoning | Import | Swap options |
 | `swap_replaces` | Which planned courses a swap could replace (many-to-many) | Import | Swap options → Replaces |
 | `assignment_groups` | Canvas grading categories and their weights | Canvas sync | (new; needed for the grade calculator) |
 | `assignments` | Canvas assignments, due dates, points, submission state, your own priority and notes | Canvas sync + you | Assignments |
@@ -135,7 +135,7 @@ Phase 4 adds `course_prereqs` (course → required course, prereq or coreq) and 
 - **Status is two fields.** Canvas's `workflow_state` (unsubmitted, submitted, graded) is synced. Your `progress` (not started, in progress) is yours. The displayed status takes whichever is further along.
 - **Times are `timestamptz` in UTC**, shown in the term's time zone: `Europe/London` for London terms, `America/New_York` from Fall 2027. Day names and "9:00 – 10:40" strings are formatted at display time, which removes the day-name sorting bug the Notion timetable had.
 - **Every table has `owner_id uuid default auth.uid()`** and a row-level-security policy `owner_id = auth.uid()`, even with one user. It costs nothing and is the correct pattern to show.
-- **Enums are Postgres enums** for closed sets (course type, requirement area, NUpath code, swap slot, quantum relevance, session type, assignment type), so typos fail at the database.
+- **Enums are Postgres enums** for closed sets (course type, requirement area, NUpath code, swap slot, relevance, session type, assignment type), so typos fail at the database.
 
 **Core schema (first migration)**
 
@@ -280,7 +280,7 @@ Seven pages cover everything: the dashboard answers "what do I do today", and th
 | `/courses/[code]` | Course page | Assignments by grading group, current grade, grade calculator, announcements, this course's timetable, your notes, links to Canvas | 3 |
 | `/pathway` | Four-year plan | One column per term from Transfer credit to Spring 2030, course cards coloured by type, SH per term, co-op terms marked | 1, then 4 |
 | `/pathway/requirements` | Requirements audit | Progress rings for CS core, AI concentration, Physics minor and NUpath; each requirement lists the courses filling it and their status | 1 |
-| `/pathway/swaps` | Swap explorer | Swap options grouped by slot, sorted by quantum relevance, with the reasoning side by side | 1 |
+| `/pathway/swaps` | Swap explorer | Swap options grouped by slot, sorted by the chosen focus's relevance, with the reasoning side by side | 1 |
 | `/calendar` | Calendar | Month and week views merging classes, exams and due dates; link to subscribe on your phone | 3 |
 | `/settings` | Settings | Sync status and history, token-expiry banner, course ↔ Canvas ID mapping, calendar feed link | 2 |
 
@@ -290,7 +290,7 @@ Seven pages cover everything: the dashboard answers "what do I do today", and th
 - **Announcements.** Unread count on the dashboard; mark read or important; full text on the course page.
 - **Drag-and-drop planning (Phase 4).** Move a course card to another term. The move is checked against `course_prereqs`, co-op terms and a per-term SH limit, and any conflict shows inline before you save.
 - **Prerequisite graph (Phase 4).** Courses as nodes, prerequisites as arrows, with the PHYS 4115 → PHYS 5352 quantum chain highlighted. Laid out by term, one column each (see the 2026-10-27 decision).
-- **Quantum / AI toggle (Phase 4).** Re-sorts swap options and highlights the courses that matter most for the chosen direction.
+- **Quantum / AI toggle (Phase 4).** Re-sorts swap options by quantum or AI relevance (see the 2026-10-27 decision). The quantum chain is already highlighted in the prerequisite graph.
 - **What-if plans (Phase 4).** Save a copy of the plan, change it freely, and compare two plans side by side. The real plan is untouched until you make one the active plan.
 - **Polish.** Installable on your phone (PWA manifest and icons), global search (⌘K) across courses, assignments and announcements, and an optional light/dark toggle (dark mode already follows the system; see Visual design).
 
@@ -385,10 +385,10 @@ Five phases, each ending with something you can use; a phase is done when its la
 
 ### Phase 4: Planning tools and polish
 
-- [ ] `course_prereqs` table, entered by hand from the course catalogue
-- [ ] Drag-and-drop pathway with live checks
+- [x] `course_prereqs` table, entered by hand from the course catalogue
+- [x] Drag-and-drop pathway with live checks
 - [x] Prerequisite graph
-- [ ] Quantum / AI toggle
+- [x] Quantum / AI toggle
 - [ ] Saved what-if plans and side-by-side comparison
 - [ ] PWA, ⌘K search, light/dark toggle (system dark mode is done)
 - [ ] Playwright end-to-end test for the main flows

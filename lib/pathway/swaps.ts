@@ -5,7 +5,7 @@ type SwapRow = Database["public"]["Tables"]["swap_options"]["Row"];
 
 export type Swap = Pick<
   SwapRow,
-  "id" | "swap_in" | "slot" | "fits_in" | "prerequisites" | "quantum_relevance" | "why_consider" | "why_current_better"
+  "id" | "swap_in" | "slot" | "fits_in" | "prerequisites" | "quantum_relevance" | "ai_relevance" | "why_consider" | "why_current_better"
 >;
 export type SwapLink = { swap_option_id: string; course_id: string };
 export type SwapCourse = { id: string; code: string; title: string };

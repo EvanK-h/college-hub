@@ -52,6 +52,7 @@ lib/
   supabase/server.ts       server client with the user's session (RLS applies)
   supabase/client.ts       browser client (anon key only)
   supabase/admin.ts        service-role client — sync jobs only
+  supabase/anon.ts         anon key, no session — calendar feed route only
   canvas/                  client.ts, schemas.ts (Zod), sync.ts
   timetable/               ICS parsing + sync
   grades/                  grade calculator (pure functions)

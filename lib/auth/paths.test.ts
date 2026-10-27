@@ -11,6 +11,9 @@ describe("isPublicPath", () => {
     expect(isPublicPath("/api/sync/all")).toBe(true);
     expect(isPublicPath("/api/sync")).toBe(false);
     expect(isPublicPath("/api/syncing")).toBe(false);
+    expect(isPublicPath("/api/calendar/some-token.ics")).toBe(true);
+    expect(isPublicPath("/api/calendar")).toBe(false);
+    expect(isPublicPath("/calendar")).toBe(false);
   });
 
   it("treats everything else as private", () => {

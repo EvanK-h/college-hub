@@ -207,3 +207,16 @@
 - Sign out moved from the dashboard to Settings.
 
 **Why.** The dashboard answers "what do I do today" at a glance, so everything it shows comes from tested pure functions in `lib/dashboard/agenda.ts`: what counts as today, due soon, and the next exam. Days are calendar days in the current term's time zone.
+
+## 2026-10-27: Calendar feed through a token-checked SQL function
+
+**Decision.** `/api/calendar/<token>.ics` reads through `calendar_feed(token)`, a `security definer` function that anon may call. Given a token whose SHA-256 matches a row in `calendar_feeds`, it returns that owner's classes and deadlines; for anything else it returns null. Only the hash is stored. The full link is shown once in Settings when it is created, and making a new one replaces it.
+
+**Why.**
+- The feed has no session, and `CLAUDE.md` keeps the service-role key out of everything but the sync. The function gives the route exactly one narrow capability instead of bypassing RLS wholesale.
+- With only the hash stored, a leaked table or backup can't be turned into a working link.
+- The token is 32 random bytes (43 base64url characters). The function rejects anything else before it looks anything up.
+
+**Trade-off.** The link can't be shown again later, so adding a second device means making a new link and re-subscribing the first. For one phone that is fine.
+
+**Also.** The feed covers the last 60 days onwards. Classes are timed events with `STATUS:CANCELLED` when cancelled, and deadlines are zero-length events at the due time, as Canvas's own feed does. Responses are `Cache-Control: private, no-store` and `X-Robots-Tag: noindex`. `/api/calendar/` is a public path in the proxy, like `/api/sync/`.

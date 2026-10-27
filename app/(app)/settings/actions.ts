@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { generateFeedToken } from "@/lib/calendar/token";
 import { parseCourseLink } from "@/lib/canvas/course-links";
 import { runCanvasSync } from "@/lib/canvas/run-sync";
 import { getTimetableFeedUrl } from "@/lib/env.server";
@@ -77,4 +79,29 @@ export async function syncNow(): Promise<SyncNowState> {
     console.error("Sync now failed:", error instanceof Error ? error.message : "unknown error");
     return { status: "error", message: "The sync could not run. Check the server logs." };
   }
+}
+
+export type FeedLinkState = { status: "idle" | "created" | "error"; url: string | null; message: string };
+
+/**
+ * Creates the calendar feed link, or replaces it (the old link stops working at once). Only the
+ * token's hash is stored, so this is the one moment the full link exists: it is returned to the
+ * page to show once and is never written anywhere else.
+ */
+export async function createCalendarFeed(): Promise<FeedLinkState> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims) return { status: "error", url: null, message: "You're signed out. Sign in again." };
+
+  const { token, hash } = generateFeedToken();
+  // One row per owner: a new token replaces the old one. RLS applies through the session client.
+  const { error } = await supabase.from("calendar_feeds").upsert({ token_hash: hash, created_at: new Date().toISOString() }, { onConflict: "owner_id" });
+  if (error) return { status: "error", url: null, message: "Could not create the link. Try again." };
+
+  const requestHeaders = await headers();
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+
+  revalidatePath("/settings");
+  return { status: "created", url: `${protocol}://${host}/api/calendar/${token}.ics`, message: "" };
 }

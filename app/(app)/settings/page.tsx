@@ -2,12 +2,14 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/actions";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { CalendarFeed } from "@/components/settings/calendar-feed";
 import { CourseLinks } from "@/components/settings/course-links";
 import { SyncCard } from "@/components/settings/sync-card";
 import { SyncHistory } from "@/components/settings/sync-history";
 import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
 import { SyncNowForm } from "@/components/settings/sync-now-form";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { canvasSettingsUrl } from "@/lib/canvas/links";
 import { getTimetableFeedUrl } from "@/lib/env.server";
 import { summarizeTerms } from "@/lib/pathway/summarize";
@@ -49,19 +51,20 @@ async function SyncSections() {
   };
 
   // All read with the user's session, so row-level security applies.
-  const [historyResult, canvasResult, canvasSuccessResult, timetableResult, timetableSuccessResult, termsResult] = await Promise.all([
+  const [historyResult, canvasResult, canvasSuccessResult, timetableResult, timetableSuccessResult, feedResult, termsResult] = await Promise.all([
     supabase.from("sync_runs").select(RUN_COLUMNS).order("started_at", { ascending: false }).limit(HISTORY_LIMIT),
     latestRun("canvas"),
     latestRun("canvas", "success"),
     latestRun("timetable"),
     latestRun("timetable", "success"),
+    supabase.from("calendar_feeds").select("created_at").maybeSingle(),
     supabase
       .from("terms")
       .select("id, name, kind, time_zone, courses(id, code, title, credits, type, status)")
       .order("id"),
   ]);
   if (historyResult.error) throw new Error(`Loading sync history failed: ${historyResult.error.message}`);
-  for (const result of [canvasResult, canvasSuccessResult, timetableResult, timetableSuccessResult]) {
+  for (const result of [canvasResult, canvasSuccessResult, timetableResult, timetableSuccessResult, feedResult]) {
     if (result.error) throw new Error(`Loading the latest sync failed: ${result.error.message}`);
   }
   if (termsResult.error) throw new Error(`Loading terms failed: ${termsResult.error.message}`);
@@ -120,6 +123,25 @@ async function SyncSections() {
         <Suspense fallback={<p className="text-sm text-muted-foreground">Loading Canvas courses…</p>}>
           <CourseLinks term={currentTerm ? { id: currentTerm.id, name: currentTerm.name } : null} />
         </Suspense>
+      </section>
+
+      <section aria-labelledby="feed-heading" className="flex flex-col gap-3">
+        <h2 id="feed-heading" className="text-title-3">
+          Calendar feed
+        </h2>
+        <Card>
+          <CardContent>
+            <CalendarFeed
+              createdOn={
+                feedResult.data
+                  ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone }).format(
+                      new Date(feedResult.data.created_at),
+                    )
+                  : null
+              }
+            />
+          </CardContent>
+        </Card>
       </section>
 
       <section aria-labelledby="history-heading" className="flex flex-col gap-3">

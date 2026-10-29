@@ -498,3 +498,9 @@ Browser back and forward, Server Action refreshes and optimistic updates carry n
 
 **Edge fades.** The board and the graph fade at a side edge only while there's more to scroll past it, using a scroll-driven animation (`edge-fade-x`). Browsers without scroll-driven animations get no fade, rather than a fade that hides the last column.
 
+## 2026-10-29: Smaller colour notes
+
+- **Relevance meters.** Each relevance on Swaps carries a four-dot meter (High ●●●●, Medium ●●●○, Low ●●○○, Lower ●○○○, None ○○○○) beside its word, because Low and Lower shared a pill style and couldn't be told apart. The meter is hidden from screen readers since the word says the same.
+- **Graph chain.** A shaded chain is now drawn rather than filled: chain cards stay on `card` with a 1px `accent-foreground` ring, and their edges are thicker and darker. Beige `accent` kept reading as "selected" and already means a co-op term. The chain toggle uses the board filter's pressed style (`foreground` on `background`) instead of accent.
+- **Brand colour.** The app icon (header and login) uses new `brand` / `brand-foreground` tokens: wine with a light glyph in both themes, matching the PWA icons. It's identity, not tint, so it no longer turns Golden Batter with the dark primary. `primary` is now only for things you can act on and focus.
+

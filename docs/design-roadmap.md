@@ -10,7 +10,7 @@ Principles used throughout, from Apple's HIG and WWDC talks: wayfinding (where a
 
 Everything that was deferred or left out while building the sections below, so none of it gets lost. Tick an item off when it's built and note where; when something is deferred, add it here.
 
-- [ ] §1.6 Smaller colour notes.
+- [x] §1.6 Smaller colour notes. Built 29 Oct 2026: relevance meters, a ringed graph chain, a wine app icon in both themes.
 - [ ] §2.4 Collapsing large title.
 - [ ] §2.5 The command palette becomes a command palette (actions as well as search).
 - [ ] §4.2 Month view and §4.3 Keyboard shortcuts for the calendar.
@@ -92,6 +92,8 @@ Today a course's colour is its *type* colour, so CS 1800, CS 1802, CS 2100 and C
 - **Option B:** add a "Course" role, letting each current-term course pick from 6–8 hues, the way Canvas course colours work. It reads much faster in a calendar, but the ΔE budget is already spent between status and category, so it would need a fresh search and probably dropping type colours outside the pathway.
 
 ### 1.6 Smaller colour notes
+
+**Done 29 Oct 2026**; see "Smaller colour notes" in the decision log. The chain toggle also moved off accent, to the board's pressed style.
 
 - The relevance pills on Swaps ("AI: Low" on accent, "Quantum: Low" on fill) are too close to tell apart. Show the rank as a 4-step mini meter (●●○○) next to the word.
 - The prerequisite graph shades the focus chain in `accent` (Golden Batter). Accent is also "co-op term", and its beige reads as "selected". Shade the chain with a **thicker edge plus a 1 px accent-foreground ring** and keep node fills neutral.

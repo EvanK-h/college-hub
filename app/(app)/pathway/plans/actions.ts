@@ -3,13 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { parseSwapCourse } from "@/lib/plans/build";
-import { parseNewPlan, parsePlanMove, parsePlanSwap, parseSwapChoice } from "@/lib/plans/forms";
+import { parseNewPlan, parsePlanMove, parsePlanSwap, parseRenamePlan, parseSwapChoice } from "@/lib/plans/forms";
 import { createClient } from "@/lib/supabase/server";
 
 // What-if plan actions. All use the user's session client, so RLS applies: another owner's plan
 // or course matches no row. None of them touch the real plan except applyPlan.
 
-export type PlanFormState = { status: "idle" | "error"; message: string };
+export type PlanFormState = { status: "idle" | "saved" | "error"; message: string };
 
 const UNIQUE_VIOLATION = "23505";
 
@@ -27,6 +27,21 @@ export async function createPlan(_previous: PlanFormState, formData: FormData): 
   }
   revalidatePath("/pathway/plans");
   redirect(`/pathway/plans/${data}`);
+}
+
+export async function renamePlan(_previous: PlanFormState, formData: FormData): Promise<PlanFormState> {
+  const parsed = parseRenamePlan(formData);
+  if (!parsed.success) return { status: "error", message: parsed.error.issues[0]?.message ?? "Check the name." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("plans").update({ name: parsed.data.name }).eq("id", parsed.data.planId).select("id");
+  if (error) {
+    return { status: "error", message: error.code === UNIQUE_VIOLATION ? "You already have a plan with that name." : "Could not rename the plan. Try again." };
+  }
+  if (data.length === 0) return { status: "error", message: "That plan could not be found." };
+  revalidatePath("/pathway/plans");
+  revalidatePath(`/pathway/plans/${parsed.data.planId}`);
+  return { status: "saved", message: "" };
 }
 
 export async function deletePlan(planId: string): Promise<void> {

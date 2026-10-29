@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, FlaskConical } from "lucide-react";
 import { applyPlan, deletePlan, movePlanItem, removePlanSwap } from "../actions";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { PathwayBoard } from "@/components/pathway/pathway-board";
@@ -10,7 +10,7 @@ import { PlanSwapForm, type SwapChoiceGroup } from "@/components/plans/plan-swap
 import { PlanSkeleton } from "@/components/skeletons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { describeProblem, planProblems } from "@/lib/pathway/move-checks";
-import { buildPlan, comparePlans, parseSwapCourse, swapItemId, type PlanItem } from "@/lib/plans/build";
+import { buildPlan, comparePlans, countChanges, parseSwapCourse, swapItemId, type PlanItem } from "@/lib/plans/build";
 import { loadPlanning, loadPlanRows, planTerms, type Planning } from "@/lib/plans/load";
 import { loadSetup } from "@/lib/setup/load";
 import type { SlotInfo } from "@/lib/setup/setup";
@@ -38,7 +38,9 @@ async function Plan({ id }: { id: string }) {
   if (!saved) notFound();
 
   const items = buildPlan(planning.courses, saved.rows, planning.swaps);
-  const changes = [...comparePlans(items, buildPlan(planning.courses, [], planning.swaps)).values()];
+  const real = buildPlan(planning.courses, [], planning.swaps);
+  const changes = [...comparePlans(items, real).values()];
+  const changeCount = countChanges(items, real);
   const moves = changes.filter((change) => change.kind === "moved").length;
   const swapped = items.filter((item) => item.replaces);
   const labels = Object.fromEntries(swapped.map((item) => [item.id, `Swap for ${item.replaces?.code}`]));
@@ -53,10 +55,26 @@ async function Plan({ id }: { id: string }) {
   return (
     <>
       <PageHeader back={{ href: "/pathway/plans", label: "What-if plans" }} title={saved.plan.name}>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
+        <div className="mt-2">
           <Link href={`/pathway/plans/compare?a=${id}&b=current`} className={buttonVariants({ variant: "outline" })}>
             Compare with current
           </Link>
+        </div>
+      </PageHeader>
+
+      {/* Stays under the header while you scroll, so a what-if plan never passes for the real one:
+          it says where you are and holds the two ways out. */}
+      <div className="sticky top-16 z-30 -my-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl bg-accent py-2.5 pr-2.5 pl-4 text-sm text-accent-foreground shadow-card">
+        <FlaskConical aria-hidden className="size-4 shrink-0" />
+        <p className="min-w-0 flex-1">
+          <span className="font-semibold">What-if plan</span>
+          <span className="tabular-nums">
+            {" "}
+            · {changeCount === 0 ? "no changes yet" : `${changeCount} ${changeCount === 1 ? "change" : "changes"}`}
+          </span>
+          <span className="hidden sm:inline"> · your real plan is unchanged</span>
+        </p>
+        <div className="flex items-center gap-2">
           <ConfirmAction
             label="Make active"
             title={`Make “${saved.plan.name}” your plan?`}
@@ -65,15 +83,15 @@ async function Plan({ id }: { id: string }) {
             action={applyPlan.bind(null, id)}
           />
           <ConfirmAction
-            label="Delete"
-            title={`Delete “${saved.plan.name}”?`}
+            label="Discard"
+            title={`Discard “${saved.plan.name}”?`}
             description="The what-if plan is deleted. Your real plan is not changed."
-            confirmLabel="Delete plan"
+            confirmLabel="Discard plan"
             destructive
             action={deletePlan.bind(null, id)}
           />
         </div>
-      </PageHeader>
+      </div>
 
       {problems.length > 0 && (
         <ul aria-label="Problems in this plan" className="flex flex-col gap-1.5 rounded-2xl bg-fill-tertiary p-4 text-sm">

@@ -14,6 +14,12 @@ export function parseNewPlan(formData: FormData) {
   return newPlanSchema.safeParse({ name: formData.get("name"), from: formData.get("from") ?? "current" });
 }
 
+const renamePlanSchema = z.object({ planId: z.uuid(), name: planNameSchema });
+
+export function parseRenamePlan(formData: FormData) {
+  return renamePlanSchema.safeParse({ planId: formData.get("planId"), name: formData.get("name") });
+}
+
 // A board id is a course id, or "swap:<swap option id>" for a swap taken in.
 const itemIdSchema = z.union([z.uuid(), z.string().regex(/^swap:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)]);
 

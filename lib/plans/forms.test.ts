@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseNewPlan, parsePlanMove, parsePlanRef, parsePlanSwap, parseSwapChoice } from "./forms";
+import { parseNewPlan, parsePlanMove, parsePlanRef, parsePlanSwap, parseRenamePlan, parseSwapChoice } from "./forms";
 
 const ID = "3f1c2b8e-9d4a-4c1e-8b7f-2a6d5e4c3b21";
 const ID2 = "7a2b3c4d-5e6f-4a1b-9c8d-0e1f2a3b4c5d";
@@ -15,6 +15,12 @@ describe("plan forms", () => {
     expect(parseNewPlan(form({ name: "Copy", from: ID })).success).toBe(true);
     expect(parseNewPlan(form({ name: "   ", from: "current" })).success).toBe(false);
     expect(parseNewPlan(form({ name: "x", from: "elsewhere" })).success).toBe(false);
+  });
+
+  it("trims a new name for a plan and needs the plan's id", () => {
+    expect(parseRenamePlan(form({ planId: ID, name: " Quantum first " })).data).toEqual({ planId: ID, name: "Quantum first" });
+    expect(parseRenamePlan(form({ planId: ID, name: "" })).success).toBe(false);
+    expect(parseRenamePlan(form({ planId: "nope", name: "x" })).success).toBe(false);
   });
 
   it("accepts moves of courses and of swaps, nothing else", () => {

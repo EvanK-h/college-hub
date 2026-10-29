@@ -9,12 +9,12 @@ import { NATIVE_SELECT_CLASS } from "@/components/ui/native-select";
 
 const IDLE: PlanFormState = { status: "idle", message: "" };
 
-// Saves a copy of the real plan, or of another plan, and opens it.
+// Saves a copy of the real plan, or of another plan, and opens it. It sits in the New plan dialog.
 export function NewPlanForm({ plans }: { plans: { id: string; name: string }[] }) {
   const [state, formAction, pending] = useActionState(createPlan, IDLE);
 
   return (
-    <form action={formAction} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+    <form action={formAction} className="grid gap-3">
       <div className="grid gap-1.5">
         <Label htmlFor="plan-name">Name</Label>
         <Input id="plan-name" name="name" required maxLength={60} placeholder="e.g. CY 4770 instead of CS 4805" aria-describedby="plan-error" />
@@ -30,10 +30,10 @@ export function NewPlanForm({ plans }: { plans: { id: string; name: string }[] }
           ))}
         </select>
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="mt-1 justify-self-end">
         {pending ? "Saving…" : "Save a copy"}
       </Button>
-      <p id="plan-error" role="alert" className="text-sm text-destructive sm:col-span-3 empty:hidden">
+      <p id="plan-error" role="alert" className="text-sm text-destructive empty:hidden">
         {state.status === "error" ? state.message : ""}
       </p>
     </form>

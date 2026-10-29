@@ -16,6 +16,9 @@ setup("signs in with a magic link", async ({ page }) => {
   await page.getByLabel("Email").fill(E2E_EMAIL);
   await page.getByRole("button", { name: "Send sign-in link" }).click();
   await expect(page.getByRole("status")).toContainText("a link is on its way");
+  // The form gives way to "Check your email", and resending waits out its countdown.
+  await expect(page.getByText("Check your email")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Send again in \d+ s/ })).toBeDisabled();
 
   await page.goto(await waitForMagicLink());
   await expect(page).toHaveURL(/localhost:\d+\/$/);

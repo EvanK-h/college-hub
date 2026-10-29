@@ -144,7 +144,7 @@ export function PrereqGraphView({ graph, chains }: { graph: PrereqGraph; chains:
         aria-label="Prerequisite graph"
         role="group"
         {...pan}
-        className={cn("-mx-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6", shown === 1 && "cursor-grab active:cursor-grabbing")}
+        className={cn("-mx-4 overflow-x-auto px-4 pb-2 edge-fade-x sm:-mx-6 sm:px-6", shown === 1 && "cursor-grab active:cursor-grabbing")}
       >
         <div ref={canvas} style={{ width: width * shown, height: height * shown }}>
           <div className="relative origin-top-left" style={{ width, height, transform: shown === 1 ? undefined : `scale(${shown})` }}>

@@ -259,6 +259,42 @@
   }
 }
 
+/* Sideways scrollers fade at an edge only while there's more to see past it. A scroll-driven
+   animation moves the two fade widths with the scroll position: at the start only the right edge
+   fades, at the end only the left. Without support, or with nothing to scroll, there's no fade. */
+@property --fade-start {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --fade-end {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes edge-fade {
+  0% {
+    --fade-start: 0px;
+    --fade-end: 24px;
+  }
+  4%,
+  96% {
+    --fade-start: 24px;
+    --fade-end: 24px;
+  }
+  100% {
+    --fade-start: 24px;
+    --fade-end: 0px;
+  }
+}
+@utility edge-fade-x {
+  @supports (animation-timeline: scroll()) {
+    mask-image: linear-gradient(to right, transparent, #000 var(--fade-start), #000 calc(100% - var(--fade-end)), transparent);
+    animation: edge-fade linear both;
+    animation-timeline: scroll(self inline);
+  }
+}
+
 /* Progress rings draw in from empty to their real length. */
 @keyframes ring-draw {
   from {

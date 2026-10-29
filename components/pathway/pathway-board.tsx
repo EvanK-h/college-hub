@@ -235,7 +235,7 @@ export function PathwayBoard({
           ref={scroller}
           aria-label="Terms"
           tabIndex={0}
-          className="relative -mx-4 flex snap-x snap-proximity scroll-px-4 items-start gap-3 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6"
+          className="relative -mx-4 flex snap-x snap-proximity scroll-px-4 items-start gap-3 overflow-x-auto px-4 edge-fade-x pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6"
         >
           {board.map((term) => (
             <DroppableTerm

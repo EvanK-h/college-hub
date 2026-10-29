@@ -380,3 +380,19 @@
 **Tab bar details.** It sits outside the header, because the header's `backdrop-filter` makes it the containing block for anything fixed inside it. The current place takes the tint, as Apple's tab bars do; a tab is something you act on, so this fits the colour roles. The viewport is now `viewport-fit=cover`, so the bar can pad itself clear of the home indicator with `env(safe-area-inset-bottom)`; the body pads the side insets, and `PAGE_CLASS` leaves room at the bottom on a phone.
 
 **The material was never blurred in Chrome.** Lightning CSS (Tailwind v4's compiler) turned the hand-written `backdrop-filter` into `-webkit-backdrop-filter` only, with or without an explicit prefixed line, and Chrome ignores the prefix. Safari blurred; Chrome showed a 72% opaque bar. `material-bar` now uses Tailwind's `backdrop-blur-[20px] backdrop-saturate-180`, which compile to both forms.
+
+## 2026-10-29: Today and the calendar's week grid, as built
+
+**Today.** Three tiles answer "what now": the class under way or next (your courses only; other timetable events stay in the agenda), the next unfinished deadline however far ahead (with a link to last week's overdue work), and the next exam. Each says so in one line when there's nothing, instead of showing an empty card. Below, one agenda covers today and the next six days. Runs of empty days fold into a single "Free" line (`foldFreeDays`), today always shows, and overdue work from the last week leads. To-dos and unread announcements sit beside it. The mini month, the Due card and the This-week grid are gone. At 1280 × 800 the page still fits without scrolling.
+
+**Also on Today.**
+- An announcement links to `/courses/<code>#announcement-<id>`, and the course page opens that `<details>` (`OpenAnnouncementFromHash`). ⌘K results for announcements do the same.
+- The to-do form is one line until you use it; the course and date row appears while the form has focus or a title is typed.
+- Deferred to the toast work (roadmap §8.2): an announcements inbox ("See all"), marking an announcement read when it opens, and Undo for to-dos.
+
+**Week grid.** From tablet width the week view is a time grid (`WeekGrid`); on a phone it stays a list of days.
+- Blocks are sized by duration, 48px an hour. The hours shown run from the week's earliest start to its latest end, widened to at least 09:00–17:00 (`hourRange`), so a quiet week still reads as a day.
+- Overlapping sessions share the width in lanes (`layoutDay`), so a clash shows as two narrow blocks rather than one hiding the other.
+- Blocks carry the course type's bar and the course code, like the pathway cards. Exams are outlined and bold, cancelled sessions are hatched and struck through, and finished ones fade.
+- Deadlines are moments, so they sit in a "Due" strip above the hours with their status pill.
+- A neutral line marks the time in today's column. It's drawn when the page renders and doesn't move until the next load. Red was ruled out because it means overdue, and the tint because it means you can act on it.

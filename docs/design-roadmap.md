@@ -121,6 +121,8 @@ It searches but can't *do* anything. Add actions: "Add to-do…", "Sync now", "G
 
 ## 3. Today (dashboard)
 
+**Done 29 Oct 2026 (§3.1, §3.2, §3.4's collapsed form, §3.3's deep link)**; see "Today and the calendar's week grid" in the decision log. The announcements inbox, mark-read-on-open and Undo for to-dos moved to §8.2, where the toasts come in.
+
 ### 3.1 **Decision:** rebuild around "Now / Next"
 
 Three equal columns give five cards equal weight, so nothing leads. On a day with no classes and nothing due (as on 29 Oct), two cards are empty, and the Due column stretches into a tall blank white panel. "This week" sits below the fold and repeats the calendar.
@@ -169,6 +171,8 @@ If the card stays: never show an empty 72-hour window. List the next N deadlines
 ---
 
 ## 4. Calendar
+
+**§4.1 done 29 Oct 2026.** The phone keeps the list as its week view; a separate Day view wasn't needed. §4.2 and §4.3 are still open.
 
 ### 4.1 **Decision:** a time-grid week view
 

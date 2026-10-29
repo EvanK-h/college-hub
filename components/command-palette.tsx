@@ -139,7 +139,7 @@ export function CommandPalette() {
           <div id={listId} role="listbox" aria-label="Results" className="max-h-[min(60vh,26rem)] overflow-y-auto p-2 empty:hidden">
             {groups.map((group) => (
               <div key={group.kind} role="group" aria-labelledby={`${listId}-${group.kind}`} className="pb-1">
-                <p id={`${listId}-${group.kind}`} className="px-2 pt-2 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                <p id={`${listId}-${group.kind}`} className="px-2 pt-2 pb-1 text-xs font-semibold text-muted-foreground">
                   {SEARCH_KIND_LABELS[group.kind]}
                 </p>
                 {group.items.map(({ result, position: current }) => {

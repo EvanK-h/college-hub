@@ -19,7 +19,7 @@ export function SyncHistory({ runs, timeZone }: { runs: SyncRun[]; timeZone: str
       <div className="overflow-x-auto">
         <table className="w-full min-w-md text-left text-sm">
           <thead>
-            <tr className="text-xs font-semibold tracking-wide text-tertiary-foreground uppercase">
+            <tr className="text-xs text-tertiary-foreground">
               <th scope="col" className="px-(--card-spacing) pb-2 font-semibold">When</th>
               <th scope="col" className="pr-4 pb-2 font-semibold">Source</th>
               <th scope="col" className="pr-4 pb-2 font-semibold">Result</th>
@@ -37,7 +37,7 @@ export function SyncHistory({ runs, timeZone }: { runs: SyncRun[]; timeZone: str
                 <td className="py-2.5 pr-4">
                   <SyncStatusBadge status={run.status} />
                   {run.error_message && (
-                    <p className="mt-0.5 max-w-xs text-xs text-muted-foreground">{run.error_message}</p>
+                    <p className="mt-0.5 max-w-xs text-footnote text-muted-foreground">{run.error_message}</p>
                   )}
                 </td>
                 <td className="py-2.5 pr-4 text-muted-foreground">

@@ -21,7 +21,7 @@ export function SyncCard({
   return (
     <Card>
       <CardContent className="flex flex-col gap-1">
-        <p className="text-xs font-semibold tracking-wide text-tertiary-foreground uppercase">{label}</p>
+        <p className="text-footnote font-semibold text-muted-foreground">{label}</p>
         <p className="flex items-center gap-2 text-headline">
           {latest && <SyncStatusIcon status={latest.status} className="size-5" />}
           {headline}

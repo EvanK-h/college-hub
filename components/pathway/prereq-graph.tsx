@@ -213,7 +213,7 @@ export function PrereqGraphView({ graph, chains }: { graph: PrereqGraph; chains:
                 <span className="w-1 shrink-0 rounded-full bg-(--course) contrast-more:w-1.5" aria-hidden />
                 <span className="block min-w-0 flex-1">
                   <span className="block text-sm font-semibold">{node.code}</span>
-                  <span className="block truncate text-xs text-muted-foreground">{node.title}</span>
+                  <span className="block truncate text-footnote text-muted-foreground">{node.title}</span>
                 </span>
                 <StatusIcon status={node.status} className="mt-0.5 size-3.5 shrink-0" />
               </button>

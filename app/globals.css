@@ -69,6 +69,10 @@
   --text-xs--letter-spacing: 0.006em;
   --text-sm--letter-spacing: -0.006em;
   --text-base--letter-spacing: -0.011em;
+  /* Footnote: the smallest size for content people read (13px); text-xs is for metadata only. */
+  --text-footnote: 0.8125rem;
+  --text-footnote--line-height: 1.4;
+  --text-footnote--letter-spacing: 0;
   --text-headline: 1.0625rem;
   --text-headline--line-height: 1.35;
   --text-headline--letter-spacing: -0.014em;

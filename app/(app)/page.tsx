@@ -346,7 +346,7 @@ async function Today() {
                         <p className="text-xs text-tertiary-foreground">
                           {[course?.code, announcement.posted_at && formatDay(new Date(announcement.posted_at), timeZone)].filter(Boolean).join(" · ")}
                         </p>
-                        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{excerpt(announcement.message, 140)}</p>
+                        <p className="mt-0.5 line-clamp-2 text-footnote text-muted-foreground">{excerpt(announcement.message, 140)}</p>
                       </li>
                     );
                   })}

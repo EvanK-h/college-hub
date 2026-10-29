@@ -59,7 +59,7 @@ export function CourseCardBody({
       <span className="w-1 shrink-0 rounded-full bg-(--course) contrast-more:w-1.5" aria-hidden />
       <span className="block min-w-0 flex-1">
         <span className="block text-sm font-semibold">{course.code}</span>
-        <span className="mt-0.5 block text-[0.8125rem] leading-snug text-muted-foreground">{course.title}</span>
+        <span className="mt-0.5 block text-footnote leading-snug text-muted-foreground">{course.title}</span>
         <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
           <span className="text-tertiary-foreground tabular-nums">{course.credits} {creditUnit}</span>
           {label && <span className="rounded-full bg-accent px-1.5 py-px font-medium text-accent-foreground">{label}</span>}

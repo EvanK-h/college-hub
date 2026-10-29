@@ -373,7 +373,7 @@ function DroppableTerm({
       drop={preview === null ? null : preview.length === 0 ? "ok" : "problem"}
       notice={
         preview && preview.length > 0 ? (
-          <ul className="flex flex-col gap-1 rounded-xl bg-card px-2.5 py-2 text-xs text-destructive shadow-card">
+          <ul className="flex flex-col gap-1 rounded-xl bg-card px-2.5 py-2 text-footnote text-destructive shadow-card">
             {preview.map((problem) => (
               <li key={problem} className="flex gap-1.5">
                 <CircleAlert aria-hidden className="mt-px size-3.5 shrink-0" />

@@ -252,7 +252,7 @@ function WeekView({ days, today, timeZone, now }: { days: Day[]; today: string; 
             </span>
           </h2>
           {day.sessions.length === 0 && day.due.length === 0 && <p className="text-xs text-tertiary-foreground">Free</p>}
-          <ul className="flex flex-col gap-2 text-xs">
+          <ul className="flex flex-col gap-2 text-footnote">
             {day.sessions.map((session) => (
               <li key={session.id} className={cn(session.cancelled && "text-muted-foreground line-through")}>
                 <p className="tabular-nums">

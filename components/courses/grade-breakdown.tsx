@@ -20,7 +20,7 @@ export function GradeBreakdown({ parts }: { parts: GradeContribution[] }) {
           </span>
         ))}
       </div>
-      <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1 text-[0.8125rem]">
+      <dl className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-1 text-footnote">
         {parts.map((part) => (
           <div key={part.id} className="contents">
             <dt className="truncate text-muted-foreground" title={part.name}>

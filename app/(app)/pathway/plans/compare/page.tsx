@@ -133,7 +133,7 @@ async function Compare({ a, b, all }: { a: string | null; b: string | null; all:
                             // Unchanged courses sit flat, like finished terms on the board; changed ones are raised and labelled.
                             <li key={item.id} className={cn("rounded-xl bg-card p-2.5 text-sm", note ? "shadow-card" : "ring-1 ring-separator")}>
                               <span className="block font-semibold">{item.code}</span>
-                              <span className="block truncate text-xs text-muted-foreground">{item.title}</span>
+                              <span className="block truncate text-footnote text-muted-foreground">{item.title}</span>
                               {note && <span className="mt-1 inline-block rounded-full bg-accent px-1.5 py-px text-xs font-medium text-accent-foreground">{note}</span>}
                             </li>
                           );

@@ -325,6 +325,8 @@ Due soon, overdue and missed are derived at display time from `due_at` and the d
 
 **Text levels.** `foreground` for primary text; `muted-foreground` for secondary text (titles under codes, descriptions, captions); `tertiary-foreground` for metadata (credits, counts) on cards or the page background only. On tinted fills, use `muted-foreground`, since tertiary drops below 4.5:1 there.
 
+**Type sizes.** Content people read is at least `text-footnote` (13px): excerpts, details, titles under codes. `text-xs` (12px) is for metadata only (counts, times, pills, badges), with one exception: the calendar's week and month grids, where space is set by time and date. Uppercase is kept for page eyebrows; in-card headings and labels are sentence case.
+
 **Fills.** Grey surfaces are translucent tints of the foreground, never solid greys: `fill` for tracks and pressed or hovered controls, `fill-secondary` for control backgrounds (nav track, close button), `fill-tertiary` for grouping backgrounds (term columns, reason panels). `secondary` and `muted` are aliases of these for shadcn components.
 
 **Wayfinding.** On the pathway, finished terms recede (no tint, flat cards, muted heading), and the current term gets the in-progress outline and a "Current term" label. Without term dates, the phase comes from course status (`summarizeTerms`).

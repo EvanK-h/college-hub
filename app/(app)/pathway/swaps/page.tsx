@@ -126,7 +126,7 @@ function SwapRow({
               <span className="font-semibold">{swap.swap_in}</span>
             )}
           </span>
-          <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+          <span className="mt-0.5 block truncate text-footnote text-muted-foreground">
             {[swap.replaces.length > 0 && `For ${swap.replaces.map((replaced) => replaced.code).join(", ")}`, swap.fits_in].filter(Boolean).join(" · ")}
           </span>
         </span>
@@ -146,7 +146,7 @@ function SwapRow({
       </summary>
 
       <div className="flex flex-col gap-4 px-4 pb-4">
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-footnote">
           <Detail label="Fits in" value={swap.fits_in} />
           <Detail label="Prerequisites" value={swap.prerequisites} />
           <Detail label="Replaces" value={swap.replaces.map((replaced) => `${replaced.code} · ${replaced.title}`).join(", ")} />
@@ -189,7 +189,7 @@ function Detail({ label, value, className }: { label: string; value: string | nu
 function Reason({ heading, text }: { heading: string; text: string | null }) {
   return (
     <div className="rounded-xl bg-fill-tertiary p-3.5">
-      <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{heading}</h4>
+      <h4 className="text-footnote font-semibold text-muted-foreground">{heading}</h4>
       <p className="mt-1.5 leading-relaxed">{text ?? "—"}</p>
     </div>
   );

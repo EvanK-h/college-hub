@@ -20,6 +20,11 @@ const STATUS_STYLE: Record<AssignmentStatus, { Icon: typeof Circle; pill: string
   not_started: { Icon: Circle, pill: "ring-1 ring-border ring-inset text-muted-foreground", icon: "text-status-planned" },
 };
 
+/** The status's hue as a text colour, for marks smaller than a pill (the month view's ◇). */
+export function statusTextClass(status: AssignmentStatus): string {
+  return STATUS_STYLE[status].icon;
+}
+
 export function StatusPill({ status, className }: { status: AssignmentStatus; className?: string }) {
   const { Icon, pill, icon } = STATUS_STYLE[status];
   return (

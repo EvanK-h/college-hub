@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/actions";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
@@ -26,24 +26,62 @@ const RUN_COLUMNS = "id, source, status, started_at, finished_at, inserted, upda
 export default function SettingsPage() {
   return (
     <main className={PAGE_CLASS}>
-      <PageHeader title="Settings">
-        <form action={signOut} className="mt-1">
-          <Button type="submit" variant="outline" size="sm">
-            Sign out
-          </Button>
-        </form>
-      </PageHeader>
+      <PageHeader title="Settings" />
       <Suspense fallback={<SettingsSkeleton />}>
         <SyncSections />
       </Suspense>
-      <section aria-labelledby="appearance" className="flex flex-col gap-3">
-        <h2 id="appearance" className="text-title-3">
-          Appearance
-        </h2>
-        <ThemeToggle />
-        <p className="text-sm text-muted-foreground">Saved on this device. System follows your device&rsquo;s light or dark setting.</p>
-      </section>
+      <Section id="appearance" title="Appearance" footer="Saved on this device. System follows your device’s light or dark setting.">
+        <Card>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm font-medium">Theme</span>
+            <ThemeToggle />
+          </CardContent>
+        </Card>
+      </Section>
+      <Suspense fallback={null}>
+        <Account />
+      </Suspense>
     </main>
+  );
+}
+
+// The iOS Settings pattern: a small heading, a card of rows, and an optional note under it.
+function Section({ id, title, action, footer, children }: { id: string; title: string; action?: ReactNode; footer?: string; children: ReactNode }) {
+  return (
+    <section aria-labelledby={id} className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-end justify-between gap-2 px-1">
+        <h2 id={id} className="text-headline">
+          {title}
+        </h2>
+        {action}
+      </div>
+      {children}
+      {footer && <p className="px-1 text-sm text-muted-foreground">{footer}</p>}
+    </section>
+  );
+}
+
+// Last, since it's the least used: who's signed in, and the way out.
+async function Account() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const email = typeof data?.claims.email === "string" ? data.claims.email : null;
+  return (
+    <Section id="account" title="Account">
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3">
+          <span className="min-w-0 text-sm">
+            <span className="block font-medium">Signed in</span>
+            {email && <span className="block truncate text-muted-foreground">{email}</span>}
+          </span>
+          <form action={signOut}>
+            <Button type="submit" variant="outline" size="sm">
+              Sign out
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </Section>
   );
 }
 
@@ -101,13 +139,7 @@ async function SyncSections() {
         />
       )}
 
-      <section aria-labelledby="sync-heading" className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <h2 id="sync-heading" className="text-title-3">
-            Sync
-          </h2>
-          <SyncNowForm />
-        </div>
+      <Section id="sync-heading" title="Sync" action={<SyncNowForm />}>
         <div className="grid gap-3 md:grid-cols-2">
           <SyncCard label="Canvas" latest={canvas} lastSuccess={canvasSuccessResult.data} now={now} />
           <SyncCard
@@ -122,22 +154,16 @@ async function SyncSections() {
             }
           />
         </div>
-      </section>
+      </Section>
 
-      <section aria-labelledby="links-heading" className="flex flex-col gap-3">
-        <h2 id="links-heading" className="text-title-3">
-          Course links{currentTerm ? ` · ${currentTerm.name}` : ""}
-        </h2>
+      <Section id="links-heading" title={`Course links${currentTerm ? ` · ${currentTerm.name}` : ""}`} footer="Only linked courses sync from Canvas.">
         {/* Its own boundary: this one calls Canvas, so a slow answer must not hold up the rest. */}
         <Suspense fallback={<CourseLinksSkeleton />}>
           <CourseLinks term={currentTerm ? { id: currentTerm.id, name: currentTerm.name } : null} />
         </Suspense>
-      </section>
+      </Section>
 
-      <section aria-labelledby="feed-heading" className="flex flex-col gap-3">
-        <h2 id="feed-heading" className="text-title-3">
-          Calendar feed
-        </h2>
+      <Section id="feed-heading" title="Calendar feed">
         <Card>
           <CardContent>
             <CalendarFeed
@@ -151,14 +177,11 @@ async function SyncSections() {
             />
           </CardContent>
         </Card>
-      </section>
+      </Section>
 
-      <section aria-labelledby="history-heading" className="flex flex-col gap-3">
-        <h2 id="history-heading" className="text-title-3">
-          History
-        </h2>
+      <Section id="history-heading" title="Sync history">
         <SyncHistory runs={runs} timeZone={timeZone} />
-      </section>
+      </Section>
     </>
   );
 }

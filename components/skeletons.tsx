@@ -233,9 +233,9 @@ export function CourseSkeleton() {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-4">
           <Bone className="h-6 w-36" />
-          {Array.from({ length: 3 }, (_, index) => (
-            <TextCard key={index} lines={2} />
-          ))}
+          <TextCard lines={7} />
+          <Bone className="mt-4 h-6 w-40" />
+          <TextCard lines={2} />
         </div>
         <div className="flex flex-col gap-6">
           <CardBone>

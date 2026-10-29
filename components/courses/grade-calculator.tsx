@@ -1,18 +1,16 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Label } from "@/components/ui/label";
 import { letterTargets, neededForTarget, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
 import type { GradeScale } from "@/lib/setup/setup";
-
-const SELECT_CLASS =
-  "h-10 w-full rounded-xl border border-input bg-card px-3 text-sm focus-visible:border-ring focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none dark:bg-muted";
+import { cn } from "@/lib/utils";
 
 const percent = (value: number) => `${value.toFixed(1)}%`;
 
 // Client component only for the target picker; the maths is the pure, tested calculator.
 // The letters come from the profile's grade scale; it starts on 90% when the scale has it (an A−
-// on the common scale), otherwise on the best letter.
+// on the common scale), otherwise on the best letter. The letters are radios drawn as chips, so the
+// target is one tap and the arrow keys move between them.
 export function GradeCalculator({ groups, items, scale }: { groups: GradeGroup[]; items: GradeItem[]; scale: GradeScale }) {
   const id = useId();
   const targets = letterTargets(scale);
@@ -25,7 +23,7 @@ export function GradeCalculator({ groups, items, scale }: { groups: GradeGroup[]
       message = "Already secured, whatever happens on the work left.";
       break;
     case "needed":
-      message = `Average ${percent(outcome.percent)} on the work still to be graded.`;
+      message = `For ${targets.find(({ minimum }) => minimum === target)?.letter ?? "it"} (${target}%), average ${percent(outcome.percent)} on the work still to be graded.`;
       break;
     case "out_of_reach":
       message = `Out of reach: full marks on everything left ends at ${percent(outcome.bestPercent)}.`;
@@ -37,18 +35,30 @@ export function GradeCalculator({ groups, items, scale }: { groups: GradeGroup[]
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid gap-1.5">
-        <Label htmlFor={id}>Target grade</Label>
-        <select id={id} value={target} onChange={(event) => setTarget(Number(event.target.value))} className={SELECT_CLASS}>
+      <fieldset className="grid gap-2">
+        <legend className="mb-2 text-sm font-medium">Target grade</legend>
+        <div className="flex flex-wrap gap-1.5">
           {targets.map(({ letter, minimum }) => (
-            <option key={letter} value={minimum}>
-              {letter} ({minimum}%)
-            </option>
+            <label
+              key={letter}
+              title={`${minimum}% or more`}
+              className="flex h-8 min-w-10 cursor-pointer items-center justify-center rounded-full bg-fill-tertiary px-2.5 text-sm font-medium text-muted-foreground tabular-nums hover:bg-fill-secondary hover:text-foreground has-checked:bg-foreground has-checked:text-background has-focus-visible:outline-2 has-focus-visible:outline-ring"
+            >
+              <input
+                type="radio"
+                name={id}
+                value={minimum}
+                checked={target === minimum}
+                onChange={() => setTarget(minimum)}
+                className="sr-only"
+              />
+              {letter}
+            </label>
           ))}
-        </select>
-      </div>
+        </div>
+      </fieldset>
       {/* Announced when the target changes. */}
-      <p role="status" className="text-sm">
+      <p role="status" className={cn("text-sm", outcome.kind === "out_of_reach" && "font-medium text-destructive")}>
         {message}
       </p>
       <p className="text-xs text-tertiary-foreground">

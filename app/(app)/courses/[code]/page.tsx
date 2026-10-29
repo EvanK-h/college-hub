@@ -1,20 +1,22 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { ExternalLink } from "lucide-react";
-import { setAssignmentProgress } from "./actions";
+import { ProgressMenu } from "@/components/assignments/progress-menu";
 import { StatusPill } from "@/components/assignments/status-pill";
 import { AnnouncementList } from "@/components/courses/announcement-list";
+import { GradeBreakdown } from "@/components/courses/grade-breakdown";
 import { GradeCalculator } from "@/components/courses/grade-calculator";
 import { NotesForm } from "@/components/courses/notes-form";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { CourseSkeleton } from "@/components/skeletons";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ASSIGNMENT_KIND_LABELS, assignmentStatus, formatDueIn } from "@/lib/assignments/status";
 import { canvasCourseUrl } from "@/lib/canvas/links";
 import { codeFromSlug } from "@/lib/courses/slug";
-import { courseGrade, letterGrade, namesItsWeight, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
+import { courseGrade, gradeContributions, letterGrade, namesItsWeight, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
 import { loadSetup } from "@/lib/setup/load";
+import { categoryClass } from "@/lib/setup/setup";
 import { createClient } from "@/lib/supabase/server";
 import { formatDay, formatTime, formatTimeRange, shortLocation } from "@/lib/timetable/format";
 import { SESSION_TYPE_LABELS } from "@/lib/timetable/kind";
@@ -48,7 +50,7 @@ async function Course({ slug }: { slug: string }) {
 
   const { data: course, error: courseError } = await supabase
     .from("courses")
-    .select("id, code, title, notes, canvas_course_id, terms(name, time_zone)")
+    .select("id, code, title, notes, canvas_course_id, terms(name, time_zone), type:course_types(name, color)")
     .eq("code", code)
     .maybeSingle();
   if (courseError) throw new Error(`Loading the course failed: ${courseError.message}`);
@@ -100,7 +102,13 @@ async function Course({ slug }: { slug: string }) {
 
   return (
     <>
-      <PageHeader back={{ href: "/courses", label: "Courses" }} eyebrow={[course.code, course.terms?.name].filter(Boolean).join(" · ")} title={course.title}>
+      <PageHeader
+        back={{ href: "/courses", label: "Courses" }}
+        eyebrow={[course.code, course.type?.name, course.terms?.name].filter(Boolean).join(" · ")}
+        title={course.title}
+        // The course type's bar, as on its pathway card and course card.
+        marker={<span aria-hidden className={cn("w-1.5 shrink-0 rounded-full bg-(--course)", categoryClass(course.type?.color ?? 5))} />}
+      >
         {canvasUrl && (
           <a
             href={canvasUrl}
@@ -124,70 +132,83 @@ async function Course({ slug }: { slug: string }) {
               {course.canvas_course_id ? "Nothing synced from Canvas yet." : "Link this course to Canvas in Settings to see its assignments."}
             </p>
           ) : (
-            groups.map((group) => {
-              const totals = groupGrade.get(group.canvas_id);
-              const inGroup = assignments.filter((assignment) => assignment.assignment_group_id === group.canvas_id);
-              return (
-                <Card key={group.canvas_id} className="gap-0 py-0">
-                  <div className="flex items-baseline justify-between gap-3 px-5 pt-4 pb-2">
-                    <h3 className="text-headline">{group.name}</h3>
-                    <p className="text-xs text-tertiary-foreground tabular-nums">
-                      {[
-                        grade.weighted && group.weight && !namesItsWeight(group.name) ? `${group.weight}% of grade` : null,
-                        totals?.percent != null ? `${totals.percent.toFixed(1)}% so far` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  </div>
-                  {inGroup.length === 0 ? (
-                    <p className="px-5 pb-4 text-sm text-muted-foreground">No assignments.</p>
-                  ) : (
-                    <ul className="divide-y divide-separator">
-                      {inGroup.map((assignment) => {
-                        const status = assignmentStatus(assignment, now);
-                        // Still worth starting: not handed in, and not long past its deadline.
-                        const open = status !== "done" && status !== "missed";
-                        return (
-                          <li key={assignment.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
-                            <div className="min-w-0 flex-1 basis-56">
-                              <a
-                                href={assignment.html_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={cn("font-medium underline-offset-4 hover:underline", status === "missed" && "text-muted-foreground")}
-                              >
-                                {assignment.title}
-                              </a>
-                              <p className="mt-0.5 text-xs text-tertiary-foreground">
-                                {[
-                                  ASSIGNMENT_KIND_LABELS[assignment.kind],
-                                  assignment.due_at &&
-                                    `Due ${formatDay(new Date(assignment.due_at), timeZone)} ${formatTime(new Date(assignment.due_at), timeZone)}`,
-                                  assignment.due_at && open && formatDueIn(assignment.due_at, now),
-                                ]
-                                  .filter(Boolean)
-                                  .join(" · ")}
+            // One card for every group: each group is a subheader carrying its weight and how it's
+            // going, so a group of one assignment doesn't make a card of its own.
+            <Card className="gap-0 py-0">
+              {groups.map((group) => {
+                const totals = groupGrade.get(group.canvas_id);
+                const inGroup = assignments.filter((assignment) => assignment.assignment_group_id === group.canvas_id);
+                return (
+                  <section key={group.canvas_id} aria-labelledby={`group-${group.canvas_id}`} className="border-separator not-first:border-t">
+                    <div className="flex items-baseline justify-between gap-3 bg-fill-tertiary px-5 pt-3 pb-2">
+                      <h3 id={`group-${group.canvas_id}`} className="text-sm font-semibold">
+                        {group.name}
+                      </h3>
+                      <p className="text-xs text-tertiary-foreground tabular-nums">
+                        {[
+                          grade.weighted && group.weight && !namesItsWeight(group.name) ? `${group.weight}% of grade` : null,
+                          totals?.percent != null ? `${totals.percent.toFixed(1)}% so far` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    </div>
+                    {inGroup.length === 0 ? (
+                      <p className="px-5 pb-3 text-sm text-muted-foreground">No assignments.</p>
+                    ) : (
+                      <ul className="divide-y divide-separator">
+                        {inGroup.map((assignment) => {
+                          const status = assignmentStatus(assignment, now);
+                          // Still worth starting: not handed in, and not long past its deadline.
+                          const open = status !== "done" && status !== "missed";
+                          return (
+                            <li key={assignment.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
+                              <div className="min-w-0 flex-1 basis-56">
+                                <a
+                                  href={assignment.html_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={cn("font-medium underline-offset-4 hover:underline", status === "missed" && "text-muted-foreground")}
+                                >
+                                  {assignment.title}
+                                </a>
+                                <p className="mt-0.5 text-xs text-tertiary-foreground">
+                                  {[
+                                    ASSIGNMENT_KIND_LABELS[assignment.kind],
+                                    assignment.due_at &&
+                                      `Due ${formatDay(new Date(assignment.due_at), timeZone)} ${formatTime(new Date(assignment.due_at), timeZone)}`,
+                                    assignment.due_at && open && formatDueIn(assignment.due_at, now),
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </p>
+                              </div>
+                              <p className="text-sm text-muted-foreground tabular-nums">
+                                {assignment.score !== null && assignment.points_possible
+                                  ? `${assignment.score} / ${assignment.points_possible}`
+                                  : assignment.points_possible
+                                    ? `${assignment.points_possible} pts`
+                                    : null}
                               </p>
-                            </div>
-                            <p className="text-sm text-muted-foreground tabular-nums">
-                              {assignment.score !== null && assignment.points_possible
-                                ? `${assignment.score} / ${assignment.points_possible}`
-                                : assignment.points_possible
-                                  ? `${assignment.points_possible} pts`
-                                  : null}
-                            </p>
-                            <StatusPill status={status} />
-                            {open && <ProgressToggle id={assignment.id} inProgress={assignment.progress === "in_progress"} />}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </Card>
-              );
-            })
+                              {/* Your progress is yours to set until Canvas says it's handed in. */}
+                              {open ? <ProgressMenu assignmentId={assignment.id} status={status} progress={assignment.progress} /> : <StatusPill status={status} />}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </section>
+                );
+              })}
+            </Card>
           )}
+
+          <section aria-labelledby="announcements-heading" className="mt-4 flex flex-col gap-3">
+            <h2 id="announcements-heading" className="text-title-3">
+              Announcements
+            </h2>
+            <AnnouncementList announcements={announcementsResult.data ?? []} timeZone={timeZone} />
+          </section>
         </section>
 
         <aside className="flex flex-col gap-6">
@@ -204,6 +225,7 @@ async function Course({ slug }: { slug: string }) {
                   <span className="text-title-3 text-muted-foreground">{letterGrade(grade.percent, setup.profile.gradeScale)}</span>
                 </p>
               )}
+              <GradeBreakdown parts={gradeContributions(grade)} />
               <p className="text-xs text-tertiary-foreground">
                 {grade.weighted ? "Weighted by assignment group, from graded work only." : "Total points, from graded work only."}
               </p>
@@ -248,25 +270,6 @@ async function Course({ slug }: { slug: string }) {
           </Card>
         </aside>
       </div>
-
-      <section aria-labelledby="announcements-heading" className="flex flex-col gap-3">
-        <h2 id="announcements-heading" className="text-title-3">
-          Announcements
-        </h2>
-        <AnnouncementList announcements={announcementsResult.data ?? []} timeZone={timeZone} />
-      </section>
     </>
-  );
-}
-
-function ProgressToggle({ id, inProgress }: { id: string; inProgress: boolean }) {
-  return (
-    <form action={setAssignmentProgress}>
-      <input type="hidden" name="assignmentId" value={id} />
-      <input type="hidden" name="progress" value={inProgress ? "not_started" : "in_progress"} />
-      <Button type="submit" size="xs" variant="ghost">
-        {inProgress ? "Pause" : "Start"}
-      </Button>
-    </form>
   );
 }

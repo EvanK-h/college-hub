@@ -6,13 +6,15 @@ import { ChevronLeft } from "lucide-react";
 // (a course, a what-if plan), so there is always a way out besides the browser's back button.
 // `nav` sits right under the title, for a section's own pages; `children` sits under the
 // description, for legends or summaries. `eyebrow` is for context the title doesn't give (a
-// course's code and term), not for repeating the section's name.
+// course's code and term), not for repeating the section's name. `marker` sits beside the title,
+// such as a course's type bar.
 export function PageHeader({
   title,
   eyebrow,
   description,
   back,
   nav,
+  marker,
   children,
 }: {
   title: string;
@@ -20,6 +22,7 @@ export function PageHeader({
   description?: string;
   back?: { href: string; label: string };
   nav?: ReactNode;
+  marker?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -34,7 +37,14 @@ export function PageHeader({
         </Link>
       )}
       {eyebrow && <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{eyebrow}</p>}
-      <h1 className="text-large-title">{title}</h1>
+      {marker ? (
+        <div className="flex items-stretch gap-3">
+          {marker}
+          <h1 className="text-large-title">{title}</h1>
+        </div>
+      ) : (
+        <h1 className="text-large-title">{title}</h1>
+      )}
       {nav && <div className="mt-1">{nav}</div>}
       {description && <p className="max-w-prose text-base text-muted-foreground">{description}</p>}
       {children}

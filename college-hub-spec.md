@@ -302,7 +302,7 @@ Apple-style restraint on the warm Canvas Hub palette. Tokens live in `app/global
 
 | Role | Tokens | Used for | Never used for |
 | --- | --- | --- | --- |
-| Tint | `primary` (wine light, Golden Batter dark), `ring` | Buttons, links, focus rings, the app icon | Decoration, headings, eyebrows, status |
+| Tint | `primary` (wine light, Golden Batter dark), `ring` | Buttons, links, focus rings, the app icon. At most one filled primary button per view; the rest are outline, secondary or ghost | Decoration, headings, eyebrows, status |
 | Label | `accent` (Golden Batter tint) | Neutral labels: co-op term, swap relevance (graded by rank) | Status or warnings |
 | Status | `status-planned`, `status-in-progress`, `status-done`, `status-due-soon`, `status-overdue` | Course and assignment state | Categories |
 | Category | `course-*` (six course types) | The bar and legend dot that mark a course's type (cards stay plain `card`) | Status |

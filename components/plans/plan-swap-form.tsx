@@ -37,7 +37,8 @@ export function PlanSwapForm({ planId, groups }: { planId: string; groups: SwapC
           ))}
         </select>
       </div>
-      <Button type="submit" disabled={pending}>
+      {/* Outline: "Make active" is the page's one primary action. */}
+      <Button type="submit" variant="outline" disabled={pending}>
         {pending ? "Adding…" : "Try it"}
       </Button>
       <p id="swap-error" role="alert" className="text-sm text-destructive sm:col-span-2 empty:hidden">

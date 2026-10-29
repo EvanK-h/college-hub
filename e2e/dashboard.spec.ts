@@ -9,7 +9,7 @@ test("adds a to-do and ticks it off", async ({ page }) => {
 
   await page.getByLabel("New to-do").fill("Revise for the QA 2000 exam");
   await page.getByLabel("Course").selectOption({ label: "QA 2000" });
-  await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.getByRole("button", { name: "Add to-do" }).click();
 
   const done = page.getByRole("button", { name: "Mark “Revise for the QA 2000 exam” done" });
   await expect(done).toBeVisible();

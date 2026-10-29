@@ -43,7 +43,7 @@ export function CalendarFeed({ createdOn }: { createdOn: string | null }) {
         </p>
       )}
       <form action={formAction}>
-        <Button type="submit" variant={createdOn || state.url ? "outline" : "default"} disabled={pending}>
+        <Button type="submit" variant="outline" disabled={pending}>
           {pending ? "Creating…" : createdOn || state.url ? "Make a new link" : "Create feed link"}
         </Button>
       </form>

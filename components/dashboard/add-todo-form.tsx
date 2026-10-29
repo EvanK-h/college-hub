@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useId, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { addTodo, type TodoFormState } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,8 +30,10 @@ export function AddTodoForm({ courses }: { courses: { id: string; code: string }
           New to-do
         </Label>
         <Input id={`${id}-title`} name="title" placeholder="Add a to-do" maxLength={200} required className="h-9 flex-1" />
-        <Button type="submit" size="sm" disabled={pending} className="h-9">
-          Add
+        {/* Return adds it too. A quiet icon rather than a filled button: adding a to-do is a small,
+            frequent action, and a page has at most one filled (primary) button. */}
+        <Button type="submit" variant="ghost" size="icon" disabled={pending} aria-label="Add to-do">
+          <Plus aria-hidden />
         </Button>
       </div>
       <div className="flex gap-2">

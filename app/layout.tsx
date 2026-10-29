@@ -4,6 +4,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "College Hub",
   description: "Degree planner and Canvas dashboard",
+  // Icons come from app/icons/[file]/route.tsx; the manifest from app/manifest.ts.
+  icons: {
+    icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  appleWebApp: { capable: true, title: "College Hub", statusBarStyle: "default" },
 };
 
 // Tints the browser chrome to match --background in each theme. Metadata cannot read CSS variables, so these mirror globals.css.

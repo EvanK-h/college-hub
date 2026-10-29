@@ -1,4 +1,5 @@
-const PUBLIC_PATHS = ["/login"];
+// The web app manifest is fetched without cookies, so it must be public (it holds nothing private).
+const PUBLIC_PATHS = ["/login", "/manifest.webmanifest"];
 // /api/sync/ is public to the proxy because cron callers have no session; each route there
 // checks `Authorization: Bearer ${CRON_SECRET}` itself and rejects everything else.
 // /api/calendar/ is public because a phone's calendar app has no session; the token in the URL is

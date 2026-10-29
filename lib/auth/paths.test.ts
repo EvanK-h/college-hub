@@ -16,6 +16,11 @@ describe("isPublicPath", () => {
     expect(isPublicPath("/calendar")).toBe(false);
   });
 
+  it("serves the web app manifest without a session, since browsers fetch it without cookies", () => {
+    expect(isPublicPath("/manifest.webmanifest")).toBe(true);
+    expect(isPublicPath("/manifest.json")).toBe(false);
+  });
+
   it("treats everything else as private", () => {
     expect(isPublicPath("/")).toBe(false);
     expect(isPublicPath("/pathway")).toBe(false);

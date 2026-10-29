@@ -189,6 +189,64 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"plan_courses": {
+                  Row: {
+                    "course_id": string | null,"id": string,"owner_id": string,"plan_id": string,"replaces_course_id": string | null,"swap_option_id": string | null,"term_id": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "course_id"?: string | null,"id"?: string,"owner_id"?: string,"plan_id": string,"replaces_course_id"?: string | null,"swap_option_id"?: string | null,"term_id": number
+                  }
+                  Update: {
+                    "course_id"?: string | null,"id"?: string,"owner_id"?: string,"plan_id"?: string,"replaces_course_id"?: string | null,"swap_option_id"?: string | null,"term_id"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "plan_courses_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "plan_courses_plan_id_fkey"
+      columns: ["plan_id"]
+isOneToOne: false
+      referencedRelation: "plans"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "plan_courses_replaces_course_id_fkey"
+      columns: ["replaces_course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "plan_courses_swap_option_id_fkey"
+      columns: ["swap_option_id"]
+isOneToOne: false
+      referencedRelation: "swap_options"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "plan_courses_term_id_fkey"
+      columns: ["term_id"]
+isOneToOne: false
+      referencedRelation: "terms"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"plans": {
+                  Row: {
+                    "created_at": string,"id": string,"name": string,"owner_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"name": string,"owner_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"name"?: string,"owner_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"requirements": {
                   Row: {
                     "area": Database["public"]['Enums']["req_area"],"id": string,"name": string,"notes": string | null,"options": string | null,"owner_id": string
@@ -305,8 +363,14 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "calendar_feed":
+            "apply_plan":
+{ Args: { "p_plan": string }; Returns: undefined
+                           },
+"calendar_feed":
 { Args: { "p_token": string }; Returns: Json
+                           },
+"create_plan":
+{ Args: { "p_from"?: string,"p_name": string }; Returns: string
                            },
 "sync_announcements":
 { Args: { "p_course_id": string,"p_owner": string,"p_rows": Json }; Returns: {

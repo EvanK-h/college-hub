@@ -390,7 +390,7 @@ Five phases, each ending with something you can use; a phase is done when its la
 - [x] Prerequisite graph
 - [x] Quantum / AI toggle
 - [x] Saved what-if plans and side-by-side comparison
-- [ ] PWA, ⌘K search, light/dark toggle (system dark mode is done)
+- [x] PWA, ⌘K search, light/dark toggle (system dark mode is done)
 - [ ] Playwright end-to-end test for the main flows
 
 **Done when:** you've used it to plan Spring 2027 registration.

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
+import { CommandPalette } from "@/components/command-palette";
 import { MainNav } from "@/components/main-nav";
 
 // Shared shell for every signed-in page. The proxy and each page already guard access.
@@ -17,9 +18,13 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <span className="hidden sm:inline">College Hub</span>
             <span className="sr-only sm:hidden">College Hub</span>
           </Link>
-          <Suspense fallback={null}>
-            <MainNav />
-          </Suspense>
+          {/* min-w-0 lets the nav scroll sideways instead of pushing search off the screen. */}
+          <div className="min-w-0 flex-1">
+            <Suspense fallback={null}>
+              <MainNav />
+            </Suspense>
+          </div>
+          <CommandPalette />
         </div>
       </header>
       {children}

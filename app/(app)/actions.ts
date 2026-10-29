@@ -2,9 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { runCanvasSync } from "@/lib/canvas/run-sync";
+import { coursePath } from "@/lib/courses/slug";
 import { getTimetableFeedUrl } from "@/lib/env.server";
+import { searchPattern, type SearchResult } from "@/lib/search/search";
 import { createClient } from "@/lib/supabase/server";
 import { isStale } from "@/lib/sync/format";
+import { formatDay } from "@/lib/timetable/format";
 import { runTimetableSync } from "@/lib/timetable/run-sync";
 import { parseNewTodo, parseTodoId, parseTodoToggle } from "@/lib/todos/form";
 
@@ -90,4 +93,50 @@ export async function syncIfStale(): Promise<{ synced: boolean }> {
   }
   revalidatePath("/");
   return { synced: true };
+}
+
+const RESULTS_PER_KIND = 5;
+
+/**
+ * ⌘K search over courses, assignments and announcements (pages are matched in the browser).
+ * Read with the user's session, so RLS limits it to your own data. Each result links into the
+ * app: a course to its page, an assignment or announcement to that section of its course page.
+ */
+export async function search(query: string): Promise<SearchResult[]> {
+  const pattern = typeof query === "string" ? searchPattern(query.slice(0, 100)) : null;
+  if (!pattern) return [];
+
+  const supabase = await createClient();
+  const [courses, assignments, announcements] = await Promise.all([
+    supabase.from("courses").select("id, code, title, terms(name)").or(`code.ilike.${pattern},title.ilike.${pattern}`).order("code").limit(RESULTS_PER_KIND),
+    supabase
+      .from("assignments")
+      .select("id, title, due_at, courses(code, terms(time_zone))")
+      .ilike("title", pattern)
+      .eq("deleted_in_canvas", false)
+      .order("due_at", { ascending: false, nullsFirst: false })
+      .limit(RESULTS_PER_KIND),
+    supabase
+      .from("announcements")
+      .select("id, title, posted_at, courses(code, terms(time_zone))")
+      .ilike("title", pattern)
+      .eq("deleted_in_canvas", false)
+      .order("posted_at", { ascending: false, nullsFirst: false })
+      .limit(RESULTS_PER_KIND),
+  ]);
+
+  const results: SearchResult[] = [];
+  for (const course of courses.data ?? []) {
+    results.push({ id: course.id, kind: "course", label: `${course.code} · ${course.title}`, detail: course.terms?.name ?? "", href: coursePath(course.code) });
+  }
+  for (const item of assignments.data ?? []) {
+    if (!item.courses) continue;
+    const due = item.due_at ? `due ${formatDay(new Date(item.due_at), item.courses.terms?.time_zone ?? "UTC")}` : "no due date";
+    results.push({ id: item.id, kind: "assignment", label: item.title, detail: `${item.courses.code}, ${due}`, href: `${coursePath(item.courses.code)}#assignments-heading` });
+  }
+  for (const item of announcements.data ?? []) {
+    if (!item.courses) continue;
+    results.push({ id: item.id, kind: "announcement", label: item.title, detail: item.courses.code, href: `${coursePath(item.courses.code)}#announcements-heading` });
+  }
+  return results;
 }

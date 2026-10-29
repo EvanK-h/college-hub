@@ -1,17 +1,23 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { COURSE_TYPE_COLOR } from "@/components/pathway/course-card";
 import { PathwayBoard } from "@/components/pathway/pathway-board";
+import { buttonVariants } from "@/components/ui/button";
 import { COURSE_TYPE_LABELS, type CourseType } from "@/lib/pathway/labels";
 import { summarizeTerms } from "@/lib/pathway/summarize";
 import { createClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
 
 export default function PathwayPage() {
   return (
     <main className={PAGE_CLASS}>
       <PageHeader eyebrow="Degree plan" title="Pathway">
         <Legend />
+        <Link href="/pathway/plans" className={cn(buttonVariants({ variant: "outline" }), "mt-2 self-start")}>
+          What-if plans
+        </Link>
       </PageHeader>
       <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
         <Terms />

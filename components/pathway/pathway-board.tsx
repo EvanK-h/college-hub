@@ -17,7 +17,7 @@ import {
 } from "@dnd-kit/core";
 import { CircleAlert, GripVertical } from "lucide-react";
 import { moveCourse } from "@/app/(app)/pathway/actions";
-import { CourseCard } from "@/components/pathway/course-card";
+import { CourseCard, CourseCardBody } from "@/components/pathway/course-card";
 import { TermColumn } from "@/components/pathway/term-column";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -32,7 +32,23 @@ type PendingMove = Move & { problems: string[] };
 // or keyboard: Space to pick up, arrows to move, Space to drop). Each move is checked against
 // prerequisites, co-op terms and term SH limits before it is saved; a clean move saves at once,
 // a move with problems asks first. Clicking a card still opens its edit dialog.
-export function PathwayBoard({ terms, prereqs }: { terms: TermSummary[]; prereqs: PlanPrereq[] }) {
+//
+// What-if plans reuse the board with their own `onMove` (saving to the plan, not the courses)
+// and `editable={false}`, since the edit dialog changes the real course. `labels` puts a chip on
+// a card, such as "Swap for CS 4805".
+export function PathwayBoard({
+  terms,
+  prereqs,
+  onMove = moveCourse,
+  editable = true,
+  labels = {},
+}: {
+  terms: TermSummary[];
+  prereqs: PlanPrereq[];
+  onMove?: (move: Move) => Promise<{ ok: boolean }>;
+  editable?: boolean;
+  labels?: Record<string, string>;
+}) {
   // Where each course is, as the server last said; moves show at once and settle when it confirms.
   const saved = useMemo(() => new Map(terms.flatMap((term) => term.courses.map((course) => [course.id, term.id] as const))), [terms]);
   const [placement, place] = useOptimistic(saved, (current, move: Move) => new Map(current).set(move.courseId, move.termId));
@@ -81,7 +97,7 @@ export function PathwayBoard({ terms, prereqs }: { terms: TermSummary[]; prereqs
     setError(null);
     startTransition(async () => {
       place(move);
-      const result = await moveCourse(move);
+      const result = await onMove(move);
       if (!result.ok) setError(`Could not move ${codeOf(move.courseId)}. Try again.`);
     });
   }
@@ -162,6 +178,8 @@ export function PathwayBoard({ terms, prereqs }: { terms: TermSummary[]; prereqs
                     terms={termOptions}
                     past={term.phase === "past"}
                     checkTerm={(termId) => problemsFor(course.id, termId)}
+                    editable={editable}
+                    label={labels[course.id]}
                   />
                 </li>
               ))}
@@ -241,12 +259,16 @@ function DraggableCourse({
   terms,
   past,
   checkTerm,
+  editable,
+  label,
 }: {
   course: PathwayCourse;
   termId: number;
   terms: { id: number; name: string }[];
   past: boolean;
   checkTerm: (termId: number) => string[];
+  editable: boolean;
+  label?: string;
 }) {
   // Done and in-progress courses are history; only planned ones move.
   const movable = course.status === "planned";
@@ -254,7 +276,11 @@ function DraggableCourse({
 
   return (
     <div ref={setNodeRef} className={cn("relative", isDragging && "opacity-40")}>
-      <CourseCard course={course} termId={termId} terms={terms} past={past} checkTerm={checkTerm} />
+      {editable ? (
+        <CourseCard course={course} termId={termId} terms={terms} past={past} checkTerm={checkTerm} />
+      ) : (
+        <CourseCardBody course={course} past={past} label={label} />
+      )}
       {movable && (
         <button
           ref={setActivatorNodeRef}

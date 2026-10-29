@@ -389,7 +389,7 @@ Five phases, each ending with something you can use; a phase is done when its la
 - [x] Drag-and-drop pathway with live checks
 - [x] Prerequisite graph
 - [x] Quantum / AI toggle
-- [ ] Saved what-if plans and side-by-side comparison
+- [x] Saved what-if plans and side-by-side comparison
 - [ ] PWA, ⌘K search, light/dark toggle (system dark mode is done)
 - [ ] Playwright end-to-end test for the main flows
 

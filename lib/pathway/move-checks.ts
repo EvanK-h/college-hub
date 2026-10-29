@@ -111,3 +111,26 @@ export function describeProblem(problem: MoveProblem, termName: string): string 
       return `${termName} would have ${problem.total} SH, over the ${problem.limit} SH limit.`;
   }
 }
+
+export type PlanProblem = { termId: number; courseCode?: string; problem: MoveProblem };
+
+/**
+ * Everything wrong with a plan as it stands, for comparing plans: each course's own unmet
+ * requirements, courses in co-op terms, and terms over their SH limit. A broken dependent shows
+ * up as the dependent's own missing requirement, so it isn't listed twice.
+ */
+export function planProblems({ terms, courses, prereqs }: { terms: readonly PlanTerm[]; courses: readonly PlanCourse[]; prereqs: readonly PlanPrereq[] }): PlanProblem[] {
+  const termOf = new Map(courses.map((c) => [c.code, c.termId]));
+  const problems: PlanProblem[] = [];
+  for (const term of terms) {
+    const inTerm = courses.filter((c) => c.termId === term.id);
+    for (const course of inTerm) {
+      for (const problem of ownProblems(course, term.id, termOf, prereqs)) problems.push({ termId: term.id, courseCode: course.code, problem });
+      if (term.kind === "coop" && course.type !== "coop_program") problems.push({ termId: term.id, courseCode: course.code, problem: { kind: "coop_term" } });
+    }
+    const total = inTerm.reduce((sum, c) => sum + c.credits, 0);
+    const limit = TERM_SH_LIMIT[term.kind];
+    if (total > limit) problems.push({ termId: term.id, problem: { kind: "over_limit", total, limit } });
+  }
+  return problems;
+}

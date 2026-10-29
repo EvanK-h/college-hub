@@ -34,21 +34,31 @@ export function CourseCard({
 }) {
   return (
     <EditCourseDialog course={{ ...course, termId }} terms={terms} checkTerm={checkTerm}>
-      <span
-        className={cn(
-          "flex items-stretch gap-3 rounded-xl bg-[color-mix(in_oklch,var(--course)_4%,var(--card))] p-3 text-card-foreground transition-shadow",
-          past ? "ring-1 ring-separator group-hover/course:shadow-card" : "shadow-card group-hover/course:shadow-raised",
-          COURSE_TYPE_COLOR[course.type],
-        )}
-      >
-        <span className="w-1 shrink-0 rounded-full bg-(--course) contrast-more:w-1.5" aria-hidden />
-        <span className="block min-w-0 flex-1">
-          <span className="block text-sm font-semibold">{course.code}</span>
-          <span className="mt-0.5 block text-[0.8125rem] leading-snug text-muted-foreground">{course.title}</span>
-          <span className="mt-1.5 block text-xs text-tertiary-foreground tabular-nums">{course.credits} SH</span>
-        </span>
-        <StatusIcon status={course.status} className="mt-0.5 size-4 shrink-0" />
-      </span>
+      <CourseCardBody course={course} past={past} />
     </EditCourseDialog>
+  );
+}
+
+/** The card without the edit dialog, for boards that don't edit real courses (what-if plans). */
+export function CourseCardBody({ course, past = false, label }: { course: PathwayCourse; past?: boolean; label?: string }) {
+  return (
+    <span
+      className={cn(
+        "flex items-stretch gap-3 rounded-xl bg-[color-mix(in_oklch,var(--course)_4%,var(--card))] p-3 text-card-foreground transition-shadow",
+        past ? "ring-1 ring-separator group-hover/course:shadow-card" : "shadow-card group-hover/course:shadow-raised",
+        COURSE_TYPE_COLOR[course.type],
+      )}
+    >
+      <span className="w-1 shrink-0 rounded-full bg-(--course) contrast-more:w-1.5" aria-hidden />
+      <span className="block min-w-0 flex-1">
+        <span className="block text-sm font-semibold">{course.code}</span>
+        <span className="mt-0.5 block text-[0.8125rem] leading-snug text-muted-foreground">{course.title}</span>
+        <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+          <span className="text-tertiary-foreground tabular-nums">{course.credits} SH</span>
+          {label && <span className="rounded-full bg-accent px-1.5 py-px font-medium text-accent-foreground">{label}</span>}
+        </span>
+      </span>
+      <StatusIcon status={course.status} className="mt-0.5 size-4 shrink-0" />
+    </span>
   );
 }

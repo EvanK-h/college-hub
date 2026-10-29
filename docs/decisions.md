@@ -276,3 +276,19 @@
 **Data.** AI ratings are drafted in `scripts/ai-relevance.ts` from the catalogue descriptions and loaded with `scripts/import-ai-relevance.ts`, the same draft-and-review flow as the prerequisites. Quantum relevance still comes from Notion, and the Notion import never writes `ai_relevance`, so re-importing keeps the ratings. A swap missing from the list is reported by the import and stays at "None" until it is added.
 
 **Why a cookie.** The server sorts before rendering, and the choice should survive visits without living in every link.
+
+## 2026-10-27: What-if plans hold moves and swaps, laid over the real plan
+
+**Decision.** A plan (`plans` + `plan_courses`) places planned courses in terms and can take in swap options in place of courses. It can't add arbitrary courses. Plans live at `/pathway/plans`, with a board per plan and a side-by-side comparison of any two plans or the current one.
+
+**How a plan reads.**
+- Done and in-progress courses always sit in their real terms; plans only rearrange planned courses.
+- A planned course with no row in the plan counts as being in its real term, so a course added after the plan was saved still shows up. A plan is a copy when made, but reads like a set of overrides.
+- A swap takes the replaced course's place, credits and type. It has no catalogue prerequisites of its own, so the checks don't cover it.
+- Only swaps named "CODE 1234 · Title" can go into a plan: the two combined options ("PHYS 2371 + 2372", "INSH 1600 or PHIL 1115") couldn't become one real course.
+
+**Making a plan active.** `apply_plan()` does it in one transaction, as the signed-in user. Planned courses move to the plan's terms. Each swap rewrites the replaced course in place (code, title, term) rather than deleting it and adding a new one, so the slot keeps its requirement links. NUpath attributes, notes and catalogue prerequisites described the old course, so they are cleared, and the swap option stops listing the course as one it replaces. The plan's swap rows become ordinary rows afterwards, so the plan matches the real plan.
+
+**Why moves + swaps.** Registration choices are mostly "take this instead of that, and when". Free-form courses would need requirement links and NUpath data entered by hand before they could be made real, and the swap options already carry that reasoning.
+
+**Comparing.** Terms where the two plans differ are shown by default (every term on request). Each course is marked "Moved from …", "Swap for …" or "Not in …", with each term's SH and both plans' problems (`planProblems`: unmet requirements, co-op terms, terms over their limit). Unchanged courses sit flat and changed ones are raised and labelled, so the label carries the meaning, not the styling.

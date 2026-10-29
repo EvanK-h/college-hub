@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkMove, describeProblem, type PlanCourse, type PlanPrereq, type PlanTerm } from "./move-checks";
+import { checkMove, describeProblem, planProblems, type PlanCourse, type PlanPrereq, type PlanTerm } from "./move-checks";
 
 const terms: PlanTerm[] = [
   { id: 0, name: "Transfer credit", kind: "transfer" },
@@ -97,5 +97,28 @@ describe("describeProblem", () => {
     expect(describeProblem({ kind: "breaks_dependent", course: "C 3000", requirement: "prereq" }, "Fall 2")).toBe("C 3000 needs this in an earlier term.");
     expect(describeProblem({ kind: "coop_term" }, "Co-op 1")).toBe("Co-op 1 is a co-op term.");
     expect(describeProblem({ kind: "over_limit", total: 20, limit: 18 }, "Fall 2")).toBe("Fall 2 would have 20 SH, over the 18 SH limit.");
+  });
+});
+
+describe("planProblems", () => {
+  const terms = [
+    { id: 0, name: "Transfer", kind: "transfer" as const },
+    { id: 1, name: "Fall", kind: "semester" as const },
+    { id: 2, name: "Co-op", kind: "coop" as const },
+  ];
+  const c = (id: string, code: string, termId: number, credits = 4) => ({ id, code, credits, type: "cs_core", termId });
+  const prereqs = [{ courseId: "b", requiresCode: "A 1000", kind: "prereq" as const, group: 1 }];
+
+  it("finds nothing wrong with a sound plan", () => {
+    expect(planProblems({ terms, courses: [c("a", "A 1000", 0), c("b", "B 2000", 1)], prereqs })).toEqual([]);
+  });
+
+  it("lists unmet requirements, co-op terms and over-full terms, by term", () => {
+    const courses = [c("a", "A 1000", 1), c("b", "B 2000", 1, 16), c("x", "X 1000", 2)];
+    expect(planProblems({ terms, courses, prereqs })).toEqual([
+      { termId: 1, courseCode: "B 2000", problem: { kind: "missing_prereq", options: ["A 1000"] } },
+      { termId: 1, problem: { kind: "over_limit", total: 20, limit: 18 } },
+      { termId: 2, courseCode: "X 1000", problem: { kind: "coop_term" } },
+    ]);
   });
 });

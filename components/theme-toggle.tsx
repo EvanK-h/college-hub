@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 const LABELS: Record<Theme, string> = { system: "System", light: "Light", dark: "Dark" };
 const ICONS = { system: Monitor, light: Sun, dark: Moon } satisfies Record<Theme, unknown>;
 
-
 // Subscribers re-read the choice when it changes in this tab or another one.
 const listeners = new Set<() => void>();
 function subscribe(listener: () => void) {
@@ -27,7 +26,8 @@ function read(): Theme {
   }
 }
 
-function apply(theme: Theme) {
+/** Saves and applies a theme. Also used by ⌘K's appearance actions. */
+export function applyTheme(theme: Theme) {
   try {
     if (theme === "system") localStorage.removeItem(THEME_STORAGE_KEY);
     else localStorage.setItem(THEME_STORAGE_KEY, theme);
@@ -62,7 +62,7 @@ export function ThemeToggle() {
             key={option}
             type="button"
             aria-pressed={theme === option}
-            onClick={() => apply(option)}
+            onClick={() => applyTheme(option)}
             className={cn(
               "press flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring",
               theme === option ? "bg-card text-foreground shadow-card" : "text-muted-foreground hover:text-foreground",

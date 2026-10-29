@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { runCanvasSync } from "@/lib/canvas/run-sync";
 import { coursePath } from "@/lib/courses/slug";
+import { PATHWAY_COURSE_COLUMNS, summarizeTerms } from "@/lib/pathway/summarize";
 import { getTimetableFeedUrl } from "@/lib/env.server";
 import { searchPattern, type SearchResult } from "@/lib/search/search";
 import { createClient } from "@/lib/supabase/server";
@@ -160,3 +161,18 @@ export async function search(query: string): Promise<SearchResult[]> {
   }
   return results;
 }
+
+/** This term's courses, for ⌘K with nothing typed. Read with the user's session, so RLS applies. */
+export async function termCourses(): Promise<SearchResult[]> {
+  const supabase = await createClient();
+  const { data: terms } = await supabase.from("terms").select(`id, name, kind, courses(${PATHWAY_COURSE_COLUMNS})`);
+  const current = summarizeTerms(terms ?? []).find((term) => term.phase === "current");
+  return (current?.courses ?? []).map((course) => ({
+    id: `term:${course.id}`,
+    kind: "this-term",
+    label: `${course.code} · ${course.title}`,
+    detail: "",
+    href: coursePath(course.code),
+  }));
+}
+

@@ -1,7 +1,7 @@
 import { Suspense, ViewTransition } from "react";
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
-import { CommandPalette } from "@/components/command-palette";
+import { CommandPalette, RememberPage } from "@/components/command-palette";
 import { MainNav, SettingsLink, TabBar } from "@/components/main-nav";
 import { Toaster } from "@/components/toast";
 
@@ -31,6 +31,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <CommandPalette />
+            <Suspense fallback={null}>
+              <RememberPage />
+            </Suspense>
             <Suspense fallback={null}>
               <SettingsLink />
             </Suspense>

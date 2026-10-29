@@ -6,10 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // "New plan" is the page's one primary action; the form opens over the list rather than sitting
-// above it as a card.
-export function NewPlanDialog({ plans }: { plans: { id: string; name: string }[] }) {
+// above it as a card. `defaultOpen` is for arriving from ⌘K's "New what-if plan" (?new); closing
+// drops the parameter, so a reload doesn't open it again.
+export function NewPlanDialog({ plans, defaultOpen = false }: { plans: { id: string; name: string }[]; defaultOpen?: boolean }) {
   return (
-    <Dialog>
+    <Dialog
+      defaultOpen={defaultOpen}
+      onOpenChange={(open) => {
+        if (!open && defaultOpen) window.history.replaceState(null, "", window.location.pathname);
+      }}
+    >
       <DialogTrigger render={<Button />}>
         <Plus aria-hidden />
         New plan

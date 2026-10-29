@@ -14,7 +14,7 @@ import { buildPlan, countChanges } from "@/lib/plans/build";
 import { loadPlanning } from "@/lib/plans/load";
 import { createClient } from "@/lib/supabase/server";
 
-export default function PlansPage() {
+export default function PlansPage({ searchParams }: PageProps<"/pathway/plans">) {
   return (
     <main className={PAGE_CLASS}>
       <PageHeader
@@ -23,18 +23,20 @@ export default function PlansPage() {
         description="Save a copy of your plan, move courses and try swaps freely, then compare. Your real plan stays as it is until you make a what-if plan the active one."
       />
       <Suspense fallback={<CardListSkeleton count={2} lines={2} />}>
-        <Plans />
+        <Plans searchParams={searchParams} />
       </Suspense>
     </main>
   );
 }
 
-async function Plans() {
+async function Plans({ searchParams }: Pick<PageProps<"/pathway/plans">, "searchParams">) {
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   // The proxy already redirects signed-out visitors; this is a second check in case it is ever bypassed.
   if (!claims?.claims) redirect("/login");
 
+  // Arriving from ⌘K's "New what-if plan" opens the form straight away.
+  const startNew = (await searchParams).new !== undefined;
   const [planning, plansResult, rowsResult] = await Promise.all([
     loadPlanning(supabase),
     supabase.from("plans").select("id, name, created_at").order("created_at", { ascending: false }),
@@ -60,7 +62,7 @@ async function Plans() {
           <h2 id="saved-plans" className="text-title-3">
             Saved plans
           </h2>
-          <NewPlanDialog plans={plans.map(({ id, name }) => ({ id, name }))} />
+          <NewPlanDialog plans={plans.map(({ id, name }) => ({ id, name }))} defaultOpen={startNew} />
         </div>
         {plans.length === 0 ? (
           <p className="px-1 text-muted-foreground">No what-if plans yet. Start one from your current plan with New plan.</p>

@@ -32,7 +32,7 @@ supabase migration new <name>       # new SQL migration in supabase/migrations
 supabase db reset                   # rebuild local DB from migrations + seed
 supabase gen types typescript --local > lib/database.types.ts
 npm test                            # Vitest
-npx playwright test                 # end-to-end
+npm run test:e2e                    # Playwright end-to-end (needs `supabase start`; builds and serves on :3100)
 npm run lint && npm run typecheck   # run both before every commit
 ```
 

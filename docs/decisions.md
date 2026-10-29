@@ -301,6 +301,16 @@
 
 **⌘K search.** A header button (and ⌘K / Ctrl+K) opens a search over pages, courses, assignments and announcements, with up to five results per kind. Pages match in the browser; the rest come from a Server Action reading with the user's session, so RLS applies. Typed text is stripped of ILIKE wildcards and PostgREST's filter separators before it reaches the query. Results open inside the app (a course page, or its Assignments or Announcements section), not Canvas. It follows the ARIA combobox pattern, with focus staying in the input and the highlighted result announced. It was built by hand rather than with a command-menu library, since it needs only one input and one list.
 
+## 2026-10-29: End-to-end tests run against a separate server and an invented user
+
+**Decision.** Playwright (`npm run test:e2e`, specs in `e2e/`) runs one test per main flow: signing in, the dashboard's to-dos, moving a course on the pathway (with and without a prerequisite problem), the grade calculator, a what-if plan from swap to "Make active", ⌘K search, and the theme toggle. It builds the app and serves it on port 3100, wired to the local Supabase stack, and signs in as an invented user (`e2e@example.test`).
+
+**Why a separate server.** The dev server reads `.env.local`, which holds the real Canvas token and your `OWNER_ID`. The dashboard syncs Canvas when its data is stale, and the sync writes as `OWNER_ID`, so a test run against it could pull real Canvas data into your account. The test server is given its own environment instead, which Next lets win over `.env.local`: local Supabase keys (read from `supabase status`, so it can't reach production), the invented user as `ALLOWED_EMAIL` and `OWNER_ID`, and empty Canvas and timetable settings. The seed also records a fresh successful sync, so no sync starts. A production build also catches what dev mode hides, such as Cache Components errors.
+
+**Sign-in is the real flow.** The setup test requests a magic link through the login form, reads it from local Mailpit, and follows it through `/auth/callback`, then saves the session for the other tests. `http://localhost:3100/auth/callback` is in the local redirect allow-list for this.
+
+**Data.** `e2e/seed.ts` rebuilds the user's data from scratch before each spec file: five invented courses, a prerequisite chain, a half-graded course for the calculator, and one swap option. Term ids (900–904) and names ("Test Fall 2026") can't clash with real terms, since term ids and names are unique across all owners. The specs share that user, so they run one at a time.
+
 ## 2026-10-29: Session reads wait for the request (`connection()`)
 
 **Decision.** `lib/supabase/server.ts` awaits `connection()` before building the client.

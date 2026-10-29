@@ -19,6 +19,10 @@ out
 coverage
 playwright-report
 test-results
+# Playwright's saved e2e session
+/e2e/.auth/
+/blob-report/
+/playwright/.cache/
 
 # typescript
 *.tsbuildinfo

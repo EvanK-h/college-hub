@@ -21,7 +21,7 @@ import { CourseCard, CourseCardBody } from "@/components/pathway/course-card";
 import { TermColumn } from "@/components/pathway/term-column";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { checkMove, describeProblem, type PlanPrereq, type TermKind } from "@/lib/pathway/move-checks";
+import { checkMove, describeProblem, type CreditLimits, type PlanPrereq, type TermKind } from "@/lib/pathway/move-checks";
 import { summarizeTerms, type PathwayCourse, type TermSummary } from "@/lib/pathway/summarize";
 import { cn } from "@/lib/utils";
 
@@ -30,21 +30,25 @@ type PendingMove = Move & { problems: string[] };
 
 // The pathway as a drag-and-drop board. Planned courses move by their grip handle (pointer, touch
 // or keyboard: Space to pick up, arrows to move, Space to drop). Each move is checked against
-// prerequisites, co-op terms and term SH limits before it is saved; a clean move saves at once,
+// prerequisites, co-op terms and term credit limits before it is saved; a clean move saves at once,
 // a move with problems asks first. Clicking a card still opens its edit dialog.
 //
 // What-if plans reuse the board with their own `onMove` (saving to the plan, not the courses)
 // and `editable={false}`, since the edit dialog changes the real course. `labels` puts a chip on
-// a card, such as "Swap for CS 4805".
+// a card, such as "Swap for CS 4805". `limits` and `creditUnit` come from the profile.
 export function PathwayBoard({
   terms,
   prereqs,
+  limits,
+  creditUnit,
   onMove = moveCourse,
   editable = true,
   labels = {},
 }: {
   terms: TermSummary[];
   prereqs: PlanPrereq[];
+  limits: CreditLimits;
+  creditUnit: string;
   onMove?: (move: Move) => Promise<{ ok: boolean }>;
   editable?: boolean;
   labels?: Record<string, string>;
@@ -74,18 +78,19 @@ export function PathwayBoard({
         id: course.id,
         code: course.code,
         credits: Number(course.credits),
-        type: course.type,
+        coop: course.type.coop,
         termId: placement.get(course.id) ?? 0,
       })),
       prereqs,
+      limits,
     }),
-    [terms, allCourses, placement, prereqs],
+    [terms, allCourses, placement, prereqs, limits],
   );
 
   const termName = (id: number) => terms.find((term) => term.id === id)?.name ?? "that term";
   const codeOf = (id: string) => allCourses.find((course) => course.id === id)?.code ?? "The course";
   const problemsFor = (courseId: string, termId: number) =>
-    checkMove(plan, courseId, termId).map((problem) => describeProblem(problem, termName(termId)));
+    checkMove(plan, courseId, termId).map((problem) => describeProblem(problem, termName(termId), creditUnit));
 
   const sensors = useSensors(
     // A short distance before a drag starts, so a tap on the handle isn't a drag.
@@ -168,6 +173,7 @@ export function PathwayBoard({
             <DroppableTerm
               key={term.id}
               term={term}
+              creditUnit={creditUnit}
               preview={overTermId === term.id ? preview : null}
             >
               {term.courses.map((course) => (
@@ -180,6 +186,7 @@ export function PathwayBoard({
                     checkTerm={(termId) => problemsFor(course.id, termId)}
                     editable={editable}
                     label={labels[course.id]}
+                    creditUnit={creditUnit}
                   />
                 </li>
               ))}
@@ -228,11 +235,22 @@ export function PathwayBoard({
   );
 }
 
-function DroppableTerm({ term, preview, children }: { term: TermSummary; preview: string[] | null; children: React.ReactNode }) {
+function DroppableTerm({
+  term,
+  creditUnit,
+  preview,
+  children,
+}: {
+  term: TermSummary;
+  creditUnit: string;
+  preview: string[] | null;
+  children: React.ReactNode;
+}) {
   const { setNodeRef } = useDroppable({ id: term.id });
   return (
     <TermColumn
       term={term}
+      creditUnit={creditUnit}
       ref={setNodeRef}
       drop={preview === null ? null : preview.length === 0 ? "ok" : "problem"}
       notice={
@@ -261,6 +279,7 @@ function DraggableCourse({
   checkTerm,
   editable,
   label,
+  creditUnit,
 }: {
   course: PathwayCourse;
   termId: number;
@@ -269,6 +288,7 @@ function DraggableCourse({
   checkTerm: (termId: number) => string[];
   editable: boolean;
   label?: string;
+  creditUnit: string;
 }) {
   // Done and in-progress courses are history; only planned ones move.
   const movable = course.status === "planned";
@@ -277,9 +297,9 @@ function DraggableCourse({
   return (
     <div ref={setNodeRef} className={cn("relative", isDragging && "opacity-40")}>
       {editable ? (
-        <CourseCard course={course} termId={termId} terms={terms} past={past} checkTerm={checkTerm} />
+        <CourseCard course={course} termId={termId} terms={terms} past={past} checkTerm={checkTerm} creditUnit={creditUnit} />
       ) : (
-        <CourseCardBody course={course} past={past} label={label} />
+        <CourseCardBody course={course} past={past} label={label} creditUnit={creditUnit} />
       )}
       {movable && (
         <button

@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Database } from "@/lib/database.types";
-import { readLocalSupabase } from "@/test/local-supabase";
+import { readLocalSupabase, testCourseType } from "@/test/local-supabase";
 import { CanvasAuthError, type CanvasClient } from "./client";
 import type { CanvasAnnouncement, CanvasAssignment, CanvasAssignmentGroup } from "./schemas";
 import { syncCanvas } from "./sync";
@@ -132,11 +132,12 @@ describe.skipIf(!local)("Canvas sync against the local database", () => {
 
   beforeEach(async () => {
     await cleanUp();
+    const type = await testCourseType(db, OWNER);
     const { data, error } = await db
       .from("courses")
       .insert([
-        { code: "TEST 1000", title: "Test One", credits: 4, type: "cs_core", term_id: TERM_ID, canvas_course_id: COURSE_1, owner_id: OWNER },
-        { code: "TEST 2000", title: "Test Two", credits: 4, type: "cs_core", term_id: TERM_ID, canvas_course_id: COURSE_2, owner_id: OWNER },
+        { code: "TEST 1000", title: "Test One", credits: 4, course_type_id: type, term_id: TERM_ID, canvas_course_id: COURSE_1, owner_id: OWNER },
+        { code: "TEST 2000", title: "Test Two", credits: 4, course_type_id: type, term_id: TERM_ID, canvas_course_id: COURSE_2, owner_id: OWNER },
       ])
       .select("id, canvas_course_id");
     if (error) throw new Error(error.message);

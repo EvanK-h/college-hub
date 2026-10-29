@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Database } from "@/lib/database.types";
-import { readLocalSupabase } from "@/test/local-supabase";
+import { readLocalSupabase, testCourseType } from "@/test/local-supabase";
 import { feedSchema } from "./ics";
 import { generateFeedToken } from "./token";
 
@@ -34,11 +34,12 @@ describe.skipIf(!local)("calendar_feed against the local database", () => {
   beforeAll(async () => {
     await cleanUp();
     check(await admin.from("terms").upsert({ id: TERM_ID, name: "Test term (feed db tests)", kind: "semester", owner_id: OWNER }));
+    const [type, otherType] = await Promise.all([testCourseType(admin, OWNER), testCourseType(admin, OTHER_OWNER)]);
     const { data: courses, error } = await admin
       .from("courses")
       .insert([
-        { code: "FEED 1000", title: "Feed One", credits: 4, type: "cs_core", term_id: TERM_ID, owner_id: OWNER },
-        { code: "FEED 2000", title: "Someone else's", credits: 4, type: "cs_core", term_id: TERM_ID, owner_id: OTHER_OWNER },
+        { code: "FEED 1000", title: "Feed One", credits: 4, course_type_id: type, term_id: TERM_ID, owner_id: OWNER },
+        { code: "FEED 2000", title: "Someone else's", credits: 4, course_type_id: otherType, term_id: TERM_ID, owner_id: OTHER_OWNER },
       ])
       .select("id, owner_id");
     if (error) throw new Error(error.message);

@@ -1,16 +1,21 @@
 import type { Database } from "@/lib/database.types";
+import type { CourseTypeInfo } from "@/lib/setup/setup";
 
 type Term = Database["public"]["Tables"]["terms"]["Row"];
 type Course = Database["public"]["Tables"]["courses"]["Row"];
 
-// Only the columns the pathway page shows, so tests can build inputs without every field.
-export type PathwayCourse = Pick<Course, "id" | "code" | "title" | "credits" | "type" | "status">;
+// Only the columns the pathway page shows, so tests can build inputs without every field. The
+// course's type comes embedded from course_types (select `type:course_types(id, name, color, coop)`).
+export type PathwayCourse = Pick<Course, "id" | "code" | "title" | "credits" | "status"> & { type: CourseTypeInfo };
+
+/** The select list that yields a PathwayCourse, embedding the course's type. */
+export const PATHWAY_COURSE_COLUMNS = "id, code, title, credits, status, type:course_types(id, name, color, coop)";
 export type PathwayTerm = Pick<Term, "id" | "name" | "kind"> & { courses: PathwayCourse[] };
 
 export type TermPhase = "past" | "current" | "future";
 export type TermSummary = PathwayTerm & { totalSh: number; phase: TermPhase };
 
-// Orders terms by id and courses by code, and adds each term's SH total and phase.
+// Orders terms by id and courses by code, and adds each term's credit total and phase.
 // Both are derived here and never stored.
 export function summarizeTerms(terms: PathwayTerm[]): TermSummary[] {
   const sorted = [...terms].sort((a, b) => a.id - b.id);

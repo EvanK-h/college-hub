@@ -7,7 +7,7 @@ const course = (id: string, code: string, termId: number, status: RealCourse["st
   code,
   title: code,
   credits: 4,
-  type: "cs_core",
+  type: { id: "core", name: "Core", color: 1, coop: false },
   status,
   termId,
 });
@@ -37,7 +37,7 @@ describe("buildPlan", () => {
   it("puts a swap in place of the course it replaces, with that course's credits and type", () => {
     const plan = buildPlan(real, [row("a", 2), row("b", 3), swapRow("s1", "b", 4)], swaps);
     const swap = plan.find((item) => item.code === "CY 4770");
-    expect(swap).toMatchObject({ id: "swap:s1", termId: 4, credits: 4, type: "cs_core", status: "planned", replaces: { id: "b", code: "CS 3000" } });
+    expect(swap).toMatchObject({ id: "swap:s1", termId: 4, credits: 4, type: { id: "core" }, status: "planned", replaces: { id: "b", code: "CS 3000" } });
     expect(plan.some((item) => item.id === "b")).toBe(false);
   });
 

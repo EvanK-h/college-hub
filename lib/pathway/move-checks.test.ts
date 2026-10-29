@@ -10,7 +10,7 @@ const terms: PlanTerm[] = [
   { id: 5, name: "Fall 2", kind: "semester" },
 ];
 
-const course = (id: string, code: string, termId: number, credits = 4, type = "cs_core"): PlanCourse => ({ id, code, credits, type, termId });
+const course = (id: string, code: string, termId: number, credits = 4, coop = false): PlanCourse => ({ id, code, credits, coop, termId });
 
 // An invented chain: A 1000 (transfer) → B 2000 (+ coreq B 2001) → C 3000, which accepts B 2000 or X 9999.
 const courses: PlanCourse[] = [
@@ -18,7 +18,7 @@ const courses: PlanCourse[] = [
   course("b", "B 2000", 1),
   course("b-lab", "B 2001", 1, 1),
   course("c", "C 3000", 2),
-  course("coop", "COOP 3945", 4, 0, "coop_program"),
+  course("coop", "COOP 3945", 4, 0, true),
 ];
 const prereqs: PlanPrereq[] = [
   { courseId: "b", requiresCode: "A 1000", kind: "prereq", group: 1 },
@@ -27,7 +27,9 @@ const prereqs: PlanPrereq[] = [
   { courseId: "c", requiresCode: "B 2000", kind: "prereq", group: 1 },
   { courseId: "c", requiresCode: "X 9999", kind: "prereq", group: 1 },
 ];
-const plan = { terms, courses, prereqs };
+// Invented limits: 18 a semester, 9 a summer, nothing for transfer or co-op terms.
+const limits = { semester: 18, summer: 9 };
+const plan = { terms, courses, prereqs, limits };
 
 describe("checkMove", () => {
   it("allows a move that keeps every requirement", () => {
@@ -79,6 +81,11 @@ describe("checkMove", () => {
     expect(checkMove(plan, "c", 3)).toEqual([]); // 4 SH fits a summer term
   });
 
+  it("has no limit for a kind of term the profile doesn't limit", () => {
+    const full = { ...plan, limits: {}, courses: [...courses, course("d", "D 1", 5, 40)] };
+    expect(checkMove(full, "c", 5)).toEqual([]);
+  });
+
   it("ignores recommended links", () => {
     const advised = { ...plan, prereqs: [...prereqs, { courseId: "c", requiresCode: "Z 5000", kind: "recommended" as const, group: 1 }] };
     expect(checkMove(advised, "c", 5)).toEqual([]);
@@ -96,7 +103,8 @@ describe("describeProblem", () => {
     expect(describeProblem({ kind: "missing_coreq", options: ["B 2001"] }, "Fall 1")).toBe("Needs B 2001 in Fall 1 or earlier.");
     expect(describeProblem({ kind: "breaks_dependent", course: "C 3000", requirement: "prereq" }, "Fall 2")).toBe("C 3000 needs this in an earlier term.");
     expect(describeProblem({ kind: "coop_term" }, "Co-op 1")).toBe("Co-op 1 is a co-op term.");
-    expect(describeProblem({ kind: "over_limit", total: 20, limit: 18 }, "Fall 2")).toBe("Fall 2 would have 20 SH, over the 18 SH limit.");
+    expect(describeProblem({ kind: "over_limit", total: 20, limit: 18 }, "Fall 2", "SH")).toBe("Fall 2 would have 20 SH, over the 18 SH limit.");
+    expect(describeProblem({ kind: "over_limit", total: 20, limit: 18 }, "Fall 2")).toBe("Fall 2 would have 20 credits, over the 18 credits limit.");
   });
 });
 
@@ -106,7 +114,7 @@ describe("planProblems", () => {
     { id: 1, name: "Fall", kind: "semester" as const },
     { id: 2, name: "Co-op", kind: "coop" as const },
   ];
-  const c = (id: string, code: string, termId: number, credits = 4) => ({ id, code, credits, type: "cs_core", termId });
+  const c = (id: string, code: string, termId: number, credits = 4) => ({ id, code, credits, coop: false, termId });
   const prereqs = [{ courseId: "b", requiresCode: "A 1000", kind: "prereq" as const, group: 1 }];
 
   it("finds nothing wrong with a sound plan", () => {
@@ -115,7 +123,7 @@ describe("planProblems", () => {
 
   it("lists unmet requirements, co-op terms and over-full terms, by term", () => {
     const courses = [c("a", "A 1000", 1), c("b", "B 2000", 1, 16), c("x", "X 1000", 2)];
-    expect(planProblems({ terms, courses, prereqs })).toEqual([
+    expect(planProblems({ terms, courses, prereqs, limits: { semester: 18 } })).toEqual([
       { termId: 1, courseCode: "B 2000", problem: { kind: "missing_prereq", options: ["A 1000"] } },
       { termId: 1, problem: { kind: "over_limit", total: 20, limit: 18 } },
       { termId: 2, courseCode: "X 1000", problem: { kind: "coop_term" } },

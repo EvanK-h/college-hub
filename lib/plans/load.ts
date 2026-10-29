@@ -1,18 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import type { PlanPrereq, PlanTerm } from "@/lib/pathway/move-checks";
-import { summarizeTerms, type TermSummary } from "@/lib/pathway/summarize";
+import { PATHWAY_COURSE_COLUMNS, summarizeTerms, type TermSummary } from "@/lib/pathway/summarize";
 import { buildPlan, type PlanItem, type PlanRow, type RealCourse, type SwapChoice } from "./build";
 
-export type SwapOffer = SwapChoice & { slot: Database["public"]["Enums"]["swap_slot"]; replaces: string[] };
+export type SwapOffer = SwapChoice & { slotId: string; replaces: string[] };
 
 /** Everything the plan pages share: terms, the real courses, prerequisites and swap options. */
 export async function loadPlanning(supabase: SupabaseClient<Database>) {
   const [termsResult, coursesResult, prereqsResult, swapsResult, linksResult] = await Promise.all([
     supabase.from("terms").select("id, name, kind").order("id"),
-    supabase.from("courses").select("id, code, title, credits, type, status, term_id"),
+    supabase.from("courses").select(`${PATHWAY_COURSE_COLUMNS}, term_id`),
     supabase.from("course_prereqs").select("course_id, requires_code, kind, option_group"),
-    supabase.from("swap_options").select("id, swap_in, slot").order("swap_in"),
+    supabase.from("swap_options").select("id, swap_in, slot_id").order("swap_in"),
     supabase.from("swap_replaces").select("swap_option_id, course_id"),
   ]);
   for (const result of [termsResult, coursesResult, prereqsResult, swapsResult, linksResult]) {
@@ -31,7 +31,7 @@ export async function loadPlanning(supabase: SupabaseClient<Database>) {
   const swaps: SwapOffer[] = (swapsResult.data ?? []).map((swap) => ({
     id: swap.id,
     swapIn: swap.swap_in,
-    slot: swap.slot,
+    slotId: swap.slot_id,
     replaces: links.filter((link) => link.swap_option_id === swap.id).map((link) => link.course_id),
   }));
   return { terms, courses, prereqs, swaps };

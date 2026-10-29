@@ -1,14 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { buildSwapGroups, type Swap } from "./swaps";
 
-const swap = (id: string, slot: Swap["slot"]): Swap => ({
+const slots = [
+  { id: "london", name: "London elective" },
+  { id: "ai", name: "AI elective" },
+];
+
+const swap = (id: string, slotId: string): Swap => ({
   id,
   swap_in: `Swap ${id}`,
-  slot,
+  slot_id: slotId,
   fits_in: null,
   prerequisites: null,
-  quantum_relevance: "low",
-  ai_relevance: "none",
   why_consider: null,
   why_current_better: null,
 });
@@ -19,13 +22,13 @@ const courses = [
 ];
 
 describe("buildSwapGroups", () => {
-  it("groups swaps by slot in a fixed order and drops empty slots", () => {
-    const groups = buildSwapGroups([swap("a", "ai_elective"), swap("b", "london_elective")], [], courses);
-    expect(groups.map((group) => group.slot)).toEqual(["london_elective", "ai_elective"]);
+  it("groups swaps by slot in the slots' order and drops empty slots", () => {
+    const groups = buildSwapGroups([...slots, { id: "empty", name: "Empty" }], [swap("a", "ai"), swap("b", "london")], [], courses);
+    expect(groups.map((group) => group.slot.id)).toEqual(["london", "ai"]);
   });
 
   it("keeps the input order within a slot", () => {
-    const groups = buildSwapGroups([swap("b", "ai_elective"), swap("a", "ai_elective")], [], courses);
+    const groups = buildSwapGroups(slots, [swap("b", "ai"), swap("a", "ai")], [], courses);
     expect(groups[0].swaps.map((s) => s.id)).toEqual(["b", "a"]);
   });
 
@@ -35,7 +38,7 @@ describe("buildSwapGroups", () => {
       { swap_option_id: "a", course_id: "c2" },
       { swap_option_id: "a", course_id: "missing" },
     ];
-    const [group] = buildSwapGroups([swap("a", "ai_elective")], links, courses);
+    const [group] = buildSwapGroups(slots, [swap("a", "ai")], links, courses);
     expect(group.swaps[0].replaces.map((course) => course.code)).toEqual(["CS 1000", "CS 2000"]);
   });
 });

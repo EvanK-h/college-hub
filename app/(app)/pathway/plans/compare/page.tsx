@@ -4,10 +4,11 @@ import { notFound, redirect } from "next/navigation";
 import { CircleAlert } from "lucide-react";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
-import { describeProblem, planProblems, TERM_SH_LIMIT, type PlanProblem } from "@/lib/pathway/move-checks";
+import { describeProblem, planProblems, type CreditLimits, type PlanProblem } from "@/lib/pathway/move-checks";
 import { buildPlan, comparePlans, type ItemChange, type PlanItem } from "@/lib/plans/build";
 import { parsePlanRef } from "@/lib/plans/forms";
 import { loadPlanning, loadPlanRows, type Planning } from "@/lib/plans/load";
+import { loadSetup } from "@/lib/setup/load";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -34,10 +35,11 @@ async function Compare({ a, b, all }: { a: string | null; b: string | null; all:
   // The proxy already redirects signed-out visitors; this is a second check in case it is ever bypassed.
   if (!claims?.claims) redirect("/login");
 
-  const planning = await loadPlanning(supabase);
+  const [planning, setup] = await Promise.all([loadPlanning(supabase), loadSetup()]);
+  const { creditLimits, creditUnit } = setup.profile;
   const [planA, planB] = await Promise.all([load(planning, a), load(planning, b)]);
-  const left: Side = { ...planA, changes: comparePlans(planA.items, planB.items), problems: problemsOf(planning, planA.items) };
-  const right: Side = { ...planB, changes: comparePlans(planB.items, planA.items), problems: problemsOf(planning, planB.items) };
+  const left: Side = { ...planA, changes: comparePlans(planA.items, planB.items), problems: problemsOf(planning, planA.items, creditLimits) };
+  const right: Side = { ...planB, changes: comparePlans(planB.items, planA.items), problems: problemsOf(planning, planB.items, creditLimits) };
 
   const differs = (termId: number) =>
     [left, right].some((side) => side.items.some((item) => item.termId === termId && side.changes.get(item.id)?.kind !== "same"));
@@ -89,7 +91,7 @@ async function Compare({ a, b, all }: { a: string | null; b: string | null; all:
                   <li key={i} className="flex gap-1.5">
                     <CircleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
                     {courseCode ? `${courseCode}: ` : ""}
-                    {describeProblem(problem, termName(termId))}
+                    {describeProblem(problem, termName(termId), creditUnit)}
                   </li>
                 ))}
               </ul>
@@ -109,12 +111,14 @@ async function Compare({ a, b, all }: { a: string | null; b: string | null; all:
                 {[left, right].map((side, index) => {
                   const inTerm = side.items.filter((item) => item.termId === term.id).sort((x, y) => x.code.localeCompare(y.code));
                   const total = inTerm.reduce((sum, item) => sum + Number(item.credits), 0);
-                  const over = total > TERM_SH_LIMIT[term.kind];
+                  const limit = creditLimits[term.kind];
+                  const over = limit !== undefined && total > limit;
                   const other = index === 0 ? right : left;
                   return (
                     <div key={index} className="flex min-w-0 flex-col gap-1.5">
                       <p className={cn("truncate px-1 text-xs tabular-nums", over ? "font-medium text-destructive" : "text-muted-foreground")}>
-                        <span className="font-medium">{side.name}</span> · {total} SH{over ? `, over the ${TERM_SH_LIMIT[term.kind]} SH limit` : ""}
+                        <span className="font-medium">{side.name}</span> · {total} {creditUnit}
+                        {over ? `, over the ${limit} ${creditUnit} limit` : ""}
                       </p>
                       <ul className="flex flex-col gap-1.5">
                         {inTerm.map((item) => {
@@ -149,6 +153,11 @@ async function Compare({ a, b, all }: { a: string | null; b: string | null; all:
   );
 }
 
-function problemsOf(planning: Planning, items: readonly PlanItem[]): PlanProblem[] {
-  return planProblems({ terms: planning.terms, courses: items.map((item) => ({ ...item, credits: Number(item.credits) })), prereqs: planning.prereqs });
+function problemsOf(planning: Planning, items: readonly PlanItem[], limits: CreditLimits): PlanProblem[] {
+  return planProblems({
+    terms: planning.terms,
+    courses: items.map((item) => ({ ...item, credits: Number(item.credits), coop: item.type.coop })),
+    prereqs: planning.prereqs,
+    limits,
+  });
 }

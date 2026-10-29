@@ -8,13 +8,13 @@
 export type TermKind = "transfer" | "semester" | "summer" | "coop";
 
 export type PlanTerm = { id: number; name: string; kind: TermKind };
-export type PlanCourse = { id: string; code: string; credits: number; type: string; termId: number };
+// `coop`: the course may sit in a co-op term (its type says so; see course_types.coop).
+export type PlanCourse = { id: string; code: string; credits: number; coop: boolean; termId: number };
 // "recommended" links are advice for the graph; the checks below only look at prereq and coreq.
 export type PlanPrereq = { courseId: string; requiresCode: string; kind: "prereq" | "coreq" | "recommended"; group: number };
 
-// Northeastern's normal maximum without an overload petition is 18 SH a semester. A summer half
-// term is assumed to hold about half that. Transfer credit has no limit.
-export const TERM_SH_LIMIT: Record<TermKind, number> = { transfer: Infinity, semester: 18, summer: 9, coop: Infinity };
+/** Most credits a term of each kind may hold, from the profile; a missing kind has no limit. */
+export type CreditLimits = Partial<Record<TermKind, number>>;
 
 export type MoveProblem =
   | { kind: "missing_prereq"; options: string[] }
@@ -55,11 +55,11 @@ function ownProblems(course: PlanCourse, termId: number, termOf: ReadonlyMap<str
 
 /**
  * Everything wrong with moving `courseId` to `toTermId`: its own unmet requirements, courses
- * that depend on it and would break, a co-op term, and the target term's SH limit. An empty list
+ * that depend on it and would break, a co-op term, and the target term's credit limit. An empty list
  * means the move is fine.
  */
 export function checkMove(
-  { terms, courses, prereqs }: { terms: readonly PlanTerm[]; courses: readonly PlanCourse[]; prereqs: readonly PlanPrereq[] },
+  { terms, courses, prereqs, limits = {} }: { terms: readonly PlanTerm[]; courses: readonly PlanCourse[]; prereqs: readonly PlanPrereq[]; limits?: CreditLimits },
   courseId: string,
   toTermId: number,
 ): MoveProblem[] {
@@ -86,17 +86,17 @@ export function checkMove(
     }
   }
 
-  if (target.kind === "coop" && course.type !== "coop_program") problems.push({ kind: "coop_term" });
+  if (target.kind === "coop" && !course.coop) problems.push({ kind: "coop_term" });
 
-  const limit = TERM_SH_LIMIT[target.kind];
+  const limit = limits[target.kind];
   const total = moved.filter((c) => c.termId === toTermId).reduce((sum, c) => sum + c.credits, 0);
-  if (total > limit) problems.push({ kind: "over_limit", total, limit });
+  if (limit !== undefined && total > limit) problems.push({ kind: "over_limit", total, limit });
 
   return problems;
 }
 
 /** One sentence per problem, for showing under the course before the move is saved. */
-export function describeProblem(problem: MoveProblem, termName: string): string {
+export function describeProblem(problem: MoveProblem, termName: string, creditUnit = "credits"): string {
   const anyOf = (codes: string[]) => (codes.length === 1 ? codes[0] : `one of ${codes.join(", ")}`);
   switch (problem.kind) {
     case "missing_prereq":
@@ -108,7 +108,7 @@ export function describeProblem(problem: MoveProblem, termName: string): string 
     case "coop_term":
       return `${termName} is a co-op term.`;
     case "over_limit":
-      return `${termName} would have ${problem.total} SH, over the ${problem.limit} SH limit.`;
+      return `${termName} would have ${problem.total} ${creditUnit}, over the ${problem.limit} ${creditUnit} limit.`;
   }
 }
 
@@ -116,21 +116,31 @@ export type PlanProblem = { termId: number; courseCode?: string; problem: MovePr
 
 /**
  * Everything wrong with a plan as it stands, for comparing plans: each course's own unmet
- * requirements, courses in co-op terms, and terms over their SH limit. A broken dependent shows
+ * requirements, courses in co-op terms, and terms over their credit limit. A broken dependent shows
  * up as the dependent's own missing requirement, so it isn't listed twice.
  */
-export function planProblems({ terms, courses, prereqs }: { terms: readonly PlanTerm[]; courses: readonly PlanCourse[]; prereqs: readonly PlanPrereq[] }): PlanProblem[] {
+export function planProblems({
+  terms,
+  courses,
+  prereqs,
+  limits = {},
+}: {
+  terms: readonly PlanTerm[];
+  courses: readonly PlanCourse[];
+  prereqs: readonly PlanPrereq[];
+  limits?: CreditLimits;
+}): PlanProblem[] {
   const termOf = new Map(courses.map((c) => [c.code, c.termId]));
   const problems: PlanProblem[] = [];
   for (const term of terms) {
     const inTerm = courses.filter((c) => c.termId === term.id);
     for (const course of inTerm) {
       for (const problem of ownProblems(course, term.id, termOf, prereqs)) problems.push({ termId: term.id, courseCode: course.code, problem });
-      if (term.kind === "coop" && course.type !== "coop_program") problems.push({ termId: term.id, courseCode: course.code, problem: { kind: "coop_term" } });
+      if (term.kind === "coop" && !course.coop) problems.push({ termId: term.id, courseCode: course.code, problem: { kind: "coop_term" } });
     }
     const total = inTerm.reduce((sum, c) => sum + c.credits, 0);
-    const limit = TERM_SH_LIMIT[term.kind];
-    if (total > limit) problems.push({ termId: term.id, problem: { kind: "over_limit", total, limit } });
+    const limit = limits[term.kind];
+    if (limit !== undefined && total > limit) problems.push({ termId: term.id, problem: { kind: "over_limit", total, limit } });
   }
   return problems;
 }

@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { ProgressRing } from "@/components/pathway/progress-ring";
 import { StatusIcon } from "@/components/pathway/status-icon";
-import { HEADLINE_AREAS, summarizeAreas } from "@/lib/pathway/areas";
-import { REQ_AREA_LABELS } from "@/lib/pathway/labels";
-import { summarizeNupath } from "@/lib/pathway/nupath";
+import { summarizeAreas } from "@/lib/pathway/areas";
+import { summarizeAttributes } from "@/lib/pathway/attributes";
+import { loadSetup } from "@/lib/setup/load";
 import { createClient } from "@/lib/supabase/server";
 
 export default function RequirementsPage() {
@@ -27,34 +27,45 @@ async function Requirements() {
 
   // The generated types do not describe embedded rows across these relations reliably, so
   // courses and links are fetched flat and joined by id here.
-  const [requirementsResult, linksResult, coursesResult] = await Promise.all([
+  const [requirementsResult, linksResult, coursesResult, attributesResult, setup] = await Promise.all([
     supabase.from("requirement_progress").select("*").order("name"),
     supabase.from("course_requirements").select("requirement_id, course_id"),
-    supabase.from("courses").select("id, code, title, nupath, status"),
+    supabase.from("courses").select("id, code, title, status"),
+    supabase.from("course_attributes").select("course_id, attribute_id"),
+    loadSetup(),
   ]);
   if (requirementsResult.error) throw new Error(`Loading requirements failed: ${requirementsResult.error.message}`);
   if (linksResult.error) throw new Error(`Loading requirement courses failed: ${linksResult.error.message}`);
   if (coursesResult.error) throw new Error(`Loading courses failed: ${coursesResult.error.message}`);
+  if (attributesResult.error) throw new Error(`Loading course attributes failed: ${attributesResult.error.message}`);
 
   const requirements = requirementsResult.data;
   const courseById = new Map(coursesResult.data.map((course) => [course.id, course]));
   const linksByRequirement = Map.groupBy(linksResult.data, (link) => link.requirement_id);
   const areas = summarizeAreas(
+    setup.areas,
     requirements.map((requirement) => ({
-      area: requirement.area,
+      areaId: requirement.area_id,
       courses: (linksByRequirement.get(requirement.requirement_id) ?? []).flatMap(
         ({ course_id }) => courseById.get(course_id) ?? [],
       ),
     })),
   );
-  const nupath = summarizeNupath(coursesResult.data);
 
-  // NUpath sits right after the headline areas, as the spec lists it.
+  // The attribute ring (NUpath for Northeastern) sits right after the headline areas.
+  const attributeIds = Map.groupBy(attributesResult.data, (link) => link.course_id);
+  const attributes = summarizeAttributes(
+    setup.attributes,
+    coursesResult.data.map((course) => ({ status: course.status, attributeIds: (attributeIds.get(course.id) ?? []).map((link) => link.attribute_id) })),
+  );
+  const attributeRing = setup.profile.attributeSetName && attributes.total > 0 ? [{ label: setup.profile.attributeSetName, counts: attributes }] : [];
   const rings = [
-    ...areas.filter((summary) => HEADLINE_AREAS.includes(summary.area)).map((summary) => ({ label: REQ_AREA_LABELS[summary.area], counts: summary })),
-    { label: "NUpath", counts: nupath },
-    ...areas.filter((summary) => !HEADLINE_AREAS.includes(summary.area)).map((summary) => ({ label: REQ_AREA_LABELS[summary.area], counts: summary })),
+    ...areas.filter((summary) => summary.area.headline).map((summary) => ({ label: summary.area.name, counts: summary })),
+    ...attributeRing,
+    ...areas.filter((summary) => !summary.area.headline).map((summary) => ({ label: summary.area.name, counts: summary })),
   ];
+
+  if (rings.length === 0) return <p className="text-muted-foreground">No requirements yet. Add them to your data folder and import it.</p>;
 
   return (
     <>
@@ -67,13 +78,13 @@ async function Requirements() {
       </ul>
 
       {areas.map(({ area }) => (
-        <section key={area} aria-labelledby={`area-${area}`} className="flex flex-col gap-3">
-          <h2 id={`area-${area}`} className="px-1 text-title-3">
-            {REQ_AREA_LABELS[area]}
+        <section key={area.id} aria-labelledby={`area-${area.id}`} className="flex flex-col gap-3">
+          <h2 id={`area-${area.id}`} className="px-1 text-title-3">
+            {area.name}
           </h2>
           <ul className="divide-y divide-separator overflow-hidden rounded-2xl bg-card text-card-foreground shadow-card">
             {requirements
-              .filter((requirement) => requirement.area === area)
+              .filter((requirement) => requirement.area_id === area.id)
               .map((requirement) => (
                 <li key={requirement.requirement_id} className="px-4 py-3.5">
                   <div className="flex items-baseline justify-between gap-3">

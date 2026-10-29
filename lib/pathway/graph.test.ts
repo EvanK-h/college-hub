@@ -8,7 +8,7 @@ const terms = [
   { id: 2, name: "Spring" },
   { id: 3, name: "Summer" },
 ];
-const course = (id: string, code: string, termId: number): GraphCourse => ({ id, code, title: code, type: "cs_core", status: "planned", termId });
+const course = (id: string, code: string, termId: number): GraphCourse => ({ id, code, title: code, color: 1, status: "planned", termId });
 const req = (courseId: string, requiresCode: string, kind: PlanPrereq["kind"] = "prereq", group = 1): PlanPrereq => ({ courseId, requiresCode, kind, group });
 
 // An invented plan: A (transfer) → B → C, B's lab beside it, D recommended after C, E with no links.

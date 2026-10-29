@@ -1,10 +1,11 @@
 // The prerequisite graph, laid out by the plan itself: one column per term, left to right, so an
 // arrow should always point right (or stay in its column, for a corequisite). Pure functions, so
 // the layout and the "which arrows are wrong" rule are tested in one place.
-import type { CourseStatus, CourseType } from "./labels";
+import type { CourseStatus } from "./labels";
 import type { PlanPrereq } from "./move-checks";
 
-export type GraphCourse = { id: string; code: string; title: string; type: CourseType; status: CourseStatus; termId: number };
+// `color`: the course type's palette colour (see lib/setup/setup.ts).
+export type GraphCourse = { id: string; code: string; title: string; color: number; status: CourseStatus; termId: number };
 export type GraphTerm = { id: number; name: string };
 
 export type GraphNode = GraphCourse & { column: number; row: number };
@@ -99,7 +100,7 @@ export function buildPrereqGraph(terms: readonly GraphTerm[], courses: readonly 
   return { columns, nodes, edges, unmet };
 }
 
-/** A course and everything it depends on: the path through the plan to it (e.g. the quantum chain). */
+/** A course and everything it depends on: the path through the plan to it (e.g. the chain to a focus's goal course). */
 export function chainTo(code: string, nodes: readonly GraphNode[], edges: readonly GraphEdge[]): Set<string> {
   const goal = nodes.find((node) => node.code === code);
   return goal ? new Set([goal.id, ...ancestors(goal.id, edges)]) : new Set();

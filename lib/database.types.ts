@@ -83,6 +83,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"attributes": {
+                  Row: {
+                    "code": string,"id": string,"name": string,"owner_id": string,"position": number,"required": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "code": string,"id"?: string,"name": string,"owner_id"?: string,"position"?: number,"required"?: boolean
+                  }
+                  Update: {
+                    "code"?: string,"id"?: string,"name"?: string,"owner_id"?: string,"position"?: number,"required"?: boolean
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"calendar_feeds": {
                   Row: {
                     "created_at": string,"id": string,"owner_id": string,"token_hash": string
@@ -111,6 +125,32 @@ isOneToOne: false
                   Relationships: [
                     {
       foreignKeyName: "class_sessions_course_id_fkey"
+      columns: ["course_id"]
+isOneToOne: false
+      referencedRelation: "courses"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"course_attributes": {
+                  Row: {
+                    "attribute_id": string,"course_id": string,"owner_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attribute_id": string,"course_id": string,"owner_id"?: string
+                  }
+                  Update: {
+                    "attribute_id"?: string,"course_id"?: string,"owner_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "course_attributes_attribute_id_fkey"
+      columns: ["attribute_id"]
+isOneToOne: false
+      referencedRelation: "attributes"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "course_attributes_course_id_fkey"
       columns: ["course_id"]
 isOneToOne: false
       referencedRelation: "courses"
@@ -169,25 +209,59 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"courses": {
+                },"course_types": {
                   Row: {
-                    "canvas_course_id": number | null,"code": string,"credits": number,"id": string,"notes": string | null,"nupath": (Database["public"]['Enums']["nupath"])[],"owner_id": string,"status": Database["public"]['Enums']["course_status"],"term_id": number,"title": string,"type": Database["public"]['Enums']["course_type"]
+                    "color": number,"coop": boolean,"id": string,"name": string,"owner_id": string,"position": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "canvas_course_id"?: number | null,"code": string,"credits": number,"id"?: string,"notes"?: string | null,"nupath"?: (Database["public"]['Enums']["nupath"])[],"owner_id"?: string,"status"?: Database["public"]['Enums']["course_status"],"term_id": number,"title": string,"type": Database["public"]['Enums']["course_type"]
+                    "color": number,"coop"?: boolean,"id"?: string,"name": string,"owner_id"?: string,"position"?: number
                   }
                   Update: {
-                    "canvas_course_id"?: number | null,"code"?: string,"credits"?: number,"id"?: string,"notes"?: string | null,"nupath"?: (Database["public"]['Enums']["nupath"])[],"owner_id"?: string,"status"?: Database["public"]['Enums']["course_status"],"term_id"?: number,"title"?: string,"type"?: Database["public"]['Enums']["course_type"]
+                    "color"?: number,"coop"?: boolean,"id"?: string,"name"?: string,"owner_id"?: string,"position"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"courses": {
+                  Row: {
+                    "canvas_course_id": number | null,"code": string,"course_type_id": string,"credits": number,"id": string,"notes": string | null,"owner_id": string,"status": Database["public"]['Enums']["course_status"],"term_id": number,"title": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "canvas_course_id"?: number | null,"code": string,"course_type_id": string,"credits": number,"id"?: string,"notes"?: string | null,"owner_id"?: string,"status"?: Database["public"]['Enums']["course_status"],"term_id": number,"title": string
+                  }
+                  Update: {
+                    "canvas_course_id"?: number | null,"code"?: string,"course_type_id"?: string,"credits"?: number,"id"?: string,"notes"?: string | null,"owner_id"?: string,"status"?: Database["public"]['Enums']["course_status"],"term_id"?: number,"title"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "courses_course_type_id_fkey"
+      columns: ["course_type_id"]
+isOneToOne: false
+      referencedRelation: "course_types"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "courses_term_id_fkey"
       columns: ["term_id"]
 isOneToOne: false
       referencedRelation: "terms"
       referencedColumns: ["id"]
     }
+                  ]
+                },"focuses": {
+                  Row: {
+                    "goal_code": string | null,"id": string,"name": string,"owner_id": string,"position": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "goal_code"?: string | null,"id"?: string,"name": string,"owner_id"?: string,"position"?: number
+                  }
+                  Update: {
+                    "goal_code"?: string | null,"id"?: string,"name"?: string,"owner_id"?: string,"position"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"plan_courses": {
                   Row: {
@@ -247,33 +321,99 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"requirements": {
+                },"profiles": {
                   Row: {
-                    "area": Database["public"]['Enums']["req_area"],"id": string,"name": string,"notes": string | null,"options": string | null,"owner_id": string
+                    "attribute_set_name": string | null,"credit_limits": NonNullable<Json>,"credit_unit": string,"grade_scale": NonNullable<Json>,"owner_id": string,"preset": string | null,"school": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "area": Database["public"]['Enums']["req_area"],"id"?: string,"name": string,"notes"?: string | null,"options"?: string | null,"owner_id"?: string
+                    "attribute_set_name"?: string | null,"credit_limits"?: NonNullable<Json>,"credit_unit"?: string,"grade_scale"?: NonNullable<Json>,"owner_id"?: string,"preset"?: string | null,"school"?: string | null
                   }
                   Update: {
-                    "area"?: Database["public"]['Enums']["req_area"],"id"?: string,"name"?: string,"notes"?: string | null,"options"?: string | null,"owner_id"?: string
+                    "attribute_set_name"?: string | null,"credit_limits"?: NonNullable<Json>,"credit_unit"?: string,"grade_scale"?: NonNullable<Json>,"owner_id"?: string,"preset"?: string | null,"school"?: string | null
                   }
                   Relationships: [
                     
                   ]
-                },"swap_options": {
+                },"requirement_areas": {
                   Row: {
-                    "ai_relevance": Database["public"]['Enums']["relevance"],"fits_in": string | null,"id": string,"owner_id": string,"prerequisites": string | null,"quantum_relevance": Database["public"]['Enums']["relevance"],"slot": Database["public"]['Enums']["swap_slot"],"swap_in": string,"why_consider": string | null,"why_current_better": string | null
+                    "headline": boolean,"id": string,"name": string,"owner_id": string,"position": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "ai_relevance"?: Database["public"]['Enums']["relevance"],"fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"quantum_relevance": Database["public"]['Enums']["relevance"],"slot": Database["public"]['Enums']["swap_slot"],"swap_in": string,"why_consider"?: string | null,"why_current_better"?: string | null
+                    "headline"?: boolean,"id"?: string,"name": string,"owner_id"?: string,"position"?: number
                   }
                   Update: {
-                    "ai_relevance"?: Database["public"]['Enums']["relevance"],"fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"quantum_relevance"?: Database["public"]['Enums']["relevance"],"slot"?: Database["public"]['Enums']["swap_slot"],"swap_in"?: string,"why_consider"?: string | null,"why_current_better"?: string | null
+                    "headline"?: boolean,"id"?: string,"name"?: string,"owner_id"?: string,"position"?: number
                   }
                   Relationships: [
                     
+                  ]
+                },"requirements": {
+                  Row: {
+                    "area_id": string,"id": string,"name": string,"notes": string | null,"options": string | null,"owner_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "area_id": string,"id"?: string,"name": string,"notes"?: string | null,"options"?: string | null,"owner_id"?: string
+                  }
+                  Update: {
+                    "area_id"?: string,"id"?: string,"name"?: string,"notes"?: string | null,"options"?: string | null,"owner_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "requirements_area_id_fkey"
+      columns: ["area_id"]
+isOneToOne: false
+      referencedRelation: "requirement_areas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"swap_options": {
+                  Row: {
+                    "fits_in": string | null,"id": string,"owner_id": string,"prerequisites": string | null,"slot_id": string,"swap_in": string,"why_consider": string | null,"why_current_better": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"slot_id": string,"swap_in": string,"why_consider"?: string | null,"why_current_better"?: string | null
+                  }
+                  Update: {
+                    "fits_in"?: string | null,"id"?: string,"owner_id"?: string,"prerequisites"?: string | null,"slot_id"?: string,"swap_in"?: string,"why_consider"?: string | null,"why_current_better"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "swap_options_slot_id_fkey"
+      columns: ["slot_id"]
+isOneToOne: false
+      referencedRelation: "swap_slots"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"swap_relevance": {
+                  Row: {
+                    "focus_id": string,"owner_id": string,"relevance": Database["public"]['Enums']["relevance"],"swap_option_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "focus_id": string,"owner_id"?: string,"relevance": Database["public"]['Enums']["relevance"],"swap_option_id": string
+                  }
+                  Update: {
+                    "focus_id"?: string,"owner_id"?: string,"relevance"?: Database["public"]['Enums']["relevance"],"swap_option_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "swap_relevance_focus_id_fkey"
+      columns: ["focus_id"]
+isOneToOne: false
+      referencedRelation: "focuses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "swap_relevance_swap_option_id_fkey"
+      columns: ["swap_option_id"]
+isOneToOne: false
+      referencedRelation: "swap_options"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"swap_replaces": {
                   Row: {
@@ -300,6 +440,20 @@ isOneToOne: false
       referencedRelation: "swap_options"
       referencedColumns: ["id"]
     }
+                  ]
+                },"swap_slots": {
+                  Row: {
+                    "id": string,"name": string,"owner_id": string,"position": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id"?: string,"name": string,"owner_id"?: string,"position"?: number
+                  }
+                  Update: {
+                    "id"?: string,"name"?: string,"owner_id"?: string,"position"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 },"sync_runs": {
                   Row: {
@@ -354,11 +508,17 @@ isOneToOne: false
           Views: {
             "requirement_progress": {
                   Row: {
-                    "area": Database["public"]['Enums']["req_area"],"done_courses": number | null,"done_pct": number | null,"done_sh": number | null,"name": string,"requirement_id": string,"started_courses": number | null,"started_pct": number | null,"status": string | null,"total_courses": number | null,"total_sh": number | null
+                    "area_id": string,"done_courses": number | null,"done_pct": number | null,"done_sh": number | null,"name": string,"requirement_id": string,"started_courses": number | null,"started_pct": number | null,"status": string | null,"total_courses": number | null,"total_sh": number | null
                   }
                   ComputedFields: never
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "requirements_area_id_fkey"
+      columns: ["area_id"]
+isOneToOne: false
+      referencedRelation: "requirement_areas"
+      referencedColumns: ["id"]
+    }
                   ]
                 }
           }
@@ -397,7 +557,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "assignment_kind": "assignment"|"quiz"|"exam"|"discussion"|"lab"|"reading","assignment_priority": "low"|"medium"|"high","assignment_progress": "not_started"|"in_progress","course_status": "planned"|"in_progress"|"done","course_type": "cs_core"|"ai_concentration"|"physics_minor"|"major_support"|"general_elective"|"coop_program","nupath": "ND"|"EI"|"IC"|"FQ"|"SI"|"AD"|"DD"|"ER"|"WF"|"WD"|"WI"|"EX"|"CE","prereq_kind": "prereq"|"coreq"|"recommended","relevance": "none"|"lower"|"low"|"medium"|"high","req_area": "cs_overview"|"cs_fundamentals"|"cs_required"|"security_presentation"|"khoury_electives"|"supporting"|"writing"|"ai_concentration"|"physics_minor"|"universitywide","session_type": "lecture"|"lab"|"seminar"|"tutorial"|"workshop"|"exam"|"other","swap_slot": "london_elective"|"khoury_elective"|"ai_elective"|"software_engineering"|"placement_substitute"|"physics_minor_elective"|"advanced_writing","sync_source": "canvas"|"timetable","sync_status": "running"|"success"|"error"|"token_expired","term_kind": "transfer"|"semester"|"summer"|"coop"
+            "assignment_kind": "assignment"|"quiz"|"exam"|"discussion"|"lab"|"reading","assignment_priority": "low"|"medium"|"high","assignment_progress": "not_started"|"in_progress","course_status": "planned"|"in_progress"|"done","prereq_kind": "prereq"|"coreq"|"recommended","relevance": "none"|"lower"|"low"|"medium"|"high","session_type": "lecture"|"lab"|"seminar"|"tutorial"|"workshop"|"exam"|"other","sync_source": "canvas"|"timetable","sync_status": "running"|"success"|"error"|"token_expired","term_kind": "transfer"|"semester"|"summer"|"coop"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -517,7 +677,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "assignment_kind": ["assignment", "quiz", "exam", "discussion", "lab", "reading"],"assignment_priority": ["low", "medium", "high"],"assignment_progress": ["not_started", "in_progress"],"course_status": ["planned", "in_progress", "done"],"course_type": ["cs_core", "ai_concentration", "physics_minor", "major_support", "general_elective", "coop_program"],"nupath": ["ND", "EI", "IC", "FQ", "SI", "AD", "DD", "ER", "WF", "WD", "WI", "EX", "CE"],"prereq_kind": ["prereq", "coreq", "recommended"],"relevance": ["none", "lower", "low", "medium", "high"],"req_area": ["cs_overview", "cs_fundamentals", "cs_required", "security_presentation", "khoury_electives", "supporting", "writing", "ai_concentration", "physics_minor", "universitywide"],"session_type": ["lecture", "lab", "seminar", "tutorial", "workshop", "exam", "other"],"swap_slot": ["london_elective", "khoury_elective", "ai_elective", "software_engineering", "placement_substitute", "physics_minor_elective", "advanced_writing"],"sync_source": ["canvas", "timetable"],"sync_status": ["running", "success", "error", "token_expired"],"term_kind": ["transfer", "semester", "summer", "coop"]
+            "assignment_kind": ["assignment", "quiz", "exam", "discussion", "lab", "reading"],"assignment_priority": ["low", "medium", "high"],"assignment_progress": ["not_started", "in_progress"],"course_status": ["planned", "in_progress", "done"],"prereq_kind": ["prereq", "coreq", "recommended"],"relevance": ["none", "lower", "low", "medium", "high"],"session_type": ["lecture", "lab", "seminar", "tutorial", "workshop", "exam", "other"],"sync_source": ["canvas", "timetable"],"sync_status": ["running", "success", "error", "token_expired"],"term_kind": ["transfer", "semester", "summer", "coop"]
           }
         }
 } as const

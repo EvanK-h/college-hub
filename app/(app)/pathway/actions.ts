@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { parseCourseMove, parseCourseUpdate } from "@/lib/pathway/course-update";
-import { FOCUS_COOKIE, parseFocus } from "@/lib/pathway/focus";
+import { z } from "zod";
+import { FOCUS_COOKIE } from "@/lib/pathway/focus";
 import { createClient } from "@/lib/supabase/server";
 
 export type CourseUpdateState = {
@@ -40,7 +41,7 @@ export async function updateCourse(_previous: CourseUpdateState, formData: FormD
 
 /**
  * Moves a planned course to another term from the drag-and-drop board. The prerequisite, co-op
- * and SH checks are advice shown before the drop is confirmed, so they are not enforced here.
+ * and credit checks are advice shown before the drop is confirmed, so they are not enforced here.
  * Done and in-progress courses can't be dragged, and this refuses them too.
  */
 export async function moveCourse(input: { courseId: string; termId: number }): Promise<{ ok: boolean }> {
@@ -63,10 +64,12 @@ export async function moveCourse(input: { courseId: string; termId: number }): P
 }
 
 /**
- * Saves the Quantum / AI focus. A preference, not data, so it lives in a cookie; setting a cookie
- * in a Server Action re-renders the current page with it.
+ * Saves the chosen focus id. A preference, not data, so it lives in a cookie; setting a cookie
+ * in a Server Action re-renders the current page with it. The page ignores an id it doesn't know.
  */
 export async function setFocus(value: string): Promise<void> {
+  const parsed = z.uuid().safeParse(value);
+  if (!parsed.success) return;
   const store = await cookies();
-  store.set(FOCUS_COOKIE, parseFocus(value), { path: "/", sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 365 });
+  store.set(FOCUS_COOKIE, parsed.data, { path: "/", sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 365 });
 }

@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Database } from "@/lib/database.types";
-import { readLocalSupabase } from "@/test/local-supabase";
+import { readLocalSupabase, testCourseType } from "@/test/local-supabase";
 
 // create_plan() and apply_plan() run as the signed-in user (RLS applies), so these tests sign in
 // as a throwaway local user. They need the local Supabase stack; see test/local-supabase.ts.
@@ -31,7 +31,7 @@ describe.skipIf(!local)("create_plan and apply_plan against the local database",
     const { data } = await admin.auth.admin.listUsers();
     const existing = data.users.find((u) => u.email === EMAIL);
     if (!existing) return;
-    for (const table of ["plans", "swap_options", "courses"] as const) check(await admin.from(table).delete().eq("owner_id", existing.id));
+    for (const table of ["plans", "swap_options", "courses", "course_types", "swap_slots", "attributes"] as const) check(await admin.from(table).delete().eq("owner_id", existing.id));
     check(await admin.from("terms").delete().in("id", TERMS));
     await admin.auth.admin.deleteUser(existing.id);
   }
@@ -45,28 +45,32 @@ describe.skipIf(!local)("create_plan and apply_plan against the local database",
     check(await user.auth.signInWithPassword({ email: EMAIL, password }));
 
     check(await admin.from("terms").insert(TERMS.map((id, i) => ({ id, name: `Plans test term ${i + 1}`, kind: "semester" as const, owner_id: ids.owner }))));
+    const type = await testCourseType(admin, ids.owner);
     const courses = value(
       await admin
         .from("courses")
         .insert([
           // A multi-row insert fills missing keys with null, so every row names every column.
-          { code: "ZZ 1000", title: "Planned", credits: 4, type: "cs_core", term_id: TERMS[0], status: "planned", nupath: [], notes: null, owner_id: ids.owner },
-          { code: "ZZ 2000", title: "Swapped out", credits: 4, type: "cs_core", term_id: TERMS[1], status: "planned", nupath: ["ND"], notes: "old notes", owner_id: ids.owner },
-          { code: "ZZ 0500", title: "Done", credits: 4, type: "cs_core", term_id: TERMS[0], status: "done", nupath: [], notes: null, owner_id: ids.owner },
+          { code: "ZZ 1000", title: "Planned", credits: 4, course_type_id: type, term_id: TERMS[0], status: "planned", notes: null, owner_id: ids.owner },
+          { code: "ZZ 2000", title: "Swapped out", credits: 4, course_type_id: type, term_id: TERMS[1], status: "planned", notes: "old notes", owner_id: ids.owner },
+          { code: "ZZ 0500", title: "Done", credits: 4, course_type_id: type, term_id: TERMS[0], status: "done", notes: null, owner_id: ids.owner },
         ])
         .select("id, code"),
     );
     ids.planned = courses.find((c) => c.code === "ZZ 1000")?.id ?? "";
     ids.swapped = courses.find((c) => c.code === "ZZ 2000")?.id ?? "";
     ids.done = courses.find((c) => c.code === "ZZ 0500")?.id ?? "";
+    const attribute = value(await admin.from("attributes").insert({ code: "ND", name: "Test attribute", owner_id: ids.owner }).select("id").single());
+    check(await admin.from("course_attributes").insert({ course_id: ids.swapped, attribute_id: attribute.id, owner_id: ids.owner }));
+    const slot = value(await admin.from("swap_slots").insert({ name: "Test slot", owner_id: ids.owner }).select("id").single());
     check(await admin.from("course_prereqs").insert({ course_id: ids.swapped, requires_code: "ZZ 1000", owner_id: ids.owner }));
 
     const swaps = value(
       await admin
         .from("swap_options")
         .insert([
-          { swap_in: "ZZ 4770 · Test Swap", slot: "khoury_elective", quantum_relevance: "high", owner_id: ids.owner },
-          { swap_in: "ZZ 1 + 2 · Not one course", slot: "khoury_elective", quantum_relevance: "low", owner_id: ids.owner },
+          { swap_in: "ZZ 4770 · Test Swap", slot_id: slot.id, owner_id: ids.owner },
+          { swap_in: "ZZ 1 + 2 · Not one course", slot_id: slot.id, owner_id: ids.owner },
         ])
         .select("id, swap_in"),
     );
@@ -95,9 +99,10 @@ describe.skipIf(!local)("create_plan and apply_plan against the local database",
 
     check(await user.rpc("apply_plan", { p_plan: plan }));
 
-    const courses = value(await user.from("courses").select("id, code, title, term_id, nupath, notes").order("code"));
+    const courses = value(await user.from("courses").select("id, code, title, term_id, notes").order("code"));
     expect(courses.find((c) => c.id === ids.planned)?.term_id).toBe(TERMS[2]);
-    expect(courses.find((c) => c.id === ids.swapped)).toMatchObject({ code: "ZZ 4770", title: "Test Swap", term_id: TERMS[2], nupath: [], notes: null });
+    expect(courses.find((c) => c.id === ids.swapped)).toMatchObject({ code: "ZZ 4770", title: "Test Swap", term_id: TERMS[2], notes: null });
+    expect(value(await user.from("course_attributes").select("attribute_id").eq("course_id", ids.swapped))).toHaveLength(0);
     expect(courses.find((c) => c.id === ids.done)?.term_id).toBe(TERMS[0]);
     expect(value(await user.from("course_prereqs").select("id").eq("course_id", ids.swapped))).toHaveLength(0);
     expect(value(await user.from("swap_replaces").select("course_id").eq("swap_option_id", ids.swap))).toHaveLength(0);

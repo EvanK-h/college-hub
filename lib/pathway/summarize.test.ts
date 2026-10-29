@@ -6,7 +6,7 @@ const course = (code: string, credits: number, status: PathwayCourse["status"] =
   code,
   title: `Title of ${code}`,
   credits,
-  type: "cs_core",
+  type: { id: "core", name: "Core", color: 1, coop: false },
   status,
 });
 

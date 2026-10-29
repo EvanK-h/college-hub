@@ -8,10 +8,11 @@ import { PathwayBoard } from "@/components/pathway/pathway-board";
 import { ConfirmAction } from "@/components/plans/confirm-action";
 import { PlanSwapForm, type SwapChoiceGroup } from "@/components/plans/plan-swap-form";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { SWAP_SLOT_LABELS } from "@/lib/pathway/labels";
 import { describeProblem, planProblems } from "@/lib/pathway/move-checks";
 import { buildPlan, comparePlans, parseSwapCourse, swapItemId, type PlanItem } from "@/lib/plans/build";
 import { loadPlanning, loadPlanRows, planTerms, type Planning } from "@/lib/plans/load";
+import { loadSetup } from "@/lib/setup/load";
+import type { SlotInfo } from "@/lib/setup/setup";
 import { createClient } from "@/lib/supabase/server";
 
 // The plan comes from the URL and your session, so it renders inside Suspense (see the Cache
@@ -31,7 +32,8 @@ async function Plan({ id }: { id: string }) {
   if (!claims?.claims) redirect("/login");
   if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
 
-  const [planning, saved] = await Promise.all([loadPlanning(supabase), loadPlanRows(supabase, id)]);
+  const [planning, saved, setup] = await Promise.all([loadPlanning(supabase), loadPlanRows(supabase, id), loadSetup()]);
+  const { creditLimits, creditUnit } = setup.profile;
   if (!saved) notFound();
 
   const items = buildPlan(planning.courses, saved.rows, planning.swaps);
@@ -40,7 +42,12 @@ async function Plan({ id }: { id: string }) {
   const swapped = items.filter((item) => item.replaces);
   const labels = Object.fromEntries(swapped.map((item) => [item.id, `Swap for ${item.replaces?.code}`]));
   const termName = (termId: number) => planning.terms.find((term) => term.id === termId)?.name ?? "that term";
-  const problems = planProblems({ terms: planning.terms, courses: items.map((item) => ({ ...item, credits: Number(item.credits) })), prereqs: planning.prereqs });
+  const problems = planProblems({
+    terms: planning.terms,
+    courses: items.map((item) => ({ ...item, credits: Number(item.credits), coop: item.type.coop })),
+    prereqs: planning.prereqs,
+    limits: creditLimits,
+  });
 
   return (
     <>
@@ -55,7 +62,7 @@ async function Plan({ id }: { id: string }) {
           <ConfirmAction
             label="Make active"
             title={`Make “${saved.plan.name}” your plan?`}
-            description={`This makes ${moves} ${moves === 1 ? "move" : "moves"} and ${swapped.length} ${swapped.length === 1 ? "swap" : "swaps"} to your real plan. A swapped-in course takes over the replaced course's requirement slot; its NUpath attributes and notes start empty.`}
+            description={`This makes ${moves} ${moves === 1 ? "move" : "moves"} and ${swapped.length} ${swapped.length === 1 ? "swap" : "swaps"} to your real plan. A swapped-in course takes over the replaced course's requirement slot; its attributes and notes start empty.`}
             confirmLabel="Make active"
             action={applyPlan.bind(null, id)}
           />
@@ -76,7 +83,7 @@ async function Plan({ id }: { id: string }) {
             <li key={index} className="flex gap-2 text-destructive">
               <CircleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
               {courseCode ? `${courseCode}: ` : ""}
-              {describeProblem(problem, termName(termId))}
+              {describeProblem(problem, termName(termId), creditUnit)}
             </li>
           ))}
         </ul>
@@ -103,12 +110,14 @@ async function Plan({ id }: { id: string }) {
             ))}
           </ul>
         )}
-        <PlanSwapForm planId={id} groups={swapChoices(planning, items)} />
+        <PlanSwapForm planId={id} groups={swapChoices(planning, items, setup.slots)} />
       </section>
 
       <PathwayBoard
         terms={planTerms(planning.terms, items)}
         prereqs={planning.prereqs}
+        limits={creditLimits}
+        creditUnit={creditUnit}
         onMove={movePlanItem.bind(null, id)}
         editable={false}
         labels={labels}
@@ -123,7 +132,7 @@ async function Plan({ id }: { id: string }) {
  * replace, skipping swaps already in the plan, courses already swapped out, and swap names that
  * aren't a single course (those couldn't be made real later).
  */
-function swapChoices(planning: Planning, items: readonly PlanItem[]): SwapChoiceGroup[] {
+function swapChoices(planning: Planning, items: readonly PlanItem[], slots: readonly SlotInfo[]): SwapChoiceGroup[] {
   const inPlan = new Set(items.map((item) => item.id));
   const codeOf = new Map(items.map((item) => [item.id, item.code]));
   const groups = new Map<string, SwapChoiceGroup>();
@@ -132,7 +141,7 @@ function swapChoices(planning: Planning, items: readonly PlanItem[]): SwapChoice
     for (const courseId of swap.replaces) {
       const course = planning.courses.find((c) => c.id === courseId);
       if (course?.status !== "planned" || !inPlan.has(courseId)) continue;
-      const label = SWAP_SLOT_LABELS[swap.slot];
+      const label = slots.find((slot) => slot.id === swap.slotId)?.name ?? "Other";
       const group = groups.get(label) ?? { label, choices: [] };
       group.choices.push({ value: `${swap.id}:${courseId}`, label: `${swap.swapIn}, for ${codeOf.get(courseId)}` });
       groups.set(label, group);

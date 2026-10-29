@@ -1,25 +1,32 @@
 import { describe, expect, it } from "vitest";
-import { parseFocus, sortByFocus } from "./focus";
+import { parseFocus, relevanceFor, sortByFocus } from "./focus";
 
 describe("parseFocus", () => {
-  it("accepts the two focuses and falls back to quantum", () => {
-    expect(parseFocus("ai")).toBe("ai");
-    expect(parseFocus("quantum")).toBe("quantum");
-    expect(parseFocus(undefined)).toBe("quantum");
-    expect(parseFocus("robots")).toBe("quantum");
+  it("accepts a known focus and falls back to the first", () => {
+    expect(parseFocus("ai", ["quantum", "ai"])).toBe("ai");
+    expect(parseFocus(undefined, ["quantum", "ai"])).toBe("quantum");
+    expect(parseFocus("robots", ["quantum", "ai"])).toBe("quantum");
+  });
+
+  it("has no focus when none are set up", () => {
+    expect(parseFocus("ai", [])).toBeNull();
   });
 });
 
 describe("sortByFocus", () => {
   const swaps = [
-    { id: "crypto", quantum_relevance: "high", ai_relevance: "lower" },
-    { id: "ml", quantum_relevance: "medium", ai_relevance: "high" },
-    { id: "rl", quantum_relevance: "low", ai_relevance: "high" },
-    { id: "writing", quantum_relevance: "none", ai_relevance: "none" },
+    { id: "crypto", relevance: { quantum: "high", ai: "lower" } },
+    { id: "ml", relevance: { quantum: "medium", ai: "high" } },
+    { id: "rl", relevance: { quantum: "low", ai: "high" } },
+    { id: "writing", relevance: {} },
   ] as const;
 
-  it("ranks by the focus, then by the other direction", () => {
-    expect(sortByFocus(swaps, "quantum").map((s) => s.id)).toEqual(["crypto", "ml", "rl", "writing"]);
-    expect(sortByFocus(swaps, "ai").map((s) => s.id)).toEqual(["ml", "rl", "crypto", "writing"]);
+  it("ranks by the focus, then by the other focuses", () => {
+    expect(sortByFocus(swaps, "quantum", ["quantum", "ai"]).map((s) => s.id)).toEqual(["crypto", "ml", "rl", "writing"]);
+    expect(sortByFocus(swaps, "ai", ["quantum", "ai"]).map((s) => s.id)).toEqual(["ml", "rl", "crypto", "writing"]);
+  });
+
+  it("treats a missing rating as none", () => {
+    expect(relevanceFor(swaps[3], "quantum")).toBe("none");
   });
 });

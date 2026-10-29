@@ -3,7 +3,6 @@
 // - done and in-progress courses always stay in their real term;
 // - a planned course sits where the plan puts it, or in its real term if the plan has no row;
 // - a swap takes the place of the course it replaces, with that course's credits and type.
-import type { CourseType } from "@/lib/pathway/labels";
 import type { PathwayCourse } from "@/lib/pathway/summarize";
 
 export type RealCourse = PathwayCourse & { termId: number };
@@ -42,7 +41,7 @@ export function buildPlan(courses: readonly RealCourse[], rows: readonly PlanRow
         code: swapCourse.code,
         title: swapCourse.title,
         credits: course.credits,
-        type: course.type as CourseType,
+        type: course.type,
         status: "planned",
         termId: swapRow.termId,
         replaces: { id: course.id, code: course.code },

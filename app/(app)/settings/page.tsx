@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { canvasSettingsUrl } from "@/lib/canvas/links";
 import { getTimetableFeedUrl } from "@/lib/env.server";
-import { summarizeTerms } from "@/lib/pathway/summarize";
+import { PATHWAY_COURSE_COLUMNS, summarizeTerms } from "@/lib/pathway/summarize";
 import { createClient } from "@/lib/supabase/server";
 
 // The "Sync now" server action runs under this page's limit, so give a sync room to finish.
@@ -68,7 +68,7 @@ async function SyncSections() {
     supabase.from("calendar_feeds").select("created_at").maybeSingle(),
     supabase
       .from("terms")
-      .select("id, name, kind, time_zone, courses(id, code, title, credits, type, status)")
+      .select(`id, name, kind, time_zone, courses(${PATHWAY_COURSE_COLUMNS})`)
       .order("id"),
   ]);
   if (historyResult.error) throw new Error(`Loading sync history failed: ${historyResult.error.message}`);

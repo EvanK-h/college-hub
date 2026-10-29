@@ -20,12 +20,12 @@
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --font-heading: var(--font-sans);
-  --color-course-cs-core: var(--course-cs-core);
-  --color-course-ai-concentration: var(--course-ai-concentration);
-  --color-course-physics-minor: var(--course-physics-minor);
-  --color-course-major-support: var(--course-major-support);
-  --color-course-general-elective: var(--course-general-elective);
-  --color-course-coop-program: var(--course-coop-program);
+  --color-category-1: var(--category-1);
+  --color-category-2: var(--category-2);
+  --color-category-3: var(--category-3);
+  --color-category-4: var(--category-4);
+  --color-category-5: var(--category-5);
+  --color-category-6: var(--category-6);
   --color-status-planned: var(--status-planned);
   --color-status-in-progress: var(--status-in-progress);
   --color-status-done: var(--status-done);
@@ -140,14 +140,15 @@
   --status-due-soon: light-dark(oklch(0.56 0.12 70), oklch(0.78 0.13 75));
   --status-overdue: var(--destructive);
 
-  /* Course types sit on hues no status uses (90, 195, 300, 350, plus two neutrals), at least
+  /* The category palette for course types (each type picks a number in its data). The hues are
+     ones no status uses (rose 350, teal 195, violet 300, olive 90, plus two neutrals), at least
      10 ΔE (OKLab ×100) from every status colour and from each other in both themes. */
-  --course-cs-core: light-dark(oklch(0.58 0.12 350), oklch(0.74 0.12 350));
-  --course-ai-concentration: light-dark(oklch(0.54 0.1 195), oklch(0.74 0.1 195));
-  --course-physics-minor: light-dark(oklch(0.52 0.12 300), oklch(0.7 0.12 300));
-  --course-major-support: light-dark(oklch(0.5 0.13 90), oklch(0.68 0.13 90));
-  --course-general-elective: light-dark(oklch(0.6 0.01 70), oklch(0.72 0.01 70));
-  --course-coop-program: light-dark(oklch(0.46 0.015 60), oklch(0.58 0.02 60));
+  --category-1: light-dark(oklch(0.58 0.12 350), oklch(0.74 0.12 350));
+  --category-2: light-dark(oklch(0.54 0.1 195), oklch(0.74 0.1 195));
+  --category-3: light-dark(oklch(0.52 0.12 300), oklch(0.7 0.12 300));
+  --category-4: light-dark(oklch(0.5 0.13 90), oklch(0.68 0.13 90));
+  --category-5: light-dark(oklch(0.6 0.01 70), oklch(0.72 0.01 70));
+  --category-6: light-dark(oklch(0.46 0.015 60), oklch(0.58 0.02 60));
 
   --radius: 0.75rem;
   --shadow-card-light: 0 0 0 0.5px oklch(0.255 0.028 55 / 0.08), 0 1px 2px oklch(0.255 0.028 55 / 0.05), 0 2px 6px -2px oklch(0.255 0.028 55 / 0.06);

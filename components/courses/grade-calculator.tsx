@@ -2,7 +2,8 @@
 
 import { useId, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { LETTER_TARGETS, neededForTarget, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
+import { letterTargets, neededForTarget, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
+import type { GradeScale } from "@/lib/setup/setup";
 
 const SELECT_CLASS =
   "h-10 w-full rounded-xl border border-input bg-card px-3 text-sm focus-visible:border-ring focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none dark:bg-muted";
@@ -10,9 +11,12 @@ const SELECT_CLASS =
 const percent = (value: number) => `${value.toFixed(1)}%`;
 
 // Client component only for the target picker; the maths is the pure, tested calculator.
-export function GradeCalculator({ groups, items }: { groups: GradeGroup[]; items: GradeItem[] }) {
+// The letters come from the profile's grade scale; it starts on 90% when the scale has it (an A−
+// on the common scale), otherwise on the best letter.
+export function GradeCalculator({ groups, items, scale }: { groups: GradeGroup[]; items: GradeItem[]; scale: GradeScale }) {
   const id = useId();
-  const [target, setTarget] = useState(90);
+  const targets = letterTargets(scale);
+  const [target, setTarget] = useState(() => targets.find(({ minimum }) => minimum === 90)?.minimum ?? targets[0]?.minimum ?? 90);
   const outcome = neededForTarget(groups, items, target);
 
   let message: string;
@@ -36,7 +40,7 @@ export function GradeCalculator({ groups, items }: { groups: GradeGroup[]; items
       <div className="grid gap-1.5">
         <Label htmlFor={id}>Target grade</Label>
         <select id={id} value={target} onChange={(event) => setTarget(Number(event.target.value))} className={SELECT_CLASS}>
-          {LETTER_TARGETS.map(({ letter, minimum }) => (
+          {targets.map(({ letter, minimum }) => (
             <option key={letter} value={minimum}>
               {letter} ({minimum}%)
             </option>

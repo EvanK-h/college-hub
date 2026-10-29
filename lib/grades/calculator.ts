@@ -8,6 +8,8 @@
 // Not modelled, because the sync doesn't store them: drop-lowest rules, excused assignments and
 // late penalties applied outside the score. Courses using those can differ slightly from Canvas.
 
+import { DEFAULT_GRADE_SCALE, type GradeScale } from "@/lib/setup/setup";
+
 export type GradeGroup = { id: number; name: string; weight: number | null };
 
 export type GradeItem = {
@@ -133,24 +135,12 @@ export function neededForTarget(groups: readonly GradeGroup[], items: readonly G
   return { kind: "needed", percent: ((target - worst) / (best - worst)) * 100 };
 }
 
-// Northeastern's scale: the lowest percentage for each letter.
-const LETTERS: ReadonlyArray<readonly [number, string]> = [
-  [93, "A"],
-  [90, "A−"],
-  [87, "B+"],
-  [83, "B"],
-  [80, "B−"],
-  [77, "C+"],
-  [73, "C"],
-  [70, "C−"],
-  [67, "D+"],
-  [63, "D"],
-  [60, "D−"],
-];
-
-export function letterGrade(percent: number): string {
-  return LETTERS.find(([minimum]) => percent >= minimum)?.[1] ?? "F";
+/** The letter for a percentage on a scale (the profile's; best letter first), or F below it. */
+export function letterGrade(percent: number, scale: GradeScale = DEFAULT_GRADE_SCALE): string {
+  return scale.find(([minimum]) => percent >= minimum)?.[1] ?? "F";
 }
 
 /** The letters and their minimums, for a target picker. */
-export const LETTER_TARGETS = LETTERS.map(([minimum, letter]) => ({ letter, minimum }));
+export function letterTargets(scale: GradeScale = DEFAULT_GRADE_SCALE): { letter: string; minimum: number }[] {
+  return scale.map(([minimum, letter]) => ({ letter, minimum }));
+}

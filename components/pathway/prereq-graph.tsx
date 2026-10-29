@@ -2,13 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { CircleAlert } from "lucide-react";
-import { COURSE_TYPE_COLOR } from "@/components/pathway/course-card";
 import { StatusIcon } from "@/components/pathway/status-icon";
 import { ancestors, chainTo, descendants, type GraphEdge, type GraphNode, type PrereqGraph } from "@/lib/pathway/graph";
+import { categoryClass } from "@/lib/setup/setup";
 import { cn } from "@/lib/utils";
-
-// The quantum computation course the plan builds towards; everything leading to it is the chain.
-const QUANTUM_GOAL = "PHYS 5352";
 
 const NODE_W = 168;
 const NODE_H = 58;
@@ -51,12 +48,16 @@ function edgePath(from: GraphNode, to: GraphNode): string {
 // The plan as a graph: one column per term, arrows from each requirement to the course that needs
 // it. Selecting a course (click, or Enter on the keyboard) lights up everything it depends on and
 // everything it unlocks, and the panel underneath says the same in words.
-export function PrereqGraphView({ graph }: { graph: PrereqGraph }) {
+//
+// `chains` are the focuses with a goal course (e.g. Quantum → PHYS 5352). One at a time can be
+// shaded: the goal and everything it depends on. The first is shaded to begin with.
+export function PrereqGraphView({ graph, chains }: { graph: PrereqGraph; chains: { name: string; goal: string }[] }) {
   const [selected, setSelected] = useState<string | null>(null);
-  const [showChain, setShowChain] = useState(true);
+  const [chainIndex, setChainIndex] = useState<number | null>(chains.length > 0 ? 0 : null);
 
   const byId = useMemo(() => new Map(graph.nodes.map((node) => [node.id, node])), [graph.nodes]);
-  const chain = useMemo(() => chainTo(QUANTUM_GOAL, graph.nodes, graph.edges), [graph.nodes, graph.edges]);
+  const goal = chainIndex === null ? null : (chains[chainIndex]?.goal ?? null);
+  const chain = useMemo(() => (goal ? chainTo(goal, graph.nodes, graph.edges) : new Set<string>()), [goal, graph.nodes, graph.edges]);
   const related = useMemo(
     () => (selected ? new Set([selected, ...ancestors(selected, graph.edges), ...descendants(selected, graph.edges)]) : null),
     [selected, graph.edges],
@@ -65,7 +66,7 @@ export function PrereqGraphView({ graph }: { graph: PrereqGraph }) {
   const rows = Math.max(0, ...graph.nodes.map((node) => node.row + 1));
   const width = graph.columns.length * NODE_W + Math.max(0, graph.columns.length - 1) * COL_GAP + 40;
   const height = HEADER_H + rows * (NODE_H + ROW_GAP);
-  const inChain = (edge: GraphEdge) => showChain && chain.has(edge.from) && chain.has(edge.to);
+  const inChain = (edge: GraphEdge) => chain.has(edge.from) && chain.has(edge.to);
   const lit = (edge: GraphEdge) => (related ? related.has(edge.from) && related.has(edge.to) : false);
   const problems = graph.edges.filter((edge) => edge.problem);
 
@@ -77,18 +78,23 @@ export function PrereqGraphView({ graph }: { graph: PrereqGraph }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Legend />
-        {chain.size > 0 && (
-          <button
-            type="button"
-            aria-pressed={showChain}
-            onClick={() => setShowChain((on) => !on)}
-            className={cn(
-              "press rounded-full px-3 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring",
-              showChain ? "bg-accent text-accent-foreground" : "bg-fill-secondary text-muted-foreground hover:text-foreground",
-            )}
-          >
-            Quantum chain
-          </button>
+        {chains.length > 0 && (
+          <div role="group" aria-label="Shade a chain" className="flex flex-wrap gap-2">
+            {chains.map((option, index) => (
+              <button
+                key={option.name}
+                type="button"
+                aria-pressed={chainIndex === index}
+                onClick={() => setChainIndex((current) => (current === index ? null : index))}
+                className={cn(
+                  "press rounded-full px-3 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring",
+                  chainIndex === index ? "bg-accent text-accent-foreground" : "bg-fill-secondary text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {option.name} chain
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
@@ -150,10 +156,10 @@ export function PrereqGraphView({ graph }: { graph: PrereqGraph }) {
               onClick={() => setSelected((current) => (current === node.id ? null : node.id))}
               className={cn(
                 "absolute flex gap-2 rounded-xl p-2 text-left shadow-card transition-opacity focus-visible:outline-2 focus-visible:outline-ring",
-                showChain && chain.has(node.id) ? "bg-accent ring-1 ring-accent-foreground/30 ring-inset" : "bg-card",
+                chain.has(node.id) ? "bg-accent ring-1 ring-accent-foreground/30 ring-inset" : "bg-card",
                 selected === node.id && "ring-2 ring-ring ring-inset",
                 related && !related.has(node.id) && "opacity-35",
-                COURSE_TYPE_COLOR[node.type],
+                categoryClass(node.color),
               )}
               style={{ left: x(node), top: y(node), width: NODE_W, height: NODE_H }}
             >

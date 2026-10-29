@@ -6,7 +6,6 @@ import { AutoSync } from "@/components/dashboard/auto-sync";
 import { MonthCalendar } from "@/components/dashboard/month-calendar";
 import { TodoList } from "@/components/dashboard/todo-list";
 import { PAGE_CLASS } from "@/components/page-header";
-import { COURSE_TYPE_COLOR } from "@/components/pathway/course-card";
 import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { excerpt } from "@/lib/announcements/text";
@@ -14,8 +13,8 @@ import { assignmentStatus, formatDueIn } from "@/lib/assignments/status";
 import { canvasSettingsUrl } from "@/lib/canvas/links";
 import { coursePath } from "@/lib/courses/slug";
 import { addDays, daysBetween, dueSoon, formatCountdown, nextExam, sessionsOn, weekAgenda } from "@/lib/dashboard/agenda";
-import type { CourseType } from "@/lib/pathway/labels";
-import { summarizeTerms } from "@/lib/pathway/summarize";
+import { PATHWAY_COURSE_COLUMNS, summarizeTerms } from "@/lib/pathway/summarize";
+import { categoryClass } from "@/lib/setup/setup";
 import { createClient } from "@/lib/supabase/server";
 import { formatRelativeTime, isStale } from "@/lib/sync/format";
 import { dayKey, formatDay, formatTime, formatTimeRange } from "@/lib/timetable/format";
@@ -36,7 +35,7 @@ export default function DashboardPage() {
   );
 }
 
-type CourseRef = { code: string; type: CourseType } | null;
+type CourseRef = { code: string; type: { color: number } | null } | null;
 
 async function Dashboard() {
   const supabase = await createClient();
@@ -47,7 +46,7 @@ async function Dashboard() {
   const now = new Date();
   const { data: terms, error: termsError } = await supabase
     .from("terms")
-    .select("id, name, kind, time_zone, courses(id, code, title, credits, type, status)")
+    .select(`id, name, kind, time_zone, courses(${PATHWAY_COURSE_COLUMNS})`)
     .order("id");
   if (termsError) throw new Error(`Loading terms failed: ${termsError.message}`);
 
@@ -65,20 +64,20 @@ async function Dashboard() {
     await Promise.all([
       supabase
         .from("class_sessions")
-        .select("id, kind, title, starts_at, ends_at, location, cancelled, courses(code, type)")
+        .select("id, kind, title, starts_at, ends_at, location, cancelled, courses(code, type:course_types(color))")
         .gte("starts_at", windowStart)
         .lt("starts_at", windowEnd)
         .order("starts_at"),
       supabase
         .from("assignments")
-        .select("id, title, kind, due_at, html_url, workflow_state, score, submitted_at, progress, courses(code, type)")
+        .select("id, title, kind, due_at, html_url, workflow_state, score, submitted_at, progress, courses(code, type:course_types(color))")
         .eq("deleted_in_canvas", false)
         .gte("due_at", windowStart)
         .lt("due_at", windowEnd)
         .order("due_at"),
       supabase
         .from("announcements")
-        .select("id, title, message, posted_at, courses(code, type)")
+        .select("id, title, message, posted_at, courses(code, type:course_types(color))")
         .eq("deleted_in_canvas", false)
         .eq("read", false)
         .order("posted_at", { ascending: false })
@@ -320,7 +319,7 @@ function CourseLink({ course, plain = false }: { course: CourseRef; plain?: bool
   return (
     <Link
       href={coursePath(course.code)}
-      className={cn("inline-flex items-center gap-1.5 underline-offset-4 hover:underline", !plain && "font-medium", COURSE_TYPE_COLOR[course.type])}
+      className={cn("inline-flex items-center gap-1.5 underline-offset-4 hover:underline", !plain && "font-medium", categoryClass(course.type?.color ?? 0))}
     >
       {!plain && <span aria-hidden className="size-2 rounded-full bg-(--course)" />}
       {course.code}

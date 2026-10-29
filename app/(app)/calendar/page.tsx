@@ -9,7 +9,7 @@ import { assignmentStatus } from "@/lib/assignments/status";
 import { neighbours, parseCalendarParams, viewRange, type CalendarView } from "@/lib/calendar/params";
 import { coursePath } from "@/lib/courses/slug";
 import { addDays, daysBetween, monthGrid, weekAgenda } from "@/lib/dashboard/agenda";
-import { summarizeTerms } from "@/lib/pathway/summarize";
+import { PATHWAY_COURSE_COLUMNS, summarizeTerms } from "@/lib/pathway/summarize";
 import { createClient } from "@/lib/supabase/server";
 import { dayKey, formatTime } from "@/lib/timetable/format";
 import { SESSION_TYPE_LABELS, sessionLabel } from "@/lib/timetable/kind";
@@ -38,7 +38,7 @@ async function Calendar({ searchParams }: { searchParams: Record<string, string 
 
   const { data: terms, error: termsError } = await supabase
     .from("terms")
-    .select("id, name, kind, time_zone, courses(id, code, title, credits, type, status)")
+    .select(`id, name, kind, time_zone, courses(${PATHWAY_COURSE_COLUMNS})`)
     .order("id");
   if (termsError) throw new Error(`Loading terms failed: ${termsError.message}`);
   const currentTerm = summarizeTerms(terms).find((term) => term.phase === "current");

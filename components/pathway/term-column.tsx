@@ -12,8 +12,10 @@ export function TermColumn({
   ref,
   drop = null,
   notice,
+  creditUnit,
 }: {
   term: TermSummary;
+  creditUnit: string;
   children: ReactNode;
   ref?: Ref<HTMLLIElement>;
   drop?: "ok" | "problem" | null;
@@ -36,7 +38,7 @@ export function TermColumn({
     >
       <div className="flex items-baseline justify-between gap-2 px-1.5 pt-1">
         <h2 className={cn("text-headline", past && "text-muted-foreground")}>{term.name}</h2>
-        <span className="text-xs text-muted-foreground tabular-nums">{term.totalSh} SH</span>
+        <span className="text-xs text-muted-foreground tabular-nums">{term.totalSh} {creditUnit}</span>
       </div>
       {(current || term.kind === "coop") && (
         <div className="flex flex-wrap gap-1.5 px-1.5">

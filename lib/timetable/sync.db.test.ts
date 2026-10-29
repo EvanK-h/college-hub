@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { Database } from "@/lib/database.types";
-import { readLocalSupabase } from "@/test/local-supabase";
+import { readLocalSupabase, testCourseType } from "@/test/local-supabase";
 import { syncTimetable } from "./sync";
 
 // These tests run the real sync_class_sessions function, so they need the local Supabase stack
@@ -89,10 +89,11 @@ describe.skipIf(!local)("timetable sync against the local database", () => {
 
   beforeEach(async () => {
     await cleanUp();
+    const type = await testCourseType(db, OWNER);
     check(
       await db.from("courses").insert([
-        { code: "TEST 1000", title: "Test One", credits: 4, type: "cs_core", term_id: TERM_ID, owner_id: OWNER },
-        { code: "TEST 2000", title: "Test Two", credits: 4, type: "cs_core", term_id: TERM_ID, owner_id: OWNER },
+        { code: "TEST 1000", title: "Test One", credits: 4, course_type_id: type, term_id: TERM_ID, owner_id: OWNER },
+        { code: "TEST 2000", title: "Test Two", credits: 4, course_type_id: type, term_id: TERM_ID, owner_id: OWNER },
       ]),
     );
     feed = ics([pastLecture, lecture, lab, unknownCourse, workshop]);

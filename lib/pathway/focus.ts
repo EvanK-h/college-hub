@@ -1,29 +1,35 @@
-// The Quantum / AI focus: which direction the swap options are ranked for. Kept in a cookie so
-// it survives visits; see the 2026-10-27 decision.
+// Focuses are the directions a student might take (say Quantum and AI). Each swap option has a
+// relevance per focus, and the swaps page ranks by the chosen one. The choice is a preference, so
+// it lives in a cookie; see the 2026-10-27 and 2026-10-29 decisions.
 import type { Relevance } from "./labels";
 
-export const FOCUSES = ["quantum", "ai"] as const;
-export type Focus = (typeof FOCUSES)[number];
-
 export const FOCUS_COOKIE = "pathway-focus";
-export const FOCUS_LABELS: Record<Focus, string> = { quantum: "Quantum", ai: "AI" };
 
-/** Anything unknown (no cookie yet, an old value) falls back to quantum, the plan's main direction. */
-export function parseFocus(value: string | undefined): Focus {
-  return FOCUSES.find((focus) => focus === value) ?? "quantum";
+/** The focus id from the cookie, or the first focus when it's missing or no longer exists. */
+export function parseFocus(value: string | undefined, focusIds: readonly string[]): string | null {
+  return focusIds.find((id) => id === value) ?? focusIds[0] ?? null;
 }
 
 const RANK: Record<Relevance, number> = { none: 0, lower: 1, low: 2, medium: 3, high: 4 };
 
-type Rated = { quantum_relevance: Relevance; ai_relevance: Relevance };
+/** A swap's relevance for each focus id; a missing rating counts as none. */
+export type Rated = { relevance: Partial<Record<string, Relevance>> };
 
-/** Best fit for the focus first; ties go to the other direction's relevance. Stable otherwise. */
-export function sortByFocus<T extends Rated>(swaps: readonly T[], focus: Focus): T[] {
-  const [first, second] = focus === "quantum" ? (["quantum_relevance", "ai_relevance"] as const) : (["ai_relevance", "quantum_relevance"] as const);
-  return [...swaps].sort((a, b) => RANK[b[first]] - RANK[a[first]] || RANK[b[second]] - RANK[a[second]]);
+export function relevanceFor(swap: Rated, focusId: string): Relevance {
+  return swap.relevance[focusId] ?? "none";
 }
 
-/** The relevance a swap has for a focus. */
-export function relevanceFor(swap: Rated, focus: Focus): Relevance {
-  return focus === "quantum" ? swap.quantum_relevance : swap.ai_relevance;
+/**
+ * Best fit for the chosen focus first; ties go to the other focuses in order. Stable otherwise.
+ * `focusIds` lists every focus in display order.
+ */
+export function sortByFocus<T extends Rated>(swaps: readonly T[], focusId: string, focusIds: readonly string[]): T[] {
+  const order = [focusId, ...focusIds.filter((id) => id !== focusId)];
+  return [...swaps].sort((a, b) => {
+    for (const id of order) {
+      const difference = RANK[relevanceFor(b, id)] - RANK[relevanceFor(a, id)];
+      if (difference !== 0) return difference;
+    }
+    return 0;
+  });
 }

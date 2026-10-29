@@ -13,6 +13,7 @@ import { ASSIGNMENT_KIND_LABELS, assignmentStatus, formatDueIn, isFinished } fro
 import { canvasCourseUrl } from "@/lib/canvas/links";
 import { codeFromSlug } from "@/lib/courses/slug";
 import { courseGrade, letterGrade, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
+import { loadSetup } from "@/lib/setup/load";
 import { createClient } from "@/lib/supabase/server";
 import { formatDay, formatTime, formatTimeRange } from "@/lib/timetable/format";
 import { SESSION_TYPE_LABELS } from "@/lib/timetable/kind";
@@ -53,7 +54,7 @@ async function Course({ slug }: { slug: string }) {
   if (!course) notFound();
 
   const now = new Date();
-  const [groupsResult, assignmentsResult, announcementsResult, sessionsResult] = await Promise.all([
+  const [groupsResult, assignmentsResult, announcementsResult, sessionsResult, setup] = await Promise.all([
     supabase.from("assignment_groups").select("canvas_id, name, weight, position").eq("course_id", course.id).order("position"),
     supabase
       .from("assignments")
@@ -75,6 +76,7 @@ async function Course({ slug }: { slug: string }) {
       .gte("ends_at", now.toISOString())
       .order("starts_at")
       .limit(UPCOMING_SESSIONS),
+    loadSetup(),
   ]);
   for (const result of [groupsResult, assignmentsResult, announcementsResult, sessionsResult]) {
     if (result.error) throw new Error(`Loading the course failed: ${result.error.message}`);
@@ -196,13 +198,13 @@ async function Course({ slug }: { slug: string }) {
               ) : (
                 <p className="flex items-baseline gap-3">
                   <span className="text-large-title tabular-nums">{grade.percent.toFixed(1)}%</span>
-                  <span className="text-title-3 text-muted-foreground">{letterGrade(grade.percent)}</span>
+                  <span className="text-title-3 text-muted-foreground">{letterGrade(grade.percent, setup.profile.gradeScale)}</span>
                 </p>
               )}
               <p className="text-xs text-tertiary-foreground">
                 {grade.weighted ? "Weighted by assignment group, from graded work only." : "Total points, from graded work only."}
               </p>
-              {groups.length > 0 && <GradeCalculator groups={gradeGroups} items={gradeItems} />}
+              {groups.length > 0 && <GradeCalculator groups={gradeGroups} items={gradeItems} scale={setup.profile.gradeScale} />}
             </CardContent>
           </Card>
 

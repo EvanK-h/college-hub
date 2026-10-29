@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { CircleAlert, Maximize2, Minimize2 } from "lucide-react";
 import { useReducedMotion } from "motion/react";
 import { StatusIcon } from "@/components/pathway/status-icon";
+import { DECELERATION, project, rubberband } from "@/lib/motion/physics";
 import { ancestors, chainTo, descendants, type GraphEdge, type GraphNode, type PrereqGraph } from "@/lib/pathway/graph";
 import { categoryClass } from "@/lib/setup/setup";
 import { cn } from "@/lib/utils";
@@ -63,7 +64,8 @@ export function PrereqGraphView({ graph, chains }: { graph: PrereqGraph; chains:
   const [fit, setFit] = useState(false);
   const [available, setAvailable] = useState<number | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
-  const pan = usePan(scroller);
+  const canvas = useRef<HTMLDivElement>(null);
+  const pan = usePan(scroller, canvas);
 
   // The room the graph has, for fitting it to the width.
   useEffect(() => {
@@ -144,7 +146,7 @@ export function PrereqGraphView({ graph, chains }: { graph: PrereqGraph; chains:
         {...pan}
         className={cn("-mx-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6", shown === 1 && "cursor-grab active:cursor-grabbing")}
       >
-        <div style={{ width: width * shown, height: height * shown }}>
+        <div ref={canvas} style={{ width: width * shown, height: height * shown }}>
           <div className="relative origin-top-left" style={{ width, height, transform: shown === 1 ? undefined : `scale(${shown})` }}>
             {graph.columns.map((term, column) => (
               <h2
@@ -242,18 +244,16 @@ export function PrereqGraphView({ graph, chains }: { graph: PrereqGraph; chains:
   );
 }
 
-// Apple's projection of where a flick would come to rest (from "Designing Fluid Interfaces"): the
-// distance a scroll view decelerating at `rate` per millisecond covers from `velocity` px/s.
-const DECELERATION = 0.998;
-const project = (velocity: number) => ((velocity / 1000) * DECELERATION) / (1 - DECELERATION);
-
 /**
  * Drag-to-pan for a sideways scroll box, mouse only (touch and trackpads already scroll it
  * natively, with their own momentum). The content follows the pointer 1:1 from where it was
  * grabbed; on release it carries on at the pointer's speed and decelerates to the projected point,
  * as a native flick does. Grabbing again stops it at once. Reduced motion stops on release.
+ *
+ * Dragged past either end, the content follows with growing resistance (`rubberband`) and springs
+ * back on release, rather than stopping dead. `content` is the element that moves for that.
  */
-function usePan(scroller: React.RefObject<HTMLDivElement | null>) {
+function usePan(scroller: React.RefObject<HTMLDivElement | null>, content: React.RefObject<HTMLDivElement | null>) {
   const reduceMotion = useReducedMotion();
   const drag = useRef<{ startX: number; startScroll: number; samples: { x: number; t: number }[] } | null>(null);
   const frame = useRef<number | null>(null);
@@ -263,6 +263,13 @@ function usePan(scroller: React.RefObject<HTMLDivElement | null>) {
     frame.current = null;
   };
   useEffect(() => stop, []);
+  // Springs a rubber-banded edge back into place.
+  const settle = () => {
+    const moved = content.current;
+    if (!moved || !moved.style.translate || moved.style.translate.startsWith("0px")) return;
+    moved.style.transition = "translate 450ms var(--ease-spring)";
+    moved.style.translate = "0px 0";
+  };
 
   return {
     onPointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -270,6 +277,7 @@ function usePan(scroller: React.RefObject<HTMLDivElement | null>) {
       // Only the background pans; courses and controls keep their clicks.
       if (!element || event.pointerType !== "mouse" || event.button !== 0 || (event.target as Element).closest("button")) return;
       stop();
+      if (content.current) content.current.style.transition = "none";
       element.setPointerCapture(event.pointerId);
       drag.current = { startX: event.clientX, startScroll: element.scrollLeft, samples: [{ x: event.clientX, t: event.timeStamp }] };
     },
@@ -277,7 +285,12 @@ function usePan(scroller: React.RefObject<HTMLDivElement | null>) {
       const element = scroller.current;
       const current = drag.current;
       if (!element || !current) return;
-      element.scrollLeft = current.startScroll - (event.clientX - current.startX);
+      const wanted = current.startScroll - (event.clientX - current.startX);
+      const max = element.scrollWidth - element.clientWidth;
+      element.scrollLeft = Math.min(Math.max(wanted, 0), max);
+      // Past an end, the content itself moves, a little and then less.
+      const overshoot = wanted < 0 ? wanted : wanted > max ? wanted - max : 0;
+      if (content.current) content.current.style.translate = `${-rubberband(overshoot, element.clientWidth)}px 0`;
       // The last 100ms of movement, for the release velocity.
       current.samples = [...current.samples, { x: event.clientX, t: event.timeStamp }].filter((sample) => event.timeStamp - sample.t < 100);
     },
@@ -285,6 +298,7 @@ function usePan(scroller: React.RefObject<HTMLDivElement | null>) {
       const element = scroller.current;
       const current = drag.current;
       drag.current = null;
+      settle();
       if (!element || !current || reduceMotion) return;
       const first = current.samples[0];
       const elapsed = first ? event.timeStamp - first.t : 0;
@@ -306,6 +320,7 @@ function usePan(scroller: React.RefObject<HTMLDivElement | null>) {
     },
     onPointerCancel() {
       drag.current = null;
+      settle();
     },
   };
 }

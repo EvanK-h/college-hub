@@ -399,7 +399,7 @@ Five phases, each ending with something you can use; a phase is done when its la
 
 The repo is what co-op reviewers will see, so make the engineering decisions visible: a demo mode with fake data, a README that explains the trade-offs, and tests on the parts that are easy to get wrong.
 
-- **Demo mode.** A `DEMO=true` deployment seeded with an invented student, so the public link never shows your grades. Make the repo public only once demo mode works.
+- **Demo mode.** A `DEMO=true` deployment seeded with an invented student, so the public link never shows your grades. Make the repo public only once demo mode works. *(2026-10-29: the invented student exists as `data/example`, and any school can be loaded from a data folder; see the decision log. A public demo deployment using it is still to do.)*
 - **README.** One screenshot of the dashboard and one of the pathway, the stack, an architecture diagram, and a short "Decisions" section: why Supabase over Notion as the backend, why the sync never overwrites your fields, how the Canvas token stays server-side, and how the sync works around the Hobby cron limit.
 - **Decision log.** Keep `docs/decisions.md` with one dated entry per real decision. It doubles as interview material.
 - **Tests worth showing.** Grade calculator, sync upsert (your columns survive), import totals, requirement progress, and one Playwright flow.

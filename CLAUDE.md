@@ -34,6 +34,8 @@ supabase gen types typescript --local > lib/database.types.ts
 npm test                            # Vitest
 npm run test:e2e                    # Playwright end-to-end (needs `supabase start`; builds and serves on :3100)
 npm run lint && npm run typecheck   # run both before every commit
+npm run import -- data/mine --email <you>   # load a data folder into local Supabase (--remote: .env.local project, --check: validate only)
+npm run export -- data/mine --email <you>   # write the database back out to a data folder
 ```
 
 ## Layout
@@ -56,9 +58,12 @@ lib/
   canvas/                  client.ts, schemas.ts (Zod), sync.ts
   timetable/               ICS parsing + sync
   grades/                  grade calculator (pure functions)
+  setup/                   the profile and per-owner categories (types, areas, slots, attributes, focuses)
   database.types.ts        generated — never edit by hand
 supabase/migrations/       all schema changes, in order
-scripts/import-notion.ts   one-off import of the Notion Course Pathway
+scripts/import.ts, export.ts   load a data folder into Supabase, or write one back out
+scripts/data-folder/       folder format (Zod), Northeastern preset, reader and writer
+data/example/              an invented student; data/* is otherwise gitignored (data/mine is yours)
 docs/decisions.md          decision log
 ```
 
@@ -79,9 +84,9 @@ docs/decisions.md          decision log
 - Schema changes happen only through new files in `supabase/migrations/`. Never edit a migration that has already been applied; write a new one.
 - Regenerate `lib/database.types.ts` after every migration.
 - Derived values (requirement progress, "due in", year, effective status, weighted grades) are computed in SQL views or TypeScript — never stored.
-- Closed sets are Postgres enums (course type, course status, NUpath code, requirement area, swap slot, relevance, session type).
+- Closed sets that are the same at every school are Postgres enums (course status, term kind, prereq kind, relevance, session type). Anything a school or student defines (course types, requirement areas, swap slots, attributes such as NUpath, focuses) is a per-owner table, read through `lib/setup/load.ts`; see the 2026-10-29 decision.
 - Store times as `timestamptz` in UTC. Display in the term's `time_zone` (`Europe/London` for London terms, `America/New_York` from Fall 2027). Format day names and time ranges at display time.
-- Import check: after importing from Notion there must be 56 courses, 171 SH total, 53 SH of transfer credit, 31 requirements and 32 swap options. Keep this as a test.
+- Import check: `data/mine` must have 56 courses, 171 SH total, 53 SH of transfer credit, 31 requirements and 32 swap options. Keep this as a test (it skips where the folder is absent).
 
 ## Sync rules
 

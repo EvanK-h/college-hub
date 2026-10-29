@@ -6,7 +6,7 @@ import { StatusPill } from "@/components/assignments/status-pill";
 import { CourseCode } from "@/components/courses/course-code";
 import { AutoSync } from "@/components/dashboard/auto-sync";
 import { TodoList } from "@/components/dashboard/todo-list";
-import { PAGE_CLASS } from "@/components/page-header";
+import { LargeTitle, PAGE_CLASS } from "@/components/page-header";
 import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
 import { DashboardSkeleton } from "@/components/skeletons";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -174,7 +174,7 @@ async function Today() {
       <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-1">
         <div>
           <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{currentTerm?.name ?? "Today"}</p>
-          <h1 className="text-large-title">{formatLongDay(now, timeZone)}</h1>
+          <LargeTitle>{formatLongDay(now, timeZone)}</LargeTitle>
         </div>
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/settings" className="underline-offset-4 hover:underline">

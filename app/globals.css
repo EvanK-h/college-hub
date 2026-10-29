@@ -202,6 +202,7 @@
   }
   html {
     @apply font-sans;
+    timeline-scope: --large-title;
     font-optical-sizing: auto;
     -webkit-tap-highlight-color: transparent;
   }
@@ -241,6 +242,44 @@
     animation: scroll-edge linear both;
     animation-timeline: scroll(root);
     animation-range: 0 24px;
+  }
+}
+
+/* The iOS large title, on phones: as a page's large title slides under the header, a small copy
+   fades into the header's middle and the "College Hub" wordmark fades out to make room. Both run
+   on the title's view timeline (inset by the header's height), declared at the root so the
+   layout's header can see it. Without scroll-driven animations the header just keeps the
+   wordmark. */
+@keyframes collapse-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes collapse-out {
+  to {
+    opacity: 0;
+  }
+}
+@utility large-title-timeline {
+  view-timeline: --large-title block;
+  view-timeline-inset: 3.5rem 0;
+}
+@utility collapsed-title {
+  opacity: 0;
+  @supports (animation-timeline: view()) {
+    animation: collapse-in linear both;
+    animation-timeline: --large-title;
+    animation-range: exit 50% exit 100%;
+  }
+}
+@utility collapsed-title-swap {
+  @supports (animation-timeline: view()) {
+    animation: collapse-out linear both;
+    animation-timeline: --large-title;
+    animation-range: exit 0% exit 50%;
   }
 }
 

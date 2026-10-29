@@ -20,7 +20,8 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <span className="flex size-8 items-center justify-center rounded-[0.6rem] bg-brand text-brand-foreground shadow-card">
               <GraduationCap aria-hidden className="size-[1.125rem]" />
             </span>
-            College Hub
+            {/* On a phone it gives way to the page's title as that scrolls under the header. */}
+            <span className="max-sm:collapsed-title-swap">College Hub</span>
           </Link>
           {/* min-w-0 lets the nav scroll sideways rather than push search off a narrow screen. */}
           <div className="min-w-0 flex-1">

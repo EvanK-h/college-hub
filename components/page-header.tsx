@@ -41,15 +41,32 @@ export function PageHeader({
       {marker ? (
         <div className="flex items-stretch gap-3">
           {marker}
-          <h1 className="text-large-title">{title}</h1>
+          <LargeTitle>{title}</LargeTitle>
         </div>
       ) : (
-        <h1 className="text-large-title">{title}</h1>
+        <LargeTitle>{title}</LargeTitle>
       )}
       {nav && <div className="mt-1">{nav}</div>}
       {description && <p className="max-w-prose text-base text-muted-foreground">{description}</p>}
       {children}
     </header>
+  );
+}
+
+// A page's h1. On a phone, once it scrolls under the header, a small copy shows in the header's
+// middle (`collapsed-title` in globals.css), so a long page still says where you are. The copy is
+// fixed over the header, hidden from screen readers and clicks; the h1 is the real title.
+export function LargeTitle({ children }: { children: string }) {
+  return (
+    <>
+      <h1 className="text-large-title large-title-timeline">{children}</h1>
+      <p
+        aria-hidden
+        className="collapsed-title pointer-events-none fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-center px-24 text-headline sm:hidden"
+      >
+        <span className="truncate">{children}</span>
+      </p>
+    </>
   );
 }
 

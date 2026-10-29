@@ -562,3 +562,13 @@ React only pairs two titles that are on screen in the same commit. The course pa
 - The loaded page clears the store, so reaching a course another way (⌘K, a link) shows the usual bones rather than a stale title.
 
 The two snapshots keep their own size and cross-fade (`object-fit: none`) instead of stretching text. Under reduced motion the title doesn't travel and just cross-fades in place. The shared name comes from `courseTitleName` in `lib/courses/slug.ts`, since the server renders the card.
+
+## 2026-10-29: Polish pass
+
+A last look through every page at desktop and phone widths in both themes:
+- **Navigation placeholders.** The header's nav, the gear and the phone's tab bar read the path, so they render inside Suspense. Their fallbacks used to be nothing, so on a first load the header filled in late. Each fallback is now the same control with nothing selected (`SegmentedLinks`, `TabBarFallback`, `SettingsLinkFallback`), and Plan's control does the same.
+- **Term headers on the board.** The credit meter moved onto its own line under the term name, so a long name ("Spring 2027 · London") no longer wraps beside the figure and pushes that column's meter out of line with the others.
+- **Week grid.** This week's grid always reaches the current time, so the now line can't fall off the bottom on an evening visit.
+- **Calendar skeleton.** Once the URL is read, the skeleton matches the view you asked for (month or week) and the phone's forms of each. A full page load still shows the month shape first, since the static shell can't know the view.
+- **Requirement rows.** "0/1 courses done" on every row repeated what the course chips already show. A met requirement now says "Met" with the done icon; an unmet one with several courses says "1 of 2 done"; a single-course row leaves it to the chip.
+

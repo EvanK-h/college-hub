@@ -1,10 +1,11 @@
 "use client";
 
 import { useOptimistic, useTransition } from "react";
-import { Circle, X } from "lucide-react";
+import { Check, Circle, Trash2, X } from "lucide-react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { deleteTodo, restoreTodo, setTodoDone } from "@/app/(app)/actions";
 import { AddTodoForm } from "@/components/dashboard/add-todo-form";
+import { SwipeRow } from "@/components/swipe-row";
 import { useToast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import { daysBetween, formatCountdown } from "@/lib/dashboard/agenda";
@@ -21,7 +22,7 @@ const form = (fields: Record<string, string>) => {
 // Ticking or deleting a to-do takes it off the list at once and says so in a toast with Undo,
 // rather than asking first. The server catches up behind it. A row leaving fades while the rows
 // below slide up into its place (popLayout), on the critically damped spring; reduced motion keeps
-// only the fade.
+// only the fade. On touch screens a row also swipes: right for done, left to delete.
 export function TodoList({
   todos,
   courses,
@@ -72,38 +73,45 @@ export function TodoList({
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="group flex items-start gap-2"
                   >
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      className="hit-area mt-0.5"
-                      aria-label={`Mark “${todo.title}” done`}
-                      onClick={() => complete(todo)}
+                    <SwipeRow
+                      className="rounded-lg"
+                      start={{ label: "Done", icon: <Check aria-hidden className="size-4" />, tone: "bg-status-done text-card", onSwipe: () => complete(todo) }}
+                      end={{ label: "Delete", icon: <Trash2 aria-hidden className="size-4" />, tone: "bg-destructive text-destructive-foreground", onSwipe: () => remove(todo) }}
                     >
-                      <Circle aria-hidden className="text-status-planned" />
-                    </Button>
-                    <div className="min-w-0 flex-1 text-sm">
-                      <p className="leading-snug">{todo.title}</p>
-                      {(todo.course || days !== null) && (
-                        <p className={cn("text-xs", days !== null && days < 0 ? "text-status-overdue" : "text-tertiary-foreground")}>
-                          {[todo.course?.code, days !== null && (days < 0 ? `${-days} d late` : formatCountdown(days))]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </p>
-                      )}
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      aria-label={`Delete “${todo.title}”`}
-                      onClick={() => remove(todo)}
-                      className="hit-area opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
-                    >
-                      <X aria-hidden />
-                    </Button>
+                      <div className="group flex items-start gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          className="hit-area mt-0.5"
+                          aria-label={`Mark “${todo.title}” done`}
+                          onClick={() => complete(todo)}
+                        >
+                          <Circle aria-hidden className="text-status-planned" />
+                        </Button>
+                        <div className="min-w-0 flex-1 text-sm">
+                          <p className="leading-snug">{todo.title}</p>
+                          {(todo.course || days !== null) && (
+                            <p className={cn("text-xs", days !== null && days < 0 ? "text-status-overdue" : "text-tertiary-foreground")}>
+                              {[todo.course?.code, days !== null && (days < 0 ? `${-days} d late` : formatCountdown(days))]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-xs"
+                          aria-label={`Delete “${todo.title}”`}
+                          onClick={() => remove(todo)}
+                          className="hit-area opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+                        >
+                          <X aria-hidden />
+                        </Button>
+                      </div>
+                    </SwipeRow>
                   </motion.li>
                 );
               })}

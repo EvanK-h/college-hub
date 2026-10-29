@@ -1,8 +1,9 @@
 "use client";
 
 import { useOptimistic, useTransition, type ReactNode } from "react";
-import { Star } from "lucide-react";
+import { Mail, MailOpen, Star } from "lucide-react";
 import { setAnnouncementFlag } from "@/app/(app)/courses/[code]/actions";
+import { SwipeRow } from "@/components/swipe-row";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,8 @@ const form = (id: string, flag: keyof Flags, value: boolean) => {
 
 // One announcement as a native <details>. Opening an unread one marks it read, as opening a mail
 // does; "Mark unread" sits right under it to take that back. The flags change at once and the
-// server catches up. `body` is the text, already converted from Canvas's HTML.
+// server catches up. On touch screens, swiping the row right toggles read. `body` is the text,
+// already converted from Canvas's HTML.
 export function AnnouncementItem({
   id,
   title,
@@ -50,33 +52,43 @@ export function AnnouncementItem({
   }
 
   return (
-    <details className="group" onToggle={(event) => event.currentTarget.open && !flags.read && set("read", true)}>
-      <summary className="flex cursor-pointer list-none items-start gap-3 rounded-lg [&::-webkit-details-marker]:hidden">
-        <span aria-hidden className={cn("mt-1.5 size-2 shrink-0 rounded-full", flags.read ? "bg-transparent" : "bg-muted-foreground")} />
-        <span className="min-w-0 flex-1">
-          <span className={cn("block", flags.read ? "font-normal" : "font-semibold")}>
-            {badge && <span className="mr-2 align-[0.0625rem]">{badge}</span>}
-            {title}
-            {!flags.read && <span className="sr-only"> (unread)</span>}
+    <SwipeRow
+      start={{
+        label: flags.read ? "Unread" : "Read",
+        icon: flags.read ? <Mail aria-hidden className="size-4" /> : <MailOpen aria-hidden className="size-4" />,
+        tone: "bg-status-in-progress text-card",
+        onSwipe: () => set("read", !flags.read),
+        stays: true,
+      }}
+    >
+      <details className="group px-5 py-3.5" onToggle={(event) => event.currentTarget.open && !flags.read && set("read", true)}>
+        <summary className="flex cursor-pointer list-none items-start gap-3 rounded-lg [&::-webkit-details-marker]:hidden">
+          <span aria-hidden className={cn("mt-1.5 size-2 shrink-0 rounded-full", flags.read ? "bg-transparent" : "bg-muted-foreground")} />
+          <span className="min-w-0 flex-1">
+            <span className={cn("block", flags.read ? "font-normal" : "font-semibold")}>
+              {badge && <span className="mr-2 align-[0.0625rem]">{badge}</span>}
+              {title}
+              {!flags.read && <span className="sr-only"> (unread)</span>}
+            </span>
+            <span className="mt-0.5 block text-xs text-tertiary-foreground">{meta}</span>
           </span>
-          <span className="mt-0.5 block text-xs text-tertiary-foreground">{meta}</span>
-        </span>
-        {flags.important && <Star aria-label="Important" className="mt-0.5 size-4 fill-current text-muted-foreground" />}
-      </summary>
-      <div className="mt-3 flex flex-col gap-3 pl-5">
-        <p className="text-sm leading-relaxed whitespace-pre-line">{body || "No text."}</p>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" size="sm" variant="secondary" onClick={() => set("read", !flags.read)}>
-            {flags.read ? "Mark unread" : "Mark read"}
-          </Button>
-          <Button type="button" size="sm" variant="secondary" onClick={() => set("important", !flags.important)}>
-            {flags.important ? "Not important" : "Mark important"}
-          </Button>
-          <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline-offset-4 hover:underline">
-            Open in Canvas
-          </a>
+          {flags.important && <Star aria-label="Important" className="mt-0.5 size-4 fill-current text-muted-foreground" />}
+        </summary>
+        <div className="mt-3 flex flex-col gap-3 pl-5">
+          <p className="text-sm leading-relaxed whitespace-pre-line">{body || "No text."}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" size="sm" variant="secondary" onClick={() => set("read", !flags.read)}>
+              {flags.read ? "Mark unread" : "Mark read"}
+            </Button>
+            <Button type="button" size="sm" variant="secondary" onClick={() => set("important", !flags.important)}>
+              {flags.important ? "Not important" : "Mark important"}
+            </Button>
+            <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline-offset-4 hover:underline">
+              Open in Canvas
+            </a>
+          </div>
         </div>
-      </div>
-    </details>
+      </details>
+    </SwipeRow>
   );
 }

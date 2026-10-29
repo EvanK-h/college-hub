@@ -35,9 +35,9 @@ export function AnnouncementList({
   return (
     <>
       <OpenAnnouncementFromHash />
-      <ul className="flex flex-col divide-y divide-separator rounded-2xl bg-card shadow-card">
+      <ul className="flex flex-col divide-y divide-separator overflow-hidden rounded-2xl bg-card shadow-card">
         {announcements.map((announcement) => (
-          <li key={announcement.id} id={`announcement-${announcement.id}`} className="scroll-mt-20 px-5 py-3.5">
+          <li key={announcement.id} id={`announcement-${announcement.id}`} className="scroll-mt-20">
             <AnnouncementItem
               id={announcement.id}
               title={announcement.title}

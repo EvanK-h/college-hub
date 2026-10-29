@@ -24,21 +24,25 @@ export function parsePlanMove(input: unknown) {
 }
 
 // The swap form sends one value per choice: "<swap option id>:<id of the course it replaces>".
-const planSwapSchema = z.object({
-  planId: z.uuid(),
-  choice: z.string().transform((value, ctx) => {
-    const [swapOptionId, courseId] = value.split(":");
-    const ids = z.object({ swapOptionId: z.uuid(), courseId: z.uuid() }).safeParse({ swapOptionId, courseId });
-    if (!ids.success) {
-      ctx.addIssue({ code: "custom", message: "Choose a swap." });
-      return z.NEVER;
-    }
-    return ids.data;
-  }),
+const swapChoiceSchema = z.string().transform((value, ctx) => {
+  const [swapOptionId, courseId] = value.split(":");
+  const ids = z.object({ swapOptionId: z.uuid(), courseId: z.uuid() }).safeParse({ swapOptionId, courseId });
+  if (!ids.success) {
+    ctx.addIssue({ code: "custom", message: "Choose a swap." });
+    return z.NEVER;
+  }
+  return ids.data;
 });
+
+const planSwapSchema = z.object({ planId: z.uuid(), choice: swapChoiceSchema });
 
 export function parsePlanSwap(formData: FormData) {
   return planSwapSchema.safeParse({ planId: formData.get("planId"), choice: formData.get("choice") });
+}
+
+/** The swaps page's "Try in a what-if plan": just the choice, since the plan is made for it. */
+export function parseSwapChoice(formData: FormData) {
+  return swapChoiceSchema.safeParse(formData.get("choice"));
 }
 
 /** "current" or a plan id, from the compare page's query string; null for anything else. */

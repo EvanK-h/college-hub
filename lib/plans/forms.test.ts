@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseNewPlan, parsePlanMove, parsePlanRef, parsePlanSwap } from "./forms";
+import { parseNewPlan, parsePlanMove, parsePlanRef, parsePlanSwap, parseSwapChoice } from "./forms";
 
 const ID = "3f1c2b8e-9d4a-4c1e-8b7f-2a6d5e4c3b21";
 const ID2 = "7a2b3c4d-5e6f-4a1b-9c8d-0e1f2a3b4c5d";
@@ -27,6 +27,8 @@ describe("plan forms", () => {
   it("splits a swap choice into the swap and the course it replaces", () => {
     expect(parsePlanSwap(form({ planId: ID, choice: `${ID2}:${ID}` })).data).toEqual({ planId: ID, choice: { swapOptionId: ID2, courseId: ID } });
     expect(parsePlanSwap(form({ planId: ID, choice: "" })).success).toBe(false);
+    expect(parseSwapChoice(form({ choice: `${ID2}:${ID}` })).data).toEqual({ swapOptionId: ID2, courseId: ID });
+    expect(parseSwapChoice(form({ choice: `${ID2}` })).success).toBe(false);
   });
 
   it("reads compare refs", () => {

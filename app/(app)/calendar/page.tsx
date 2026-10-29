@@ -11,7 +11,7 @@ import { coursePath } from "@/lib/courses/slug";
 import { addDays, daysBetween, monthGrid, weekAgenda } from "@/lib/dashboard/agenda";
 import { PATHWAY_COURSE_COLUMNS, summarizeTerms } from "@/lib/pathway/summarize";
 import { createClient } from "@/lib/supabase/server";
-import { dayKey, formatTime } from "@/lib/timetable/format";
+import { dayKey, formatTime, shortLocation } from "@/lib/timetable/format";
 import { SESSION_TYPE_LABELS, sessionLabel } from "@/lib/timetable/kind";
 import { cn } from "@/lib/utils";
 
@@ -256,7 +256,11 @@ function WeekView({ days, today, timeZone, now }: { days: Day[]; today: string; 
                     session.title
                   )}
                 </p>
-                {session.location && <p className="text-tertiary-foreground">{session.location}</p>}
+                {session.location && (
+                  <p title={session.location} className="text-tertiary-foreground">
+                    {shortLocation(session.location)}
+                  </p>
+                )}
                 {session.cancelled && <p>Cancelled</p>}
               </li>
             ))}

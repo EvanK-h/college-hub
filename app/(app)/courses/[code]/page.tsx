@@ -15,7 +15,7 @@ import { codeFromSlug } from "@/lib/courses/slug";
 import { courseGrade, letterGrade, namesItsWeight, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
 import { loadSetup } from "@/lib/setup/load";
 import { createClient } from "@/lib/supabase/server";
-import { formatDay, formatTime, formatTimeRange } from "@/lib/timetable/format";
+import { formatDay, formatTime, formatTimeRange, shortLocation } from "@/lib/timetable/format";
 import { SESSION_TYPE_LABELS } from "@/lib/timetable/kind";
 import { cn } from "@/lib/utils";
 
@@ -225,10 +225,10 @@ async function Course({ slug }: { slug: string }) {
                         {formatDay(new Date(session.starts_at), timeZone)} ·{" "}
                         {formatTimeRange(new Date(session.starts_at), new Date(session.ends_at), timeZone)}
                       </p>
-                      <p className="text-xs text-tertiary-foreground">
+                      <p title={session.location ?? undefined} className="text-xs text-tertiary-foreground">
                         {session.cancelled
                           ? "Cancelled"
-                          : [SESSION_TYPE_LABELS[session.kind], session.location].filter(Boolean).join(" · ")}
+                          : [SESSION_TYPE_LABELS[session.kind], session.location && shortLocation(session.location)].filter(Boolean).join(" · ")}
                       </p>
                     </li>
                   ))}

@@ -17,7 +17,7 @@ import { PATHWAY_COURSE_COLUMNS, summarizeTerms } from "@/lib/pathway/summarize"
 import { categoryClass } from "@/lib/setup/setup";
 import { createClient } from "@/lib/supabase/server";
 import { formatRelativeTime, isStale } from "@/lib/sync/format";
-import { dayKey, formatDay, formatTime, formatTimeRange } from "@/lib/timetable/format";
+import { dayKey, formatDay, formatTime, formatTimeRange, shortLocation } from "@/lib/timetable/format";
 import { SESSION_TYPE_LABELS, sessionLabel } from "@/lib/timetable/kind";
 import { cn } from "@/lib/utils";
 
@@ -168,8 +168,11 @@ async function Dashboard() {
                         </span>
                         <span className="min-w-0">
                           {course ? <CourseLink course={course} /> : <span className="font-medium">{session.title}</span>}
-                          <span className={cn("block text-xs text-tertiary-foreground", session.cancelled && "line-through")}>
-                            {[course && SESSION_TYPE_LABELS[session.kind], session.location].filter(Boolean).join(" · ")}
+                          <span
+                            title={session.location ?? undefined}
+                            className={cn("block text-xs text-tertiary-foreground", session.cancelled && "line-through")}
+                          >
+                            {[course && SESSION_TYPE_LABELS[session.kind], session.location && shortLocation(session.location)].filter(Boolean).join(" · ")}
                           </span>
                           {session.cancelled && <span className="text-xs">Cancelled</span>}
                         </span>
@@ -292,7 +295,12 @@ async function Dashboard() {
                   <p key={session.id} className={cn(session.cancelled && "text-muted-foreground line-through")}>
                     <span className="tabular-nums">{formatTime(new Date(session.starts_at), timeZone)}</span>{" "}
                     {sessionLabel(session)}
-                    {session.location && <span className="text-tertiary-foreground"> · {session.location}</span>}
+                    {session.location && (
+                      <span title={session.location} className="text-tertiary-foreground">
+                        {" "}
+                        · {shortLocation(session.location)}
+                      </span>
+                    )}
                   </p>
                 ))}
                 {dayDue.map((assignment) => (

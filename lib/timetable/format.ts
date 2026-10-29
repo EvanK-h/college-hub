@@ -27,3 +27,13 @@ export function dayKey(date: Date, timeZone: string): string {
   const get = parts(date, timeZone, { year: "numeric", month: "2-digit", day: "2-digit" });
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
+
+/**
+ * A room as it fits in a narrow column: "Portsoken COMBINED 528 & 532 [94 cap]" becomes
+ * "Portsoken COMBINED 528 & 532". The room's capacity is noise when you're finding the room.
+ * Capitals are left alone, since building acronyms (ISEC) would be mangled. The full string goes
+ * in a `title`.
+ */
+export function shortLocation(location: string): string {
+  return location.replace(/\s*\[\s*\d+\s*cap\s*\]/gi, "").trim();
+}

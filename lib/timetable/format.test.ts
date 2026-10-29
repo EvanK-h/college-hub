@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayKey, formatDay, formatTimeRange } from "./format";
+import { dayKey, formatDay, formatTimeRange, shortLocation } from "./format";
 
 describe("timetable formatting", () => {
   it("shows a London class in local time on both sides of the clock change", () => {
@@ -14,5 +14,17 @@ describe("timetable formatting", () => {
     expect(formatDay(late, "America/New_York")).toBe("Tue 7 Sept");
     expect(dayKey(late, "America/New_York")).toBe("2027-09-07");
     expect(dayKey(late, "Europe/London")).toBe("2027-09-08");
+  });
+});
+
+describe("shortLocation", () => {
+  it.each([
+    ["Portsoken COMBINED 528 & 532 [94 cap]", "Portsoken COMBINED 528 & 532"],
+    ["Devon House 212 [33 Cap]", "Devon House 212"],
+    ["(Online); Devon House 110 [16 Cap]", "(Online); Devon House 110"],
+    ["Devon House G23", "Devon House G23"],
+    ["ISEC 102 [40 CAP]", "ISEC 102"],
+  ])("%s → %s", (location, expected) => {
+    expect(shortLocation(location)).toBe(expected);
   });
 });

@@ -490,3 +490,11 @@ Browser back and forward, Server Action refreshes and optimistic updates carry n
 
 **Graph physics.** `project` and `rubberband` (Apple's formulas) are pure functions in `lib/motion/physics.ts` with tests. Panning past the graph's ends moves the canvas with growing resistance and springs back on release, which closes the rubber-band item left open in §5.6.
 
+## 2026-10-29: Mobile: sheets, swipes and edge fades
+
+**Bottom sheets.** Under `sm`, every dialog (`DialogContent`) is a sheet pinned to the bottom with a grabber, rather than a centred card. It follows the finger 1:1 down the grabber and rubber-bands upwards. On release the flick is projected forward (`project`); past half the sheet's height it slides off and closes, otherwise it springs back. It's built into the shared dialog on Base UI and `lib/motion/physics.ts` instead of adding Vaul, so the course editor, "New plan", rename, delete and ⌘K all get it at once (⌘K sits at the top of the screen only from `sm` up). From `sm` up nothing changes, including the course editor growing from its card.
+
+**Swipe actions.** `SwipeRow` adds Mail-style swipes for touch only: a to-do swipes right for done and left to delete (both with Undo in the toast), an announcement swipes right to toggle read. A touch picks a direction after 10px, so vertical scrolling stays native, and a swipe commits when its projected end passes 40% of the row. The rows' own buttons stay for mouse and keyboard, and the swipe is never the only way to do anything.
+
+**Edge fades.** The board and the graph fade at a side edge only while there's more to scroll past it, using a scroll-driven animation (`edge-fade-x`). Browsers without scroll-driven animations get no fade, rather than a fade that hides the last column.
+

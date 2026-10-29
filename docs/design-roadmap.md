@@ -17,8 +17,8 @@ Everything that was deferred or left out while building the sections below, so n
 - [x] Announcements inbox ("See all" on Today), from §3. Built with §8.2: `/announcements`.
 - [x] Mark an announcement read when it's opened, from §3. Built with §8.2 (`AnnouncementItem`).
 - [x] Undo for to-dos, from §3. Built with §8.2: done and delete both undo from the toast.
-- [ ] The course edit dialog as a bottom sheet on phones, from §5.3. With §8.5.
-- [ ] "New plan" dialog as a bottom sheet on phones, from §5.7. With §8.5.
+- [x] The course edit dialog as a bottom sheet on phones, from §5.3. Built with §8.5: every dialog is a sheet under `sm`.
+- [x] "New plan" dialog as a bottom sheet on phones, from §5.7. Built with §8.5.
 - [x] Rubber-banding at the prerequisite graph's edges, from §5.6. Built with §8.4: past an end the canvas itself moves (`rubberband`) and springs back.
 - [ ] Shared-element morph from a Courses card into the course page's header, from §8.4. React only pairs the two when the course page renders in the same commit as the navigation, and it streams in behind a skeleton today; it needs the page (or its header) to render without suspending first.
 - [ ] Merge the graph into the board as a "Board | Graph" toggle, from §5.6. **Decision**: it removes a Plan tab.
@@ -237,7 +237,7 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 
 - Status as a three-segment control (○ Planned · ◐ In progress · ✓ Done) instead of a `<select>`. It's one tap, and it shows the status shapes.
 - Add context: requirements this course satisfies, prerequisites (met or unmet), and a link to the course page when one exists.
-- On phone it becomes a bottom sheet (§6.2).
+- On phone it becomes a bottom sheet (§8.5).
 - Grow the dialog from the card (set `transform-origin` from the trigger's rect), so it reads as the card opening rather than a box appearing in the middle.
 
 **Done 29 Oct 2026 (§5.4–5.7)**; see "Requirements, swaps, graph and what-if plans, as built" in the decision log. Changes from the plan below: requirement chips link to the course page (not the board); the graph pans with momentum but doesn't rubber-band, because it pans by native scrolling, which stops at the edges; the graph stays its own page (merging it into the board is still open); and "New plan" opens a dialog, which becomes a sheet on phones with §8.5.
@@ -326,6 +326,8 @@ The app leans on `text-xs` (12 px) for real content: calendar entries, swap deta
 - **Progress rings** draw in on the first visit only (sessionStorage flag). Redrawing every time you open the page starts to feel slow.
 
 ### 8.5 Mobile
+
+**Done 29 Oct 2026**; see "Mobile: sheets, swipes and edge fades" in the decision log. Changes from the plan below: the sheets are built into the shared `DialogContent` rather than taken from Vaul, and the edge fades follow the scroll position, so an edge only fades while there is more past it.
 
 - Bottom tab bar (§2.1).
 - **Dialogs become bottom sheets** under `sm`, with drag-to-dismiss: track the finger 1:1, project the release velocity to decide whether to close, and rubber-band past the top. Vaul does this. Use a damping 0.8 spring only after a flick.

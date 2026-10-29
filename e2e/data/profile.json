@@ -1,0 +1,14 @@
+{
+  "school": "End-to-end tests",
+  "creditUnit": "credits",
+  "timeZone": "America/New_York",
+  "courseTypes": [
+    {
+      "name": "Core",
+      "color": 1
+    }
+  ],
+  "slots": [
+    "Elective"
+  ]
+}

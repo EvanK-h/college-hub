@@ -1,0 +1,61 @@
+[
+  {
+    "swapIn": "BIOL 4500 · Developmental Biology",
+    "slot": "Biology elective",
+    "fitsIn": "Spring 2029",
+    "prerequisites": "BIOL 2301",
+    "whyConsider": "Pairs with the thesis lab's work on zebrafish development.",
+    "whyCurrentBetter": "Conservation Biology keeps a field option open if the thesis changes direction.",
+    "replaces": [
+      "BIOL 4400"
+    ],
+    "relevance": {
+      "Research": "high",
+      "Industry": "low"
+    }
+  },
+  {
+    "swapIn": "BIOL 4600 · Biotechnology Methods",
+    "slot": "Biology elective",
+    "fitsIn": "Fall 2028 or Spring 2029",
+    "prerequisites": "BIOL 3400",
+    "whyConsider": "Hands-on lab techniques that internships ask for.",
+    "whyCurrentBetter": "Neurobiology and Conservation Biology cover more of the graduate-school reading list.",
+    "replaces": [
+      "BIOL 4300",
+      "BIOL 4400"
+    ],
+    "relevance": {
+      "Research": "medium",
+      "Industry": "high"
+    }
+  },
+  {
+    "swapIn": "BIOL 4700 + 4701 · Field Ecology with lab",
+    "slot": "Biology elective",
+    "fitsIn": "Summer only",
+    "whyConsider": "Three weeks of field work at the university's station.",
+    "whyCurrentBetter": "Takes a summer the internship needs.",
+    "replaces": [
+      "BIOL 4400"
+    ],
+    "relevance": {
+      "Research": "medium"
+    }
+  },
+  {
+    "swapIn": "DATA 4200 · Deep Learning",
+    "slot": "Minor elective",
+    "fitsIn": "Spring 2028",
+    "prerequisites": "DATA 2300",
+    "whyConsider": "The most asked-for skill in biotech data roles.",
+    "whyCurrentBetter": "Machine Learning for Scientists is taught with biology data sets.",
+    "replaces": [
+      "DATA 3400"
+    ],
+    "relevance": {
+      "Research": "low",
+      "Industry": "high"
+    }
+  }
+]

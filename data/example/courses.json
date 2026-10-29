@@ -1,0 +1,384 @@
+[
+  {
+    "code": "MATH 1210",
+    "title": "Calculus 1",
+    "credits": 4,
+    "type": "Science and math",
+    "status": "done",
+    "term": "Transfer credit",
+    "attributes": [
+      "QR"
+    ],
+    "notes": "AP Calculus AB, score 5."
+  },
+  {
+    "code": "ENGL 1010",
+    "title": "First-Year Writing",
+    "credits": 4,
+    "type": "General education",
+    "status": "done",
+    "term": "Transfer credit",
+    "attributes": [
+      "WRI"
+    ]
+  },
+  {
+    "code": "PSYC 1001",
+    "title": "Introduction to Psychology",
+    "credits": 4,
+    "type": "General education",
+    "status": "done",
+    "term": "Transfer credit",
+    "attributes": [
+      "SS"
+    ]
+  },
+  {
+    "code": "BIOL 1101",
+    "title": "Principles of Biology 1",
+    "credits": 4,
+    "type": "Biology core",
+    "status": "done",
+    "term": "Fall 2025",
+    "attributes": [
+      "NS"
+    ]
+  },
+  {
+    "code": "BIOL 1102",
+    "title": "Principles of Biology 1 Lab",
+    "credits": 1,
+    "type": "Biology core",
+    "status": "done",
+    "term": "Fall 2025",
+    "attributes": [
+      "NS"
+    ]
+  },
+  {
+    "code": "CHEM 1211",
+    "title": "General Chemistry 1",
+    "credits": 4,
+    "type": "Science and math",
+    "status": "done",
+    "term": "Fall 2025",
+    "attributes": [
+      "NS"
+    ]
+  },
+  {
+    "code": "CHEM 1212",
+    "title": "General Chemistry 1 Lab",
+    "credits": 1,
+    "type": "Science and math",
+    "status": "done",
+    "term": "Fall 2025"
+  },
+  {
+    "code": "MATH 1220",
+    "title": "Calculus 2",
+    "credits": 4,
+    "type": "Science and math",
+    "status": "done",
+    "term": "Fall 2025",
+    "attributes": [
+      "QR"
+    ]
+  },
+  {
+    "code": "HIST 1150",
+    "title": "World History",
+    "credits": 3,
+    "type": "General education",
+    "status": "done",
+    "term": "Fall 2025",
+    "attributes": [
+      "HUM"
+    ]
+  },
+  {
+    "code": "BIOL 1111",
+    "title": "Principles of Biology 2",
+    "credits": 4,
+    "type": "Biology core",
+    "status": "done",
+    "term": "Spring 2026"
+  },
+  {
+    "code": "BIOL 1112",
+    "title": "Principles of Biology 2 Lab",
+    "credits": 1,
+    "type": "Biology core",
+    "status": "done",
+    "term": "Spring 2026"
+  },
+  {
+    "code": "CHEM 1221",
+    "title": "General Chemistry 2",
+    "credits": 4,
+    "type": "Science and math",
+    "status": "done",
+    "term": "Spring 2026"
+  },
+  {
+    "code": "CHEM 1222",
+    "title": "General Chemistry 2 Lab",
+    "credits": 1,
+    "type": "Science and math",
+    "status": "done",
+    "term": "Spring 2026"
+  },
+  {
+    "code": "DATA 1100",
+    "title": "Programming for Data Science",
+    "credits": 4,
+    "type": "Data science minor",
+    "status": "done",
+    "term": "Spring 2026",
+    "attributes": [
+      "QR"
+    ]
+  },
+  {
+    "code": "ARTS 1300",
+    "title": "Drawing Studio",
+    "credits": 3,
+    "type": "General education",
+    "status": "done",
+    "term": "Spring 2026",
+    "attributes": [
+      "ART"
+    ]
+  },
+  {
+    "code": "STAT 2100",
+    "title": "Introductory Statistics",
+    "credits": 4,
+    "type": "Science and math",
+    "status": "done",
+    "term": "Summer 2026",
+    "attributes": [
+      "QR"
+    ]
+  },
+  {
+    "code": "BIOL 2201",
+    "title": "Genetics",
+    "credits": 4,
+    "type": "Biology core",
+    "status": "in_progress",
+    "term": "Fall 2026"
+  },
+  {
+    "code": "BIOL 2202",
+    "title": "Genetics Lab",
+    "credits": 1,
+    "type": "Biology core",
+    "status": "in_progress",
+    "term": "Fall 2026"
+  },
+  {
+    "code": "CHEM 2311",
+    "title": "Organic Chemistry 1",
+    "credits": 4,
+    "type": "Science and math",
+    "status": "in_progress",
+    "term": "Fall 2026"
+  },
+  {
+    "code": "DATA 2200",
+    "title": "Data Wrangling and Visualisation",
+    "credits": 4,
+    "type": "Data science minor",
+    "status": "in_progress",
+    "term": "Fall 2026"
+  },
+  {
+    "code": "SOCI 1200",
+    "title": "Society and Health",
+    "credits": 3,
+    "type": "General education",
+    "status": "in_progress",
+    "term": "Fall 2026",
+    "attributes": [
+      "SS",
+      "DIV"
+    ]
+  },
+  {
+    "code": "BIOL 2301",
+    "title": "Cell Biology",
+    "credits": 4,
+    "type": "Biology core",
+    "status": "planned",
+    "term": "Spring 2027"
+  },
+  {
+    "code": "CHEM 2321",
+    "title": "Organic Chemistry 2",
+    "credits": 4,
+    "type": "Science and math",
+    "status": "planned",
+    "term": "Spring 2027"
+  },
+  {
+    "code": "PHYS 1110",
+    "title": "Physics for Life Sciences 1",
+    "credits": 4,
+    "type": "Science and math",
+    "status": "planned",
+    "term": "Spring 2027",
+    "attributes": [
+      "NS"
+    ]
+  },
+  {
+    "code": "DATA 2300",
+    "title": "Statistical Modelling",
+    "credits": 4,
+    "type": "Data science minor",
+    "status": "planned",
+    "term": "Spring 2027"
+  },
+  {
+    "code": "BIOL 3101",
+    "title": "Ecology and Evolution",
+    "credits": 4,
+    "type": "Biology core",
+    "status": "planned",
+    "term": "Fall 2027"
+  },
+  {
+    "code": "BIOL 3400",
+    "title": "Molecular Biology",
+    "credits": 4,
+    "type": "Biology elective",
+    "status": "planned",
+    "term": "Fall 2027"
+  },
+  {
+    "code": "PHYS 1120",
+    "title": "Physics for Life Sciences 2",
+    "credits": 4,
+    "type": "Science and math",
+    "status": "planned",
+    "term": "Fall 2027"
+  },
+  {
+    "code": "ENGL 3050",
+    "title": "Writing in the Sciences",
+    "credits": 3,
+    "type": "General education",
+    "status": "planned",
+    "term": "Fall 2027",
+    "attributes": [
+      "WRI"
+    ]
+  },
+  {
+    "code": "BIOL 3500",
+    "title": "Biochemistry",
+    "credits": 4,
+    "type": "Biology core",
+    "status": "planned",
+    "term": "Spring 2028"
+  },
+  {
+    "code": "BIOL 3620",
+    "title": "Microbiology",
+    "credits": 4,
+    "type": "Biology elective",
+    "status": "planned",
+    "term": "Spring 2028"
+  },
+  {
+    "code": "DATA 3400",
+    "title": "Machine Learning for Scientists",
+    "credits": 4,
+    "type": "Data science minor",
+    "status": "planned",
+    "term": "Spring 2028"
+  },
+  {
+    "code": "PHIL 2100",
+    "title": "Bioethics",
+    "credits": 3,
+    "type": "General education",
+    "status": "planned",
+    "term": "Spring 2028",
+    "attributes": [
+      "HUM",
+      "DIV"
+    ]
+  },
+  {
+    "code": "INTN 3000",
+    "title": "Industry Internship",
+    "credits": 0,
+    "type": "Internship",
+    "status": "planned",
+    "term": "Summer 2028 · Internship",
+    "notes": "Twelve weeks; apply by January."
+  },
+  {
+    "code": "BIOL 4100",
+    "title": "Immunology",
+    "credits": 4,
+    "type": "Biology elective",
+    "status": "planned",
+    "term": "Fall 2028"
+  },
+  {
+    "code": "BIOL 4250",
+    "title": "Bioinformatics",
+    "credits": 4,
+    "type": "Biology elective",
+    "status": "planned",
+    "term": "Fall 2028"
+  },
+  {
+    "code": "DATA 4100",
+    "title": "Data Science Project",
+    "credits": 4,
+    "type": "Data science minor",
+    "status": "planned",
+    "term": "Fall 2028"
+  },
+  {
+    "code": "MUSC 1100",
+    "title": "Music and Culture",
+    "credits": 3,
+    "type": "General education",
+    "status": "planned",
+    "term": "Fall 2028",
+    "attributes": [
+      "ART",
+      "DIV"
+    ]
+  },
+  {
+    "code": "BIOL 4990",
+    "title": "Senior Research Thesis",
+    "credits": 4,
+    "type": "Biology core",
+    "status": "planned",
+    "term": "Spring 2029",
+    "notes": "Ask a lab about joining by Spring 2028."
+  },
+  {
+    "code": "BIOL 4300",
+    "title": "Neurobiology",
+    "credits": 4,
+    "type": "Biology elective",
+    "status": "planned",
+    "term": "Spring 2029"
+  },
+  {
+    "code": "BIOL 4400",
+    "title": "Conservation Biology",
+    "credits": 4,
+    "type": "Biology elective",
+    "status": "planned",
+    "term": "Spring 2029"
+  }
+]

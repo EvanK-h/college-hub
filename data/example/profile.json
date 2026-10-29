@@ -1,0 +1,103 @@
+{
+  "school": "Example State University",
+  "creditUnit": "credits",
+  "timeZone": "America/Chicago",
+  "attributeSetName": "Gen Ed",
+  "creditLimits": {
+    "semester": 18,
+    "summer": 12
+  },
+  "courseTypes": [
+    {
+      "name": "Biology core",
+      "color": 1
+    },
+    {
+      "name": "Biology elective",
+      "color": 2
+    },
+    {
+      "name": "Data science minor",
+      "color": 3
+    },
+    {
+      "name": "Science and math",
+      "color": 4
+    },
+    {
+      "name": "General education",
+      "color": 5
+    },
+    {
+      "name": "Internship",
+      "color": 6,
+      "coop": true
+    }
+  ],
+  "areas": [
+    {
+      "name": "Biology core",
+      "headline": true
+    },
+    {
+      "name": "Biology electives",
+      "headline": true
+    },
+    {
+      "name": "Data science minor",
+      "headline": true
+    },
+    {
+      "name": "Chemistry and physics"
+    },
+    {
+      "name": "Mathematics and statistics"
+    },
+    {
+      "name": "Capstone"
+    }
+  ],
+  "slots": [
+    "Biology elective",
+    "Minor elective"
+  ],
+  "attributes": [
+    {
+      "code": "WRI",
+      "name": "Writing"
+    },
+    {
+      "code": "QR",
+      "name": "Quantitative reasoning"
+    },
+    {
+      "code": "NS",
+      "name": "Natural science"
+    },
+    {
+      "code": "HUM",
+      "name": "Humanities"
+    },
+    {
+      "code": "SS",
+      "name": "Social science"
+    },
+    {
+      "code": "ART",
+      "name": "Arts"
+    },
+    {
+      "code": "DIV",
+      "name": "Diversity and equity"
+    }
+  ],
+  "focuses": [
+    {
+      "name": "Research",
+      "goal": "BIOL 4990"
+    },
+    {
+      "name": "Industry"
+    }
+  ]
+}

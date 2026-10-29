@@ -1,0 +1,42 @@
+[
+  {
+    "code": "QA 1000",
+    "title": "Foundations of Testing",
+    "credits": 4,
+    "type": "Core",
+    "status": "done",
+    "term": "Transfer credit"
+  },
+  {
+    "code": "QA 2000",
+    "title": "Browser Automation",
+    "credits": 4,
+    "type": "Core",
+    "status": "in_progress",
+    "term": "Fall 2026"
+  },
+  {
+    "code": "QA 2100",
+    "title": "Flaky Test Forensics",
+    "credits": 4,
+    "type": "Core",
+    "status": "planned",
+    "term": "Spring 2027"
+  },
+  {
+    "code": "QA 3000",
+    "title": "Advanced Assertions",
+    "credits": 4,
+    "type": "Core",
+    "status": "planned",
+    "term": "Fall 2027"
+  },
+  {
+    "code": "QA 3100",
+    "title": "Test Doubles",
+    "credits": 4,
+    "type": "Core",
+    "status": "planned",
+    "term": "Fall 2027"
+  }
+]

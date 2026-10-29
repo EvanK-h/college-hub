@@ -1,0 +1,115 @@
+[
+  {
+    "name": "Principles of Biology with labs",
+    "area": "Biology core",
+    "courses": [
+      "BIOL 1101",
+      "BIOL 1102",
+      "BIOL 1111",
+      "BIOL 1112"
+    ]
+  },
+  {
+    "name": "Genetics with lab",
+    "area": "Biology core",
+    "courses": [
+      "BIOL 2201",
+      "BIOL 2202"
+    ]
+  },
+  {
+    "name": "Cell Biology",
+    "area": "Biology core",
+    "courses": [
+      "BIOL 2301"
+    ]
+  },
+  {
+    "name": "Ecology and Evolution",
+    "area": "Biology core",
+    "courses": [
+      "BIOL 3101"
+    ]
+  },
+  {
+    "name": "Biochemistry",
+    "area": "Biology core",
+    "courses": [
+      "BIOL 3500"
+    ]
+  },
+  {
+    "name": "Upper-level biology electives",
+    "area": "Biology electives",
+    "options": "Any six BIOL courses numbered 3000 or above, outside the core.",
+    "courses": [
+      "BIOL 3400",
+      "BIOL 3620",
+      "BIOL 4100",
+      "BIOL 4250",
+      "BIOL 4300",
+      "BIOL 4400"
+    ]
+  },
+  {
+    "name": "General chemistry with labs",
+    "area": "Chemistry and physics",
+    "courses": [
+      "CHEM 1211",
+      "CHEM 1212",
+      "CHEM 1221",
+      "CHEM 1222"
+    ]
+  },
+  {
+    "name": "Organic chemistry",
+    "area": "Chemistry and physics",
+    "courses": [
+      "CHEM 2311",
+      "CHEM 2321"
+    ]
+  },
+  {
+    "name": "Physics for life sciences",
+    "area": "Chemistry and physics",
+    "courses": [
+      "PHYS 1110",
+      "PHYS 1120"
+    ]
+  },
+  {
+    "name": "Calculus",
+    "area": "Mathematics and statistics",
+    "courses": [
+      "MATH 1210",
+      "MATH 1220"
+    ]
+  },
+  {
+    "name": "Statistics",
+    "area": "Mathematics and statistics",
+    "courses": [
+      "STAT 2100"
+    ]
+  },
+  {
+    "name": "Data science minor",
+    "area": "Data science minor",
+    "notes": "Five courses; DATA 4100 is the minor's project.",
+    "courses": [
+      "DATA 1100",
+      "DATA 2200",
+      "DATA 2300",
+      "DATA 3400",
+      "DATA 4100"
+    ]
+  },
+  {
+    "name": "Senior thesis or capstone",
+    "area": "Capstone",
+    "options": "BIOL 4990, or BIOL 4980 Capstone Seminar.",
+    "courses": [
+      "BIOL 4990"
+    ]
+  }
+]

@@ -1,28 +1,46 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../lib/database.types";
+import { readFolder } from "../scripts/data-folder/files";
+import { writeDataset } from "../scripts/data-folder/write";
 import { E2E_EMAIL, E2E_USER_ID, localSupabase } from "./local";
 
 // Invented data for the end-to-end user, rebuilt from scratch before each spec file so every
-// test starts from the same plan. Ids and Canvas ids are chosen so they can't collide with
-// anything real or with the Vitest database tests.
+// test starts from the same plan. The plan is the data folder in e2e/data, loaded by the same
+// importer as everyone's own data; this file adds what a sync would (Canvas grades, sync runs).
+// Ids and Canvas ids are chosen so they can't collide with anything real or with the Vitest
+// database tests.
 //
-//   Test transfer credit (900)  QA 1000 done
-//   Test Fall 2026 (901)        QA 2000 in progress, on Canvas, with a graded problem set and an exam to come
-//   Test Spring 2027 (902)      QA 2100 planned, needs QA 2000
-//   Test Fall 2027 (903)        QA 3000 planned, needs QA 2100; QA 3100 planned
-//   Test co-op (904)
+//   Transfer credit (900)  QA 1000 done
+//   Fall 2026 (901)        QA 2000 in progress, on Canvas, with a graded problem set and an exam to come
+//   Spring 2027 (902)      QA 2100 planned, needs QA 2000
+//   Fall 2027 (903)        QA 3000 planned, needs QA 2100; QA 3100 planned
+//   Co-op (904)
 //   Swap option: QA 4000 · Invented Elective, in place of QA 3100
 
-export const TERMS = { transfer: 900, fall26: 901, spring27: 902, fall27: 903, coop: 904 } as const;
-// Term names are unique across every owner, so the test terms are named so no real term can clash.
+const FIRST_TERM_ID = 900;
 export const TERM_NAMES = {
-  transfer: "Test transfer credit",
-  fall26: "Test Fall 2026",
-  spring27: "Test Spring 2027",
-  fall27: "Test Fall 2027",
-  coop: "Test co-op",
+  transfer: "Transfer credit",
+  fall26: "Fall 2026",
+  spring27: "Spring 2027",
+  fall27: "Fall 2027",
+  coop: "Co-op",
 } as const;
-const OWNED_TABLES = ["plans", "todos", "swap_options", "courses", "sync_runs"] as const;
+// Deleted in this order: rows that point at categories go before the categories themselves.
+const OWNED_TABLES = [
+  "plans",
+  "todos",
+  "swap_options",
+  "requirements",
+  "courses",
+  "sync_runs",
+  "course_types",
+  "requirement_areas",
+  "swap_slots",
+  "attributes",
+  "focuses",
+  "profiles",
+  "terms",
+] as const;
 
 function admin() {
   const { url, serviceKey } = localSupabase();
@@ -55,42 +73,13 @@ export async function seed() {
 
   // Child rows (assignments, prerequisites, plan rows...) go with their courses and plans.
   for (const table of OWNED_TABLES) check(await db.from(table).delete().eq("owner_id", owner));
-  check(await db.from("terms").delete().eq("owner_id", owner));
+  await writeDataset(db, owner, readFolder("e2e/data"), { firstTermId: FIRST_TERM_ID });
 
-  check(
-    await db.from("terms").insert([
-      { id: TERMS.transfer, name: TERM_NAMES.transfer, kind: "transfer", time_zone: "America/New_York", owner_id: owner },
-      { id: TERMS.fall26, name: TERM_NAMES.fall26, kind: "semester", time_zone: "Europe/London", owner_id: owner },
-      { id: TERMS.spring27, name: TERM_NAMES.spring27, kind: "semester", time_zone: "Europe/London", owner_id: owner },
-      { id: TERMS.fall27, name: TERM_NAMES.fall27, kind: "semester", time_zone: "America/New_York", owner_id: owner },
-      { id: TERMS.coop, name: TERM_NAMES.coop, kind: "coop", time_zone: "America/New_York", owner_id: owner },
-    ]),
-  );
-
-  // A multi-row insert fills missing keys with null, so every row names every column.
-  const course = (code: string, title: string, term_id: number, status: "planned" | "in_progress" | "done", canvas_course_id: number | null = null) => ({
-    code, title, credits: 4, type: "cs_core" as const, term_id, status, canvas_course_id, owner_id: owner,
-  });
-  const courses = rows(
-    await db
-      .from("courses")
-      .insert([
-        course("QA 1000", "Foundations of Testing", TERMS.transfer, "done"),
-        course("QA 2000", "Browser Automation", TERMS.fall26, "in_progress", 9_900_001),
-        course("QA 2100", "Flaky Test Forensics", TERMS.spring27, "planned"),
-        course("QA 3000", "Advanced Assertions", TERMS.fall27, "planned"),
-        course("QA 3100", "Test Doubles", TERMS.fall27, "planned"),
-      ])
-      .select("id, code"),
-  );
+  const courses = rows(await db.from("courses").select("id, code").eq("owner_id", owner));
   const id = (code: string) => courses.find((c) => c.code === code)?.id ?? "";
 
-  check(
-    await db.from("course_prereqs").insert([
-      { course_id: id("QA 2100"), requires_code: "QA 2000", kind: "prereq", option_group: 1, owner_id: owner },
-      { course_id: id("QA 3000"), requires_code: "QA 2100", kind: "prereq", option_group: 1, owner_id: owner },
-    ]),
-  );
+  // QA 2000 is on Canvas, as if mapped in Settings.
+  check(await db.from("courses").update({ canvas_course_id: 9_900_001 }).eq("id", id("QA 2000")));
 
   // QA 2000's grade: problem sets (60%) 80/100 graded, the exam (40%) still to come. So the course
   // stands at 80%, an A- (90%) is out of reach (88% at best), and a B- (80%) needs 80% on the exam.
@@ -114,14 +103,6 @@ export async function seed() {
       },
     ]),
   );
-
-  const [swap] = rows(
-    await db
-      .from("swap_options")
-      .insert({ swap_in: "QA 4000 · Invented Elective", slot: "khoury_elective", quantum_relevance: "medium", ai_relevance: "high", owner_id: owner })
-      .select("id"),
-  );
-  check(await db.from("swap_replaces").insert({ swap_option_id: swap?.id ?? "", course_id: id("QA 3100"), owner_id: owner }));
 
   // A fresh successful sync, so loading the dashboard never starts one.
   const now = new Date().toISOString();

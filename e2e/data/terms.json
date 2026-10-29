@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Transfer credit",
+    "kind": "transfer"
+  },
+  {
+    "name": "Fall 2026",
+    "kind": "semester",
+    "timeZone": "Europe/London"
+  },
+  {
+    "name": "Spring 2027",
+    "kind": "semester",
+    "timeZone": "Europe/London"
+  },
+  {
+    "name": "Fall 2027",
+    "kind": "semester"
+  },
+  {
+    "name": "Co-op",
+    "kind": "coop"
+  }
+]

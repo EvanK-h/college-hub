@@ -1,0 +1,230 @@
+[
+  {
+    "course": "BIOL 1101",
+    "coreq": [
+      [
+        "BIOL 1102"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 1102",
+    "coreq": [
+      [
+        "BIOL 1101"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 1111",
+    "prereq": [
+      [
+        "BIOL 1101"
+      ]
+    ],
+    "coreq": [
+      [
+        "BIOL 1112"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 1112",
+    "coreq": [
+      [
+        "BIOL 1111"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 2201",
+    "prereq": [
+      [
+        "BIOL 1111"
+      ]
+    ],
+    "coreq": [
+      [
+        "BIOL 2202"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 2202",
+    "coreq": [
+      [
+        "BIOL 2201"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 2301",
+    "prereq": [
+      [
+        "BIOL 2201"
+      ],
+      [
+        "CHEM 1221"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 3101",
+    "prereq": [
+      [
+        "BIOL 2201"
+      ]
+    ],
+    "recommended": [
+      [
+        "STAT 2100"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 3400",
+    "prereq": [
+      [
+        "BIOL 2301"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 3500",
+    "prereq": [
+      [
+        "BIOL 2301"
+      ],
+      [
+        "CHEM 2321"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 4250",
+    "prereq": [
+      [
+        "BIOL 2201"
+      ],
+      [
+        "DATA 1100",
+        "CS 1100"
+      ]
+    ]
+  },
+  {
+    "course": "BIOL 4990",
+    "prereq": [
+      [
+        "BIOL 3101",
+        "BIOL 3500"
+      ]
+    ],
+    "recommended": [
+      [
+        "BIOL 3400"
+      ]
+    ]
+  },
+  {
+    "course": "CHEM 1212",
+    "coreq": [
+      [
+        "CHEM 1211"
+      ]
+    ]
+  },
+  {
+    "course": "CHEM 1221",
+    "prereq": [
+      [
+        "CHEM 1211"
+      ]
+    ],
+    "coreq": [
+      [
+        "CHEM 1222"
+      ]
+    ]
+  },
+  {
+    "course": "CHEM 2311",
+    "prereq": [
+      [
+        "CHEM 1221"
+      ]
+    ]
+  },
+  {
+    "course": "CHEM 2321",
+    "prereq": [
+      [
+        "CHEM 2311"
+      ]
+    ]
+  },
+  {
+    "course": "PHYS 1110",
+    "prereq": [
+      [
+        "MATH 1210"
+      ]
+    ]
+  },
+  {
+    "course": "PHYS 1120",
+    "prereq": [
+      [
+        "PHYS 1110"
+      ]
+    ]
+  },
+  {
+    "course": "STAT 2100",
+    "recommended": [
+      [
+        "MATH 1210"
+      ]
+    ]
+  },
+  {
+    "course": "DATA 2200",
+    "prereq": [
+      [
+        "DATA 1100"
+      ]
+    ]
+  },
+  {
+    "course": "DATA 2300",
+    "prereq": [
+      [
+        "DATA 2200"
+      ],
+      [
+        "STAT 2100"
+      ]
+    ]
+  },
+  {
+    "course": "DATA 3400",
+    "prereq": [
+      [
+        "DATA 2300"
+      ]
+    ],
+    "recommended": [
+      [
+        "MATH 1220"
+      ]
+    ]
+  },
+  {
+    "course": "DATA 4100",
+    "prereq": [
+      [
+        "DATA 3400"
+      ]
+    ]
+  }
+]

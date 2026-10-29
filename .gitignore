@@ -31,8 +31,9 @@ next-env.d.ts
 # certificates
 *.pem
 
-# personal Notion exports used by scripts/import-notion.ts
-/scripts/data/
+# personal data folders (see README); data/example is the committed, invented one
+/data/*
+!/data/example/
 
 # Claude Code worktrees and Supabase Studio SQL snippets
 /.claude/worktrees/

@@ -1,0 +1,46 @@
+[
+  {
+    "name": "Transfer credit",
+    "kind": "transfer"
+  },
+  {
+    "name": "Fall 2025",
+    "kind": "semester"
+  },
+  {
+    "name": "Spring 2026",
+    "kind": "semester"
+  },
+  {
+    "name": "Summer 2026",
+    "kind": "summer"
+  },
+  {
+    "name": "Fall 2026",
+    "kind": "semester"
+  },
+  {
+    "name": "Spring 2027",
+    "kind": "semester"
+  },
+  {
+    "name": "Fall 2027",
+    "kind": "semester"
+  },
+  {
+    "name": "Spring 2028",
+    "kind": "semester"
+  },
+  {
+    "name": "Summer 2028 · Internship",
+    "kind": "coop"
+  },
+  {
+    "name": "Fall 2028",
+    "kind": "semester"
+  },
+  {
+    "name": "Spring 2029",
+    "kind": "semester"
+  }
+]

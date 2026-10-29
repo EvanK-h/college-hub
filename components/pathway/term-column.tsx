@@ -52,38 +52,40 @@ export function TermColumn({
         drop === "problem" && "ring-2 ring-destructive ring-inset",
       )}
     >
-      <div className="flex flex-col gap-1.5 px-1.5 pt-1">
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="min-w-0">
-            {onToggle ? (
-              <button
-                type="button"
-                aria-expanded={!collapsed}
-                onClick={onToggle}
-                className="-mx-1 flex items-center gap-1 rounded-md px-1 text-left hover:bg-fill-secondary focus-visible:outline-2 focus-visible:outline-ring"
-              >
-                <ChevronRight aria-hidden className={cn("size-4 shrink-0 text-tertiary-foreground transition-transform", !collapsed && "rotate-90")} />
-                {name}
-              </button>
-            ) : (
-              name
+      <div className="flex flex-col gap-1 px-1.5 pt-1">
+        <h2 className="min-w-0">
+          {onToggle ? (
+            <button
+              type="button"
+              aria-expanded={!collapsed}
+              onClick={onToggle}
+              className="-mx-1 flex items-center gap-1 rounded-md px-1 text-left hover:bg-fill-secondary focus-visible:outline-2 focus-visible:outline-ring"
+            >
+              <ChevronRight aria-hidden className={cn("size-4 shrink-0 text-tertiary-foreground transition-transform", !collapsed && "rotate-90")} />
+              {name}
+            </button>
+          ) : (
+            name
+          )}
+        </h2>
+        {/* The credit load on its own line under the name, so a long term name never pushes it
+            onto a second row and every column's meter lines up. */}
+        {!collapsed && (
+          <div className="flex items-center gap-2">
+            {limit !== undefined && (
+              <span aria-hidden className="block h-1 flex-1 overflow-hidden rounded-full bg-fill">
+                <span
+                  className={cn("block h-full rounded-full", over ? "bg-status-overdue" : "bg-tertiary-foreground")}
+                  style={{ width: `${Math.min(term.totalSh / limit, 1) * 100}%` }}
+                />
+              </span>
             )}
-          </h2>
-          {!collapsed && (
             <span className={cn("shrink-0 text-xs tabular-nums", over ? "font-semibold text-status-overdue" : "text-muted-foreground")}>
               {term.totalSh}
               {limit !== undefined && ` / ${limit}`} {creditUnit}
               {over && <span className="sr-only">, over the limit</span>}
             </span>
-          )}
-        </div>
-        {!collapsed && limit !== undefined && (
-          <span aria-hidden className="block h-1 overflow-hidden rounded-full bg-fill">
-            <span
-              className={cn("block h-full rounded-full", over ? "bg-status-overdue" : "bg-tertiary-foreground")}
-              style={{ width: `${Math.min(term.totalSh / limit, 1) * 100}%` }}
-            />
-          </span>
+          </div>
         )}
         {collapsed && (
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground tabular-nums">

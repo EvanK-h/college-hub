@@ -284,6 +284,8 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 
 ## 7. Settings and login
 
+**Done 29 Oct 2026**; see "Settings and login, as built" in the decision log. A suggested course link still needs a "Link it" press, since saving a guess silently would sync the wrong course if the guess were wrong.
+
 - **Inset grouped sections** (the iOS Settings pattern) for Sync, Course links, Calendar feed, Appearance and Account.
 - **Move "Sign out"** from directly under the title to an Account section at the bottom. It's the least-used action on the page and currently the first one.
 - **Course links autosave on change**, with an inline ✓ / error, instead of seven Save buttons. Show the full Canvas course name under the select, since it truncates.

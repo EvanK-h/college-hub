@@ -450,3 +450,11 @@
 - **Notes autosave**, 800ms after typing pauses or when the box loses focus, with a quiet "Saving…" / "Saved." line. The Save button is gone.
 - **Type in the header.** The eyebrow names the type ("CS 1800 · CS core · Fall 2026 · London"), and the type's bar sits beside the title (`PageHeader`'s new `marker`).
 
+## 2026-10-29: Settings and login, as built
+
+- **Grouped sections.** Settings uses the iOS pattern throughout: a small heading, a card, and a note under it where one helps. The order is Sync, Course links, Calendar feed, Sync history, Appearance, Account.
+- **Account comes last.** It shows the signed-in address and Sign out, which used to be the first thing under the title.
+- **Course links save on change.** Picking a Canvas course saves it, with a ✓ (or the error) and the full Canvas name under the select, since the select truncates it. The seven Save buttons are gone. A course-code suggestion isn't saved until "Link it" is pressed, because a wrong guess would sync the wrong course. Saving on change needs JavaScript, unlike the old per-row Save buttons.
+- **History shows the latest 5 runs.** "Show all 20 runs" is a checkbox drawn as a link; the older rows hide with CSS until it's checked.
+- **Login.** After sending, the form becomes "Check your email" with the address and "Send again", which counts down 30 seconds so a double tap can't send two emails, plus "Use a different email". The wording still never says whether the address may sign in.
+

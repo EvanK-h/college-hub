@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MotionConfig, motion } from "motion/react";
+import { activeHref } from "@/lib/navigation/active";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -14,6 +15,7 @@ const LINKS = [
   { href: "/pathway/graph", label: "Prerequisites" },
   { href: "/settings", label: "Settings" },
 ] as const;
+const HREFS = LINKS.map((link) => link.href);
 
 // Critically damped (no overshoot): the pill is moved by a click, not thrown, so it should settle, not bounce.
 const PILL_SPRING = { type: "spring", bounce: 0, duration: 0.35 } as const;
@@ -21,6 +23,8 @@ const PILL_SPRING = { type: "spring", bounce: 0, duration: 0.35 } as const;
 // Client component because it reads the current path and animates the active pill between links.
 export function MainNav() {
   const pathname = usePathname();
+  // Course pages are reached from the dashboard, so they count as part of it until Courses has a tab.
+  const current = activeHref(pathname, HREFS, pathname.startsWith("/courses/") ? "/" : null);
 
   return (
     // "user" swaps the spring for an instant change when the OS asks for reduced motion.
@@ -28,7 +32,7 @@ export function MainNav() {
       <nav aria-label="Main" className="-mx-1 overflow-x-auto px-1 [scrollbar-width:none]">
         <ul className="flex w-max gap-0.5 rounded-full bg-fill-secondary p-1">
           {LINKS.map(({ href, label }) => {
-            const active = pathname === href;
+            const active = current === href;
             return (
               <li key={href} className="relative">
                 {active && (

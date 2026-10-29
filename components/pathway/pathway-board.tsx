@@ -24,6 +24,7 @@ import { moveCourse } from "@/app/(app)/pathway/actions";
 import { CourseCard, CourseCardBody } from "@/components/pathway/course-card";
 import type { CourseDetails } from "@/components/pathway/edit-course-dialog";
 import { TermColumn } from "@/components/pathway/term-column";
+import { useToast } from "@/components/toast";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { coursePath } from "@/lib/courses/slug";
@@ -90,6 +91,7 @@ export function PathwayBoard({
   const [highlight, setHighlight] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
   const scroller = useRef<HTMLOListElement>(null);
+  const toast = useToast();
 
   // Open with the current term in view: if it starts off-screen, scroll it to the start.
   useEffect(() => {
@@ -137,12 +139,23 @@ export function PathwayBoard({
     useSensor(KeyboardSensor),
   );
 
-  function commit(move: Move) {
+  // Saves a move; once it's saved, a toast offers Undo, which moves the course straight back.
+  function commit(move: Move, undoable = true) {
+    const from = placement.get(move.courseId);
     setError(null);
     startTransition(async () => {
       place(move);
       const result = await onMove(move);
-      if (!result.ok) setError(`Could not move ${codeOf(move.courseId)}. Try again.`);
+      if (!result.ok) {
+        setError(`Could not move ${codeOf(move.courseId)}. Try again.`);
+        return;
+      }
+      if (undoable && from !== undefined) {
+        toast({
+          message: `Moved ${codeOf(move.courseId)} to ${termName(move.termId)}`,
+          action: { label: "Undo", onAction: () => commit({ courseId: move.courseId, termId: from }, false) },
+        });
+      }
     });
   }
 

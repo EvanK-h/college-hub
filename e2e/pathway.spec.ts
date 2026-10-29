@@ -28,3 +28,15 @@ test("asks before a move that breaks a prerequisite, and can be cancelled", asyn
   await dialog.getByRole("button", { name: "Cancel" }).click();
   await expect(termColumn(page, TERM_NAMES.spring27).getByText("QA 2100")).toBeVisible();
 });
+
+test("undoes a move from the toast", async ({ page }) => {
+  await page.goto("/pathway");
+  // From the first test, QA 3100 sits in Spring 2027.
+  await dragCourse(page, "QA 3100", TERM_NAMES.fall27);
+  await expect(termColumn(page, TERM_NAMES.fall27).getByText("QA 3100")).toBeVisible();
+
+  await page.getByRole("status").getByRole("button", { name: "Undo" }).click();
+  await expect(termColumn(page, TERM_NAMES.spring27).getByText("QA 3100")).toBeVisible();
+  await page.reload();
+  await expect(termColumn(page, TERM_NAMES.spring27).getByText("QA 3100")).toBeVisible();
+});

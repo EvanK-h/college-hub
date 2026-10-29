@@ -30,6 +30,8 @@ Principles used throughout, from Apple's HIG and WWDC talks: wayfinding (where a
 
 ## 1. Colour scheme
 
+**Done 29 Oct 2026 (§1.1–1.4)**, with the numbers in the decision log. Changes from the plan below: the dark card ended at `0.22` and the popover at `0.25` (tertiary text needed the margin); light popovers are white like cards; no type dot was added to cards, since the bar already carries the type; and the new colour test turned up two light course types that broke the ΔE rule, so teal shifted slightly and olive became moss green. §1.5 was decided as option A; §1.6 is still open.
+
 The role system is sound: one meaning per hue, measured distances, and two text levels. What's worth changing is how the surfaces and tints *feel*, which is a bit muddy in dark mode and a bit pink on the pathway. Every token change below has to pass the existing 4.5:1 / 3:1 and ≥10 ΔE checks before it lands.
 
 ### 1.1 Surfaces: more separation, less brown (light and dark)

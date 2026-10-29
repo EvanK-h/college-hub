@@ -344,3 +344,27 @@
 **Why.** The review found the app's visual language sound and its structure the weak point: seven tabs that aren't peers (four are views of the plan), no way to browse courses, a dashboard whose five equal cards give nothing priority and show empty panels on quiet days, and a week view that can't show free time or clashes.
 
 **Also: "Missed" assignments.** Work more than 30 days past its deadline without a submission is shown as Missed (neutral grey, a circle-with-a-dash icon), not Overdue. Canvas copies old assignments into new courses (a 2024 lab showed as "Overdue · 753 d ago"), and a red status that never clears stops meaning "act now". Comparing with the term's start date would be more precise, but terms have no dates yet (2026-10-25 decision), so it is a fixed age.
+
+## 2026-10-29: Colour pass: surfaces, plain cards, today marker, and a test for the rules
+
+**Decision.** Retune the surfaces, drop the course-type tint from cards, mark today with a filled circle, allow one filled primary button per view, and enforce the spec's colour rules with a test (`lib/colour/tokens.test.ts`) that reads `globals.css`.
+
+**Surfaces** (light / dark):
+- `--background` `0.962 0.006 80` / `0.165 0.006 60`; `--card` `1 0 0` / `0.22 0.008 65`; `--popover` `1 0 0` / `0.25 0.01 65`.
+- Light cards are pure white on warm paper, 3.9 ΔE from the page (was 2.9), so they separate by value as well as shadow. Dark surfaces lose most of their chroma (0.006–0.01, was 0.01–0.013), which read as brown, and step up in lightness: card 5.5 ΔE above the page, popover 3.0 above the card.
+- Tertiary text keeps at least 4.57:1 wherever it's allowed (page, card, popover) in both themes; dark popover was tried at 0.255 and dropped to 4.50.
+- The theme-color and manifest hex values now come from one constant, `CHROME_COLOURS` in `lib/theme.ts`, which the test checks against `--background`.
+
+**Two course-type colours failed the existing rules,** found by the new test, which measures in OKLab the way the 2026-10-26 entry describes:
+- Light teal (AI concentration) was 9.7 ΔE from done green. It moves to `oklch(0.57 0.095 196)`, 3 ΔE from the old teal.
+- Light olive (Major support) was 7.5 ΔE from due-soon amber, and outside sRGB. No olive inside sRGB near that hue clears 10, so it becomes moss green, `oklch(0.43 0.105 122)`: 10.2 ΔE from due-soon and done. Dark mode keeps its olive, which passes.
+- The 2026-10-26 entry's "at least 10.3 ΔE" didn't hold for these two in light mode; the likely cause is that the values were measured before later tweaks, with no test to catch the drift.
+
+**Rules the test enforces:** text 4.5:1 (foreground, muted and tertiary on page, card and popover; status colours and the tint on cards; primary-foreground on primary); course types 3:1 on cards; chromatic course types at least 10 ΔE from every status, the tint and each other; every token inside sRGB, since a clipped colour would make the numbers meaningless on an ordinary screen.
+
+**Neutral course types.** General elective and Co-op / program are greys, 1.4–2.1 ΔE from planned's grey. That was always so; the spec's wording claimed otherwise. Planned is the absence of a status hue, and a planned course always shows its empty-circle icon, so the pair is exempt rather than recoloured.
+
+**Also.**
+- Course cards drop their 4% type tint (2026-10-26); the bar carries the type. The tint made the board read pink in light mode and maroon in dark.
+- Today is a filled circle in the foreground colour (`TODAY_MARKER_CLASS`) in the mini month, the month view and the week view. The ring it replaces read as a focus ring.
+- At most one filled primary button per view: the calendar feed button and a plan's "Try it" become outline (Sync now and Make active are those pages' actions), and the to-do "Add" becomes a ghost + icon ("Add to-do"; Return still adds).

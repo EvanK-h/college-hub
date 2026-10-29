@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, CalendarDays, Route, Settings, Sun } from "lucide-react";
-import { SegmentedNav } from "@/components/segmented-nav";
+import { SegmentedLinks, SegmentedNav } from "@/components/segmented-nav";
 import { activeHref } from "@/lib/navigation/active";
 import { cn } from "@/lib/utils";
 
@@ -23,13 +23,28 @@ export function MainNav() {
   return <SegmentedNav links={SECTIONS} label="Main" layoutId="main-nav-pill" className="hidden sm:block" />;
 }
 
+// The nav reads the path, so the layout renders it inside Suspense. These placeholders are the
+// same controls with nothing selected, so the header and tab bar never pop in on a first load.
+export function MainNavFallback() {
+  return <SegmentedLinks links={SECTIONS} label="Main" layoutId="main-nav-pill" className="hidden sm:block" current={null} />;
+}
+export function TabBarFallback() {
+  return <TabBarLinks current={null} />;
+}
+export function SettingsLinkFallback() {
+  return <SettingsLinkView active={false} />;
+}
+
 /**
  * The places as a tab bar along the bottom on a phone, where the thumb is. A translucent layer,
  * like the header, that clears the home indicator. The current place takes the tint: a tab is
  * something you act on, and Apple's tab bars mark the selected one that way.
  */
 export function TabBar() {
-  const current = activeHref(usePathname(), HREFS);
+  return <TabBarLinks current={activeHref(usePathname(), HREFS)} />;
+}
+
+function TabBarLinks({ current }: { current: string | null }) {
   return (
     <nav
       aria-label="Main"
@@ -62,7 +77,10 @@ export function TabBar() {
 
 /** The gear at the end of the header. It reads as pressed while you're on Settings. */
 export function SettingsLink() {
-  const active = usePathname().startsWith("/settings");
+  return <SettingsLinkView active={usePathname().startsWith("/settings")} />;
+}
+
+function SettingsLinkView({ active }: { active: boolean }) {
   return (
     <Link
       href="/settings"

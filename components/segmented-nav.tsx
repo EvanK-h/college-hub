@@ -26,12 +26,30 @@ export function SegmentedNav({
   layoutId: string;
   className?: string;
 }) {
-  const pathname = usePathname();
   const current = activeHref(
-    pathname,
+    usePathname(),
     links.map((link) => link.href),
   );
+  return <SegmentedLinks links={links} label={label} layoutId={layoutId} className={className} current={current} />;
+}
 
+/**
+ * The control itself, for a given current link. With `current` null it is the placeholder shown
+ * while the path is read (inside Suspense), the same size and links, just with nothing selected.
+ */
+export function SegmentedLinks({
+  links,
+  label,
+  layoutId,
+  className,
+  current,
+}: {
+  links: readonly { href: string; label: string }[];
+  label: string;
+  layoutId: string;
+  className?: string;
+  current: string | null;
+}) {
   return (
     // "user" swaps the spring for an instant change when the OS asks for reduced motion.
     <MotionConfig reducedMotion="user">

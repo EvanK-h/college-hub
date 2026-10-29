@@ -2,7 +2,7 @@ import { Suspense, ViewTransition } from "react";
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { CommandPalette, RememberPage } from "@/components/command-palette";
-import { MainNav, SettingsLink, TabBar } from "@/components/main-nav";
+import { MainNav, MainNavFallback, SettingsLink, SettingsLinkFallback, TabBar, TabBarFallback } from "@/components/main-nav";
 import { Toaster } from "@/components/toast";
 
 // Shared shell for every signed-in page. The proxy and each page already guard access.
@@ -25,7 +25,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           </Link>
           {/* min-w-0 lets the nav scroll sideways rather than push search off a narrow screen. */}
           <div className="min-w-0 flex-1">
-            <Suspense fallback={null}>
+            <Suspense fallback={<MainNavFallback />}>
               <MainNav />
             </Suspense>
           </div>
@@ -34,7 +34,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <Suspense fallback={null}>
               <RememberPage />
             </Suspense>
-            <Suspense fallback={null}>
+            <Suspense fallback={<SettingsLinkFallback />}>
               <SettingsLink />
             </Suspense>
           </div>
@@ -46,7 +46,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
       <ViewTransition default="none" update={{ "nav-tab": "nav-tab", "nav-forward": "nav-forward", "nav-back": "nav-back", default: "none" }}>
         {children}
       </ViewTransition>
-      <Suspense fallback={null}>
+      <Suspense fallback={<TabBarFallback />}>
         <TabBar />
       </Suspense>
     </Toaster>

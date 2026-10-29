@@ -197,6 +197,8 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 
 ## 5. Plan (pathway and friends)
 
+**Done 29 Oct 2026 (§5.1–5.3)**; see "Pathway board, as built" in the decision log. Changes from the plan below: the profile has one credit limit per term kind, so the meter has no amber step (neutral up to the limit, red over it); the board only scrolls to the current term when it would start off-screen, since a folded transfer column leaves it in view; and the phone bottom sheet waits for §6.2.
+
 ### 5.1 Pathway board
 
 - **Degree progress header.** The page answers "what's where" but not "how far am I". Add a one-line summary above the board (for example `X of Y SH · N terms left · graduating <term>`), with a thin segmented bar (done / in progress / planned in the status colours).

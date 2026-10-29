@@ -396,3 +396,22 @@
 - Blocks carry the course type's bar and the course code, like the pathway cards. Exams are outlined and bold, cancelled sessions are hatched and struck through, and finished ones fade.
 - Deadlines are moments, so they sit in a "Due" strip above the hours with their status pill.
 - A neutral line marks the time in today's column. It's drawn when the page renders and doesn't move until the next load. Red was ruled out because it means overdue, and the tint because it means you can act on it.
+
+## 2026-10-29: Pathway board, as built
+
+**Progress.** A line above the board answers "how far am I": credits done of the plan's total, credits in progress, terms with coursework left (this one included) and the term the plan finishes in (`planProgress`). A thin bar splits the same numbers into done and in progress, like the requirement rings. Co-op placements count towards neither.
+
+**Columns.**
+- Finished terms fold to a summary ("19 courses · 53 SH", with a tick when all are done). The term name is a disclosure button, and a folded column opens while a course is dragged over it.
+- The credit total is a meter against the profile's limit for the term's kind ("16 / 18 SH"). It turns red over the limit. There's no amber step, because the profile has one limit per kind rather than a soft and a hard one.
+- The board opens with the current term in view, and scrolls only if that term would otherwise start off-screen.
+- The legend moved from the page header to the board and became a filter: pressing a type (`aria-pressed`) dims every other card; pressing it again clears it.
+
+**Dragging.** You drag the card itself. A mouse starts after 6px, so a click still opens the dialog (dnd-kit swallows the click that ends a drag). On touch, a 200ms press picks the card up, so a swipe still scrolls the board; no text selection or callout appears while you hold. The grip stays as the keyboard's handle. What you hold is the card's own face, lifted (scale 1.03 on a spring, deeper shadow) rather than a rotated code-only box. It settles into its slot on the `--ease-spring` curve (the literal value is repeated in the board, since the Web Animations API can't read a CSS variable), with no animation under reduced motion. Auto-scroll near the edges is gentler than dnd-kit's default.
+
+**Edit dialog.**
+- Status is three radios drawn as a segmented control, each with its status shape.
+- A panel shows what the course counts towards and its prerequisite and corequisite groups, each met or not in the plan as it stands (`prereqChecks`). "Recommended" links aren't requirements, so they're left out.
+- A link goes to the course page (not for co-op placements).
+- The dialog grows from the card that opened it: its transform origin is the card's offset from the viewport centre, starting at half size, and it shrinks back the same way.
+

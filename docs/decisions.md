@@ -512,3 +512,13 @@ On a phone, once a page's large title scrolls under the header, a small copy fad
 
 The timeline follows the title itself, so pages with a back link or eyebrow above the title need no tuning. Pages that Next keeps mounted but hidden don't interfere, since a `display: none` title has no timeline. It is phones only: on wider screens the header's middle holds the nav, which already shows where you are. Browsers without scroll-driven animations keep the wordmark and show no small title.
 
+## 2026-10-29: ⌘K actions
+
+⌘K now does things as well as finding them.
+- **With nothing typed** it lists your recent pages (the last five you could name, kept in localStorage and read back through a schema), this term's courses (`termCourses`, through RLS) and the actions.
+- **Actions:** "Add a to-do…", "Sync now", "New what-if plan…" and the three appearance choices. Once you type, matching actions come before pages, so "sync" runs a sync rather than opening Settings.
+- **"Add a to-do…"** turns the input into the to-do's title, with a "New to-do" chip; Enter saves it through the existing `addTodo` (the same validation) and says so in a toast, and Backspace on an empty line goes back to searching. Course and due date stay on Today's form; the palette is for getting a thought down fast.
+- **"Sync now"** calls the same session-checked `syncNow` Server Action as the Settings button, never the cron route, and reports in a toast.
+- **"New what-if plan…"** opens `/pathway/plans?new`, where the New plan dialog starts open; closing it drops the parameter.
+- Recording the recent pages lives in a separate `RememberPage` inside Suspense, because reading the path outside one stops the shell from prerendering.
+

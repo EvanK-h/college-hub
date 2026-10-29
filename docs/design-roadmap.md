@@ -12,7 +12,7 @@ Everything that was deferred or left out while building the sections below, so n
 
 - [x] §1.6 Smaller colour notes. Built 29 Oct 2026: relevance meters, a ringed graph chain, a wine app icon in both themes.
 - [x] §2.4 Collapsing large title. Built 29 Oct 2026, phones only (`LargeTitle`).
-- [ ] §2.5 The command palette becomes a command palette (actions as well as search).
+- [x] §2.5 The command palette becomes a command palette (actions as well as search). Built 29 Oct 2026.
 - [ ] §4.2 Month view and §4.3 Keyboard shortcuts for the calendar.
 - [x] Announcements inbox ("See all" on Today), from §3. Built with §8.2: `/announcements`.
 - [x] Mark an announcement read when it's opened, from §3. Built with §8.2 (`AnnouncementItem`).
@@ -103,7 +103,7 @@ Today a course's colour is its *type* colour, so CS 1800, CS 1802, CS 2100 and C
 
 ## 2. Navigation and information architecture
 
-**Done 29 Oct 2026 (§2.1–2.3)**; see "Navigation as built" in the decision log. The board's tab is labelled "Pathway" (its page title), not "Board". §2.5 is still open.
+**Done 29 Oct 2026 (§2.1–2.3)**; see "Navigation as built" in the decision log. The board's tab is labelled "Pathway" (its page title), not "Board". §2.4 and §2.5 were built later.
 
 ### 2.1 **Decision:** restructure the top nav (7 flat tabs → 4 places)
 
@@ -137,6 +137,8 @@ Course pages, plan detail and compare pages have no way up except the browser's 
 Every page opens with a 38 px large title, then the content. On scroll, fade the page title into the header bar's centre (a scroll-driven animation like `scroll-edge`, with `animation-timeline: scroll(root)` and range 40–80 px). That's the iOS large-title behaviour, and it keeps "where am I" visible on long pages (Requirements, Swaps, course pages).
 
 ### 2.5 The command palette becomes a command palette
+
+**Done 29 Oct 2026**; see "⌘K actions" in the decision log. "Go to CS 1800" needed no action of its own: courses were already results, and this term's show with nothing typed.
 
 It searches but can't *do* anything. Add actions: "Add to-do…", "Sync now", "Go to CS 1800", "Switch to dark", "New what-if plan". With an empty query, show recent pages and this term's courses instead of nothing.
 

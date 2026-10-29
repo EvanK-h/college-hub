@@ -368,3 +368,15 @@
 - Course cards drop their 4% type tint (2026-10-26); the bar carries the type. The tint made the board read pink in light mode and maroon in dark.
 - Today is a filled circle in the foreground colour (`TODAY_MARKER_CLASS`) in the mini month, the month view and the week view. The ring it replaces read as a focus ring.
 - At most one filled primary button per view: the calendar feed button and a plan's "Try it" become outline (Sync now and Make active are those pages' actions), and the to-do "Add" becomes a ghost + icon ("Add to-do"; Return still adds).
+
+## 2026-10-29: Navigation as built: four places, a tab bar, and a Plan control
+
+**What was built** (the structure was decided earlier today):
+- `MainNav` (header, from 640px) and `TabBar` (fixed to the bottom on a phone) share one list of places: Today `/`, Calendar, Courses, Plan `/pathway`. Settings is a gear button beside search. Both controls are `SegmentedNav`, which marks the longest link that is the path or a parent of it, so `/courses/cs-1800` lights up Courses and `/pathway/plans/…` lights up Plan.
+- Plan's pages (Pathway, Requirements, Swaps, Prerequisites, What-if) have their own `PlanNav` under each page title, through a new `nav` slot on `PageHeader`. The board keeps the name "Pathway" rather than the roadmap's "Board", so the control's label matches the page title.
+- Pages one level down get a `back` link in `PageHeader` instead of an eyebrow or an "All plans" button: course pages go up to Courses, a what-if plan and the compare page to What-if plans. Eyebrows that only repeated the section ("Degree plan", "Calendar", "Account") are gone.
+- `/courses` shows this term's courses as cards (grade, next deadline, next class, overdue and unread counts, from `summarizeCourse`), then later terms as compact lists, then finished terms behind a disclosure. Co-op placements are left out: they have no course page.
+
+**Tab bar details.** It sits outside the header, because the header's `backdrop-filter` makes it the containing block for anything fixed inside it. The current place takes the tint, as Apple's tab bars do; a tab is something you act on, so this fits the colour roles. The viewport is now `viewport-fit=cover`, so the bar can pad itself clear of the home indicator with `env(safe-area-inset-bottom)`; the body pads the side insets, and `PAGE_CLASS` leaves room at the bottom on a phone.
+
+**The material was never blurred in Chrome.** Lightning CSS (Tailwind v4's compiler) turned the hand-written `backdrop-filter` into `-webkit-backdrop-filter` only, with or without an explicit prefixed line, and Chrome ignores the prefix. Safari blurred; Chrome showed a 72% opaque bar. `material-bar` now uses Tailwind's `backdrop-blur-[20px] backdrop-saturate-180`, which compile to both forms.

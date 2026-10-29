@@ -82,6 +82,8 @@ Today a course's colour is its *type* colour, so CS 1800, CS 1802, CS 2100 and C
 
 ## 2. Navigation and information architecture
 
+**Done 29 Oct 2026 (§2.1–2.3)**; see "Navigation as built" in the decision log. The board's tab is labelled "Pathway" (its page title), not "Board". §2.4 and §2.5 are still open.
+
 ### 2.1 **Decision:** restructure the top nav (7 flat tabs → 4 places)
 
 The segmented control holds 7 peers, but they aren't peers. Requirements, Swaps and Prerequisites are views of the degree plan, What-if plans is hidden behind a button on Pathway, Settings is utility, and "Dashboard" is a generic label. A segmented control is for 2–5 sibling views. With 7 it scrolls sideways on a phone and hides Settings.

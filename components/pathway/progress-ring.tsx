@@ -4,8 +4,9 @@ import { cn } from "@/lib/utils";
 const RADIUS = 40;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-// Draws in from empty on load (`ring-draw` in globals.css); reduced motion makes that instant.
-const ARC_CLASS = "animate-[ring-draw_900ms_var(--ease-spring)_both]";
+// Draws in from empty on the first visit (`ring-draw` in globals.css; see RingsDrawn); reduced
+// motion makes that instant.
+const ARC_CLASS = "animate-[ring-draw_900ms_var(--ease-spring)_both] in-data-rings-drawn:animate-none";
 
 // A donut split into done, in progress and not started. The text beside it carries the same
 // numbers ("3/9" and what's left), so the colours are never the only way to read it.

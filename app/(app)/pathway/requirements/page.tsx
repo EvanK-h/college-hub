@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { PlanNav } from "@/components/pathway/plan-nav";
 import { ProgressRing } from "@/components/pathway/progress-ring";
+import { RingsDrawn } from "@/components/pathway/rings-drawn";
 import { StatusIcon } from "@/components/pathway/status-icon";
 import { RequirementsSkeleton } from "@/components/skeletons";
 import { coursePath } from "@/lib/courses/slug";
@@ -80,6 +81,7 @@ async function Requirements() {
 
   return (
     <div className="group/requirements flex flex-col gap-8">
+      <RingsDrawn />
       <section aria-label="Progress by area" className="flex flex-col gap-3">
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">

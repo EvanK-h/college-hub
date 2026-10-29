@@ -131,14 +131,27 @@ export function BoardSkeleton() {
 export function RequirementsSkeleton() {
   return (
     <Skeleton>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-3">
-        {Array.from({ length: 6 }, (_, index) => (
-          <CardBone key={index} className="items-center p-4">
-            <Bone className="size-24 rounded-full border-[9.6px] border-fill-secondary bg-transparent" />
-            <Bone className="h-4 w-24" />
-            <Bone className="h-3 w-32" />
-          </CardBone>
-        ))}
+      <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] gap-3">
+          {Array.from({ length: 4 }, (_, index) => (
+            <CardBone key={index} className="items-center p-4">
+              <Bone className="size-24 rounded-full border-[9.6px] border-fill-secondary bg-transparent" />
+              <Bone className="h-4 w-24" />
+              <Bone className="h-3 w-20" />
+            </CardBone>
+          ))}
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }, (_, index) => (
+            <CardBone key={index} className="flex-row items-center px-3 py-2.5">
+              <Bone className="size-11 shrink-0 rounded-full border-[4.4px] border-fill-secondary bg-transparent" />
+              <span className="flex flex-1 flex-col gap-1.5">
+                <Bone className="h-4 w-28" />
+                <Bone className="h-3 w-16" />
+              </span>
+            </CardBone>
+          ))}
+        </div>
       </div>
       {Array.from({ length: 2 }, (_, index) => (
         <div key={index} className="flex flex-col gap-3">

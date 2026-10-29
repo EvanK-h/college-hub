@@ -27,3 +27,9 @@ export function summarizeAreas(areas: AreaInfo[], requirements: AreaRequirement[
     })
     .filter((summary) => summary.total > 0);
 }
+
+/** What's left, briefly: "1 in progress · 2 to go", or "Complete". The ring's centre shows what's done. */
+export function ringCaption({ inProgress, notStarted, total, done }: RingCounts): string {
+  if (total > 0 && done === total) return "Complete";
+  return [inProgress > 0 && `${inProgress} in progress`, notStarted > 0 && `${notStarted} to go`].filter(Boolean).join(" · ");
+}

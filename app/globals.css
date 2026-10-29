@@ -144,12 +144,13 @@
   --status-overdue: var(--destructive);
 
   /* The category palette for course types (each type picks a number in its data). The hues are
-     ones no status uses (rose 350, teal 195, violet 300, olive 90, plus two neutrals), at least
-     10 ΔE (OKLab ×100) from every status colour and from each other in both themes. */
+     ones no status uses (rose 350, teal 195, violet 300, olive 90 (moss 122 in light), plus two
+     neutrals), at least 10 ΔE (OKLab ×100) from every status colour and from each other in both
+     themes, and inside sRGB. lib/colour/tokens.test.ts enforces it. */
   --category-1: light-dark(oklch(0.58 0.12 350), oklch(0.74 0.12 350));
-  --category-2: light-dark(oklch(0.54 0.1 195), oklch(0.74 0.1 195));
+  --category-2: light-dark(oklch(0.57 0.095 196), oklch(0.74 0.1 195));
   --category-3: light-dark(oklch(0.52 0.12 300), oklch(0.7 0.12 300));
-  --category-4: light-dark(oklch(0.5 0.13 90), oklch(0.68 0.13 90));
+  --category-4: light-dark(oklch(0.43 0.105 122), oklch(0.68 0.13 90));
   --category-5: light-dark(oklch(0.6 0.01 70), oklch(0.72 0.01 70));
   --category-6: light-dark(oklch(0.46 0.015 60), oklch(0.58 0.02 60));
 

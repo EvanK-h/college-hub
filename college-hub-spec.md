@@ -321,7 +321,7 @@ Apple-style restraint on the warm Canvas Hub palette. Tokens live in `app/global
 
 Due soon, overdue and missed are derived at display time from `due_at` and the displayed status, never stored. Each status colour passes 4.5:1 on cards in both themes, so it can colour text as well as icons and arcs.
 
-**Course types** use hues no status uses (rose 350 CS core, teal 195 AI concentration, violet 300 Physics minor, olive 90 Major support, neutral grey General elective, dark stone Co-op / program). Each is at least 10 ΔE (OKLab ×100) from every status colour and from the others. A new category must pass the same check.
+**Course types** use hues no status uses (rose 350 CS core, teal 195 AI concentration, violet 300 Physics minor, olive 90 Major support (moss 122 in light mode, where olive sat too close to due-soon amber), neutral grey General elective, dark stone Co-op / program). Each chromatic type is at least 10 ΔE (OKLab ×100) from every status colour, the tint and the other types; the two neutral types share planned's grey on purpose, since planned is the absence of a status hue. Every token stays inside sRGB, so the numbers hold on any screen. `lib/colour/tokens.test.ts` checks all of this, and the contrast rules below, against `globals.css`; a new or changed colour must pass it.
 
 **Text levels.** `foreground` for primary text; `muted-foreground` for secondary text (titles under codes, descriptions, captions); `tertiary-foreground` for metadata (credits, counts) on cards or the page background only. On tinted fills, use `muted-foreground`, since tertiary drops below 4.5:1 there.
 

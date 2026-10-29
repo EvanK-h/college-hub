@@ -13,7 +13,7 @@ Everything that was deferred or left out while building the sections below, so n
 - [x] §1.6 Smaller colour notes. Built 29 Oct 2026: relevance meters, a ringed graph chain, a wine app icon in both themes.
 - [x] §2.4 Collapsing large title. Built 29 Oct 2026, phones only (`LargeTitle`).
 - [x] §2.5 The command palette becomes a command palette (actions as well as search). Built 29 Oct 2026.
-- [ ] §4.2 Month view and §4.3 Keyboard shortcuts for the calendar.
+- [x] §4.2 Month view and §4.3 Keyboard shortcuts for the calendar. Built 29 Oct 2026.
 - [x] Announcements inbox ("See all" on Today), from §3. Built with §8.2: `/announcements`.
 - [x] Mark an announcement read when it's opened, from §3. Built with §8.2 (`AnnouncementItem`).
 - [x] Undo for to-dos, from §3. Built with §8.2: done and delete both undo from the toast.
@@ -197,7 +197,7 @@ If the card stays: never show an empty 72-hour window. List the next N deadlines
 
 ## 4. Calendar
 
-**§4.1 done 29 Oct 2026.** The phone keeps the list as its week view; a separate Day view wasn't needed. §4.2 and §4.3 are still open.
+**§4.1 done 29 Oct 2026.** The phone keeps the list as its week view; a separate Day view wasn't needed. **§4.2 and §4.3 done 29 Oct 2026**; see "Month view and calendar shortcuts" in the decision log. The fill and today-marker fixes had already landed with §0, and the whole cell was already the link.
 
 ### 4.1 **Decision:** a time-grid week view
 

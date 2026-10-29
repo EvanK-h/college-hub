@@ -522,3 +522,24 @@ The timeline follows the title itself, so pages with a back link or eyebrow abov
 - **"New what-if plan…"** opens `/pathway/plans?new`, where the New plan dialog starts open; closing it drops the parameter.
 - Recording the recent pages lives in a separate `RememberPage` inside Suspense, because reading the path outside one stops the shell from prerendering.
 
+## 2026-10-29: Month view and calendar shortcuts
+
+**Month cells** (`monthDay` in `lib/calendar/month.ts`, with tests). Each entry leads with its kind:
+- a bold "Exam" and the course code;
+- ◇ for a deadline, in its status colour, ◆ once it's done;
+- ● for an event that isn't one of your classes.
+
+Exams come first, then deadlines, then events. A cell shows three, then "+N more"; your own classes stay a count ("3 classes"), since most weekdays have several. Screen readers hear "Due, not started:" instead of the glyph.
+
+**Phone month.** Under `md` the month is the iOS pattern instead of a table that scrolled sideways: a compact grid of dates, each with up to three dots, and the chosen day's agenda below as the same card the phone's week list uses. The dots are:
+- an exam (solid foreground);
+- a deadline (hollow, like ◇, in its most urgent status's colour);
+- classes or events (grey).
+
+Choosing a date keeps the month (`?date=`, without scrolling to the top); a month reached by the arrows opens on today if it's in it, otherwise the 1st.
+
+**Shortcuts.**
+- ← and → move by week or month, T goes to today, and M and W switch the view.
+- They're named in the buttons' tooltips and `aria-keyshortcuts`.
+- They're ignored while typing in a field, with a modifier held (so ⌘← stays the browser's), or inside a dialog such as ⌘K.
+

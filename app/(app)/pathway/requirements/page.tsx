@@ -136,9 +136,20 @@ async function Requirements() {
                 <li key={requirement.requirement_id} className={cn("px-4 py-3.5", met(requirement) && hideWhenFiltering)}>
                   <div className="flex items-baseline justify-between gap-3">
                     <h3 className="text-sm font-semibold">{requirement.name}</h3>
-                    <span className="shrink-0 text-xs text-tertiary-foreground tabular-nums">
-                      {requirement.done_courses}/{requirement.total_courses} courses done
-                    </span>
+                    {/* A met requirement says so; otherwise a count, but only when there's more than
+                        one course (a single course's chip already shows its status). */}
+                    {met(requirement) ? (
+                      <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground">
+                        <StatusIcon status="done" className="size-3.5" />
+                        Met
+                      </span>
+                    ) : (
+                      (requirement.total_courses ?? 0) > 1 && (
+                        <span className="shrink-0 text-xs text-tertiary-foreground tabular-nums">
+                          {requirement.done_courses} of {requirement.total_courses} done
+                        </span>
+                      )
+                    )}
                   </div>
                   <ul className="mt-2 flex flex-wrap gap-x-1 gap-y-1">
                     {(linksByRequirement.get(requirement.requirement_id) ?? []).map(({ course_id }) => {

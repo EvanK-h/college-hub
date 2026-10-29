@@ -30,7 +30,7 @@ export function TodoList({
                 <form action={setTodoDone}>
                   <input type="hidden" name="todoId" value={todo.id} />
                   <input type="hidden" name="done" value="true" />
-                  <Button type="submit" variant="ghost" size="icon-xs" className="mt-0.5" aria-label={`Mark “${todo.title}” done`}>
+                  <Button type="submit" variant="ghost" size="icon-xs" className="hit-area mt-0.5" aria-label={`Mark “${todo.title}” done`}>
                     <Circle aria-hidden className="text-status-planned" />
                   </Button>
                 </form>
@@ -51,7 +51,7 @@ export function TodoList({
                     variant="ghost"
                     size="icon-xs"
                     aria-label={`Delete “${todo.title}”`}
-                    className="opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
+                    className="hit-area opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
                   >
                     <X aria-hidden />
                   </Button>

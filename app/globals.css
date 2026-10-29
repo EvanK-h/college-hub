@@ -237,6 +237,17 @@
   }
 }
 
+/* Widens a small control's target towards Apple's 44pt without changing how it looks. Kept to
+   8px above and below and 6px at the sides, so it stays inside the gaps of a list of rows. */
+@utility hit-area {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -8px -6px;
+  }
+}
+
 /* Progress rings draw in from empty to their real length. */
 @keyframes ring-draw {
   from {

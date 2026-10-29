@@ -31,7 +31,8 @@ export type PrereqGraph = {
 /**
  * Builds the graph from the plan. Only courses with at least one link are drawn, and only terms
  * holding such a course get a column. Within a column, courses are ordered by the average row of
- * what they need (a one-pass barycentre heuristic), which keeps most arrows short and uncrossed.
+ * what they need (the barycentre heuristic), then a sweep back and one forward again tidy what that
+ * first pass tangled, which keeps most arrows short and uncrossed.
  */
 export function buildPrereqGraph(terms: readonly GraphTerm[], courses: readonly GraphCourse[], prereqs: readonly PlanPrereq[]): PrereqGraph {
   const byCode = new Map(courses.map((course) => [course.code, course]));
@@ -83,21 +84,74 @@ export function buildPrereqGraph(terms: readonly GraphTerm[], courses: readonly 
 
   // Place columns left to right, ordering each by where its requirements sit.
   const rowOf = new Map<string, number>();
-  const nodes: GraphNode[] = [];
-  for (const [column, term] of columns.entries()) {
+  const order: GraphCourse[][] = [];
+  for (const term of columns) {
     const inColumn = courses.filter((course) => course.termId === term.id && linked.has(course.id));
-    const weight = (course: GraphCourse) => {
-      const rows = edges.filter((edge) => edge.to === course.id && rowOf.has(edge.from)).map((edge) => rowOf.get(edge.from) ?? 0);
-      return rows.length > 0 ? rows.reduce((a, b) => a + b, 0) / rows.length : Number.POSITIVE_INFINITY;
-    };
-    const ordered = [...inColumn].sort((a, b) => weight(a) - weight(b) || a.code.localeCompare(b.code));
-    ordered.forEach((course, row) => {
-      rowOf.set(course.id, row);
-      nodes.push({ ...course, column, row });
-    });
+    const ordered = byBarycentre(inColumn, edges, rowOf, "from", "to");
+    ordered.forEach((course, row) => rowOf.set(course.id, row));
+    order.push(ordered);
   }
 
+  // Then sweep back (each column by where what it unlocks sits) and forward again, keeping a
+  // sweep only if it leaves fewer crossings.
+  let best = crossings(order, edges);
+  for (const [key, other] of [["to", "from"], ["from", "to"]] as const) {
+    const rows = new Map(rowOf);
+    const indices = key === "to" ? order.map((_, index) => order.length - 1 - index) : order.map((_, index) => index);
+    const next = [...order];
+    for (const index of indices) {
+      next[index] = byBarycentre(order[index] ?? [], edges, rows, key, other, (course) => rows.get(course.id) ?? 0);
+      next[index]?.forEach((course, row) => rows.set(course.id, row));
+    }
+    const count = crossings(next, edges);
+    if (count < best) {
+      best = count;
+      next.forEach((column, index) => (order[index] = column));
+      for (const [id, row] of rows) rowOf.set(id, row);
+    }
+  }
+
+  const nodes: GraphNode[] = order.flatMap((column, index) => column.map((course, row) => ({ ...course, column: index, row })));
   return { columns, nodes, edges, unmet };
+}
+
+/**
+ * Orders a column by the average row of each course's neighbours on one side (`key` is the edge
+ * end the neighbour sits at, `own` the end this course sits at). Courses with no placed neighbour
+ * keep their place by `fallback`, or go last in code order.
+ */
+function byBarycentre(
+  column: readonly GraphCourse[],
+  edges: readonly GraphEdge[],
+  rowOf: ReadonlyMap<string, number>,
+  key: "from" | "to",
+  own: "from" | "to",
+  fallback?: (course: GraphCourse) => number,
+): GraphCourse[] {
+  const weight = (course: GraphCourse) => {
+    const rows = edges.filter((edge) => edge[own] === course.id && edge[key] !== course.id && rowOf.has(edge[key])).map((edge) => rowOf.get(edge[key]) ?? 0);
+    if (rows.length > 0) return rows.reduce((a, b) => a + b, 0) / rows.length;
+    return fallback ? fallback(course) : Number.POSITIVE_INFINITY;
+  };
+  return [...column].sort((a, b) => weight(a) - weight(b) || a.code.localeCompare(b.code));
+}
+
+/** How many pairs of arrows between neighbouring columns cross, for a given order of each column. */
+export function crossings(order: readonly (readonly { id: string }[])[], edges: readonly Pick<GraphEdge, "from" | "to">[]): number {
+  const place = new Map<string, { column: number; row: number }>();
+  order.forEach((column, index) => column.forEach((course, row) => place.set(course.id, { column: index, row })));
+  const spans = edges.flatMap((edge) => {
+    const from = place.get(edge.from);
+    const to = place.get(edge.to);
+    return from && to && to.column === from.column + 1 ? [{ column: from.column, a: from.row, b: to.row }] : [];
+  });
+  let count = 0;
+  for (const [index, first] of spans.entries()) {
+    for (const second of spans.slice(index + 1)) {
+      if (first.column === second.column && (first.a - second.a) * (first.b - second.b) < 0) count += 1;
+    }
+  }
+  return count;
 }
 
 /** A course and everything it depends on: the path through the plan to it (e.g. the chain to a focus's goal course). */

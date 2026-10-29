@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ancestors, buildPrereqGraph, chainTo, descendants, type GraphCourse } from "./graph";
+import { ancestors, buildPrereqGraph, chainTo, crossings, descendants, type GraphCourse } from "./graph";
 import type { PlanPrereq } from "./move-checks";
 
 const terms = [
@@ -88,5 +88,29 @@ describe("ancestors and descendants", () => {
     const { nodes } = buildPrereqGraph(terms, courses, prereqs);
     expect(chainTo("D 4000", nodes, edges)).toEqual(new Set(["d", "c", "b", "a", "bl"]));
     expect(chainTo("Q 0000", nodes, edges)).toEqual(new Set());
+  });
+});
+
+describe("crossings", () => {
+  const column = (...ids: string[]) => ids.map((id) => ({ id }));
+
+  it("counts arrows between neighbouring columns that cross", () => {
+    // a→y and b→x cross; a→x and b→y don't.
+    expect(crossings([column("a", "b"), column("x", "y")], [{ from: "a", to: "y" }, { from: "b", to: "x" }])).toBe(1);
+    expect(crossings([column("a", "b"), column("x", "y")], [{ from: "a", to: "x" }, { from: "b", to: "y" }])).toBe(0);
+  });
+
+  it("ignores arrows that share an end or skip a column", () => {
+    expect(crossings([column("a", "b"), column("x")], [{ from: "a", to: "x" }, { from: "b", to: "x" }])).toBe(0);
+    expect(crossings([column("a", "b"), column("x", "y"), column("z")], [{ from: "a", to: "z" }, { from: "b", to: "x" }])).toBe(0);
+  });
+
+  it("lays out a small tangle with no crossings", () => {
+    // Two roots whose children sit the other way round from code order, and grandchildren after them.
+    const tangled = [course("a", "A 1", 0), course("b", "B 1", 0), course("p", "P 1", 1), course("q", "Q 1", 1), course("x", "X 1", 2), course("y", "Y 1", 2)];
+    const links = [req("q", "A 1"), req("p", "B 1"), req("x", "Q 1"), req("y", "P 1"), req("x", "B 1")];
+    const graph = buildPrereqGraph(terms, tangled, links);
+    const order = graph.columns.map((_, index) => graph.nodes.filter((node) => node.column === index).sort((m, n) => m.row - n.row));
+    expect(crossings(order, graph.edges)).toBe(0);
   });
 });

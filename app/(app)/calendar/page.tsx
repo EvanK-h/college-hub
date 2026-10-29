@@ -80,7 +80,7 @@ async function Calendar({ searchParams }: { searchParams: Record<string, string 
 
   return (
     <>
-      <PageHeader eyebrow="Calendar" title={formatRangeTitle(view, first, last)}>
+      <PageHeader title={formatRangeTitle(view, first, last)}>
         <nav aria-label="Calendar" className="mt-2 flex flex-wrap items-center gap-2">
           <Link href={href({ date: previous })} className={buttonVariants({ variant: "outline", size: "icon-sm" })}>
             <ChevronLeft aria-hidden />

@@ -1,10 +1,9 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { PlanNav } from "@/components/pathway/plan-nav";
 import { PathwayBoard } from "@/components/pathway/pathway-board";
 import { BoardSkeleton, LegendSkeleton } from "@/components/skeletons";
-import { buttonVariants } from "@/components/ui/button";
 import { PATHWAY_COURSE_COLUMNS, summarizeTerms } from "@/lib/pathway/summarize";
 import { loadSetup } from "@/lib/setup/load";
 import { categoryClass } from "@/lib/setup/setup";
@@ -14,13 +13,10 @@ import { cn } from "@/lib/utils";
 export default function PathwayPage() {
   return (
     <main className={PAGE_CLASS}>
-      <PageHeader eyebrow="Degree plan" title="Pathway">
+      <PageHeader title="Pathway" nav={<PlanNav />}>
         <Suspense fallback={<LegendSkeleton />}>
           <Legend />
         </Suspense>
-        <Link href="/pathway/plans" className={cn(buttonVariants({ variant: "outline" }), "mt-2 self-start")}>
-          What-if plans
-        </Link>
       </PageHeader>
       <Suspense fallback={<BoardSkeleton />}>
         <Terms />

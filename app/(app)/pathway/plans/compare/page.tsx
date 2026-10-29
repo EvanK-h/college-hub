@@ -57,7 +57,7 @@ async function Compare({ a, b, all }: { a: string | null; b: string | null; all:
 
   return (
     <>
-      <PageHeader eyebrow="What-if plans" title="Compare plans">
+      <PageHeader back={{ href: "/pathway/plans", label: "What-if plans" }} title="Compare plans">
         <div className="mt-2 flex flex-wrap gap-2">
           {/* Back to the plans being compared (the current plan has no page of its own here). */}
           {[left, right].map((side) =>
@@ -67,9 +67,6 @@ async function Compare({ a, b, all }: { a: string | null; b: string | null; all:
               </Link>
             ) : null,
           )}
-          <Link href="/pathway/plans" className={buttonVariants({ variant: "outline" })}>
-            All plans
-          </Link>
           <Link href={`/pathway/plans/compare?${query}${all ? "" : "&all=1"}`} className={buttonVariants({ variant: "outline" })}>
             {all ? "Only terms that differ" : "Show every term"}
           </Link>

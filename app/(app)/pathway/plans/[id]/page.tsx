@@ -52,11 +52,8 @@ async function Plan({ id }: { id: string }) {
 
   return (
     <>
-      <PageHeader eyebrow="What-if plan" title={saved.plan.name}>
+      <PageHeader back={{ href: "/pathway/plans", label: "What-if plans" }} title={saved.plan.name}>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Link href="/pathway/plans" className={buttonVariants({ variant: "outline" })}>
-            All plans
-          </Link>
           <Link href={`/pathway/plans/compare?a=${id}&b=current`} className={buttonVariants({ variant: "outline" })}>
             Compare with current
           </Link>

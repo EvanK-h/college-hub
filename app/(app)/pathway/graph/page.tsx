@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { PlanNav } from "@/components/pathway/plan-nav";
 import { PrereqGraphView } from "@/components/pathway/prereq-graph";
 import { GraphSkeleton } from "@/components/skeletons";
 import { buildPrereqGraph } from "@/lib/pathway/graph";
@@ -11,7 +12,7 @@ export default function GraphPage() {
   return (
     <main className={PAGE_CLASS}>
       <PageHeader
-        eyebrow="Degree plan"
+        nav={<PlanNav />}
         title="Prerequisites"
         description="Each arrow runs from a requirement to the course that needs it, laid out by term. Select a course to trace its chain."
       />

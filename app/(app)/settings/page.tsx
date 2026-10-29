@@ -26,7 +26,7 @@ const RUN_COLUMNS = "id, source, status, started_at, finished_at, inserted, upda
 export default function SettingsPage() {
   return (
     <main className={PAGE_CLASS}>
-      <PageHeader eyebrow="Account" title="Settings">
+      <PageHeader title="Settings">
         <form action={signOut} className="mt-1">
           <Button type="submit" variant="outline" size="sm">
             Sign out

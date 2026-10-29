@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { PlanNav } from "@/components/pathway/plan-nav";
 import { FocusToggle } from "@/components/pathway/focus-toggle";
 import { CardListSkeleton } from "@/components/skeletons";
 import { FOCUS_COOKIE, parseFocus, relevanceFor, sortByFocus, type Rated } from "@/lib/pathway/focus";
@@ -25,7 +26,7 @@ const RELEVANCE_PILL: Record<Relevance, string> = {
 export default function SwapsPage() {
   return (
     <main className={PAGE_CLASS}>
-      <PageHeader eyebrow="Degree plan" title="Swap options" />
+      <PageHeader title="Swap options" nav={<PlanNav />} />
       <Suspense fallback={<CardListSkeleton />}>
         <Swaps />
       </Suspense>

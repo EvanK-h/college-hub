@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { PlanNav } from "@/components/pathway/plan-nav";
 import { NewPlanForm } from "@/components/plans/new-plan-form";
 import { CardListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ export default function PlansPage() {
   return (
     <main className={PAGE_CLASS}>
       <PageHeader
-        eyebrow="Degree plan"
+        nav={<PlanNav />}
         title="What-if plans"
         description="Save a copy of your plan, move courses and try swaps freely, then compare. Your real plan stays as it is until you make a what-if plan the active one."
       />

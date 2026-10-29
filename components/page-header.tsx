@@ -1,21 +1,41 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
-// The large title every page opens with. `children` sits under it for legends or summaries.
+// The large title every page opens with. `back` links up from a page that is one level down
+// (a course, a what-if plan), so there is always a way out besides the browser's back button.
+// `nav` sits right under the title, for a section's own pages; `children` sits under the
+// description, for legends or summaries. `eyebrow` is for context the title doesn't give (a
+// course's code and term), not for repeating the section's name.
 export function PageHeader({
   title,
   eyebrow,
   description,
+  back,
+  nav,
   children,
 }: {
   title: string;
   eyebrow?: string;
   description?: string;
+  back?: { href: string; label: string };
+  nav?: ReactNode;
   children?: ReactNode;
 }) {
   return (
     <header className="flex flex-col gap-2">
+      {back && (
+        <Link
+          href={back.href}
+          className="press -ml-1 flex w-max items-center gap-0.5 rounded-lg pr-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
+        >
+          <ChevronLeft aria-hidden className="size-4" />
+          {back.label}
+        </Link>
+      )}
       {eyebrow && <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">{eyebrow}</p>}
       <h1 className="text-large-title">{title}</h1>
+      {nav && <div className="mt-1">{nav}</div>}
       {description && <p className="max-w-prose text-base text-muted-foreground">{description}</p>}
       {children}
     </header>

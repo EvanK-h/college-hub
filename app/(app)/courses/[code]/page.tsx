@@ -100,7 +100,7 @@ async function Course({ slug }: { slug: string }) {
 
   return (
     <>
-      <PageHeader eyebrow={[course.code, course.terms?.name].filter(Boolean).join(" · ")} title={course.title}>
+      <PageHeader back={{ href: "/courses", label: "Courses" }} eyebrow={[course.code, course.terms?.name].filter(Boolean).join(" · ")} title={course.title}>
         {canvasUrl && (
           <a
             href={canvasUrl}

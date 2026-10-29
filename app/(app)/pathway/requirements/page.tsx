@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { PlanNav } from "@/components/pathway/plan-nav";
 import { ProgressRing } from "@/components/pathway/progress-ring";
 import { StatusIcon } from "@/components/pathway/status-icon";
 import { RequirementsSkeleton } from "@/components/skeletons";
@@ -12,7 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 export default function RequirementsPage() {
   return (
     <main className={PAGE_CLASS}>
-      <PageHeader eyebrow="Degree plan" title="Requirements" />
+      <PageHeader title="Requirements" nav={<PlanNav />} />
       <Suspense fallback={<RequirementsSkeleton />}>
         <Requirements />
       </Suspense>

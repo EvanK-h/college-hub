@@ -1,4 +1,4 @@
-import { EditCourseDialog } from "@/components/pathway/edit-course-dialog";
+import { EditCourseDialog, type CourseDetails } from "@/components/pathway/edit-course-dialog";
 import { StatusIcon } from "@/components/pathway/status-icon";
 import { categoryClass } from "@/lib/setup/setup";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ export function CourseCard({
   terms,
   past = false,
   checkTerm,
+  details,
   creditUnit,
 }: {
   course: PathwayCourse;
@@ -23,9 +24,10 @@ export function CourseCard({
   creditUnit: string;
   /** Problems with moving this course to a term, shown in the dialog as the term is changed. */
   checkTerm?: (termId: number) => string[];
+  details?: CourseDetails;
 }) {
   return (
-    <EditCourseDialog course={{ ...course, termId }} terms={terms} checkTerm={checkTerm}>
+    <EditCourseDialog course={{ ...course, termId }} terms={terms} checkTerm={checkTerm} details={details}>
       <CourseCardBody course={course} past={past} creditUnit={creditUnit} />
     </EditCourseDialog>
   );
@@ -37,17 +39,20 @@ export function CourseCardBody({
   past = false,
   label,
   creditUnit,
+  className,
 }: {
   course: PathwayCourse;
   past?: boolean;
   label?: string;
   creditUnit: string;
+  className?: string;
 }) {
   return (
     <span
       className={cn(
         "flex items-stretch gap-3 rounded-xl bg-card p-3 text-card-foreground transition-shadow",
         past ? "ring-1 ring-separator group-hover/course:shadow-card" : "shadow-card group-hover/course:shadow-raised",
+        className,
         categoryClass(course.type.color),
       )}
     >

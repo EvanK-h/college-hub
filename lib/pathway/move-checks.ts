@@ -144,3 +144,22 @@ export function planProblems({
   }
   return problems;
 }
+
+export type PrereqCheck = { kind: "prereq" | "coreq"; options: string[]; met: boolean };
+
+/** Each of a course's prerequisite and corequisite groups, and whether the plan as it stands meets it. */
+export function prereqChecks(
+  { courses, prereqs }: { courses: readonly PlanCourse[]; prereqs: readonly PlanPrereq[] },
+  courseId: string,
+): PrereqCheck[] {
+  const course = courses.find((c) => c.id === courseId);
+  if (!course) return [];
+  const termOf = new Map(courses.map((c) => [c.code, c.termId]));
+  return (["prereq", "coreq"] as const).flatMap((kind) =>
+    groupsFor(prereqs, courseId, kind).map((options) => ({
+      kind,
+      options,
+      met: groupMet(options, termOf, (t) => (kind === "prereq" ? t < course.termId : t <= course.termId)),
+    })),
+  );
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkMove, describeProblem, planProblems, type PlanCourse, type PlanPrereq, type PlanTerm } from "./move-checks";
+import { checkMove, describeProblem, planProblems, prereqChecks, type PlanCourse, type PlanPrereq, type PlanTerm } from "./move-checks";
 
 const terms: PlanTerm[] = [
   { id: 0, name: "Transfer credit", kind: "transfer" },
@@ -128,5 +128,24 @@ describe("planProblems", () => {
       { termId: 1, problem: { kind: "over_limit", total: 20, limit: 18 } },
       { termId: 2, courseCode: "X 1000", problem: { kind: "coop_term" } },
     ]);
+  });
+});
+
+describe("prereqChecks", () => {
+  it("lists each group with whether the plan meets it", () => {
+    expect(prereqChecks(plan, "b")).toEqual([
+      { kind: "prereq", options: ["A 1000"], met: true },
+      { kind: "coreq", options: ["B 2001"], met: true },
+    ]);
+  });
+
+  it("marks a group unmet when no option comes early enough", () => {
+    const moved = { ...plan, courses: courses.map((c) => (c.id === "c" ? { ...c, termId: 1 } : c)) };
+    expect(prereqChecks(moved, "c")).toEqual([{ kind: "prereq", options: ["B 2000", "X 9999"], met: false }]);
+  });
+
+  it("is empty for a course with no requirements or one not in the plan", () => {
+    expect(prereqChecks(plan, "a")).toEqual([]);
+    expect(prereqChecks(plan, "nope")).toEqual([]);
   });
 });

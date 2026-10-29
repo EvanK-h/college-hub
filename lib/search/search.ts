@@ -27,6 +27,7 @@ const PAGES: { label: string; href: string; keywords: string }[] = [
   { label: "Today", href: "/", keywords: "dashboard home agenda todos" },
   { label: "Calendar", href: "/calendar", keywords: "timetable schedule classes week month" },
   { label: "Courses", href: "/courses", keywords: "classes grades canvas term" },
+  { label: "Announcements", href: "/announcements", keywords: "inbox unread news messages" },
   { label: "Pathway", href: "/pathway", keywords: "plan degree terms board" },
   { label: "Requirements", href: "/pathway/requirements", keywords: "audit progress attributes nupath" },
   { label: "Swaps", href: "/pathway/swaps", keywords: "swap options electives focus relevance" },

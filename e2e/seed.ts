@@ -104,6 +104,15 @@ export async function seed() {
     ]),
   );
 
+  // One unread announcement, for the inbox and mark-read-on-open.
+  check(
+    await db.from("announcements").insert({
+      canvas_id: 9_900_301, course_id: id("QA 2000"), title: "Exam room changed", message: "<p>The exam is now in room 101.</p>",
+      author: "A. Tester", posted_at: new Date(Date.now() - 86_400_000).toISOString(), html_url: "https://canvas.example.test/n/1",
+      read: false, owner_id: owner,
+    }),
+  );
+
   // A fresh successful sync, so loading the dashboard never starts one.
   const now = new Date().toISOString();
   check(

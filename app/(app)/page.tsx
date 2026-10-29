@@ -9,7 +9,7 @@ import { TodoList } from "@/components/dashboard/todo-list";
 import { PAGE_CLASS } from "@/components/page-header";
 import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
 import { DashboardSkeleton } from "@/components/skeletons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { excerpt } from "@/lib/announcements/text";
 import { assignmentStatus, formatDueIn } from "@/lib/assignments/status";
 import { canvasSettingsUrl } from "@/lib/canvas/links";
@@ -320,6 +320,11 @@ async function Today() {
                   <span className="ml-2 text-sm font-normal text-muted-foreground tabular-nums">{unreadResult.count} unread</span>
                 )}
               </CardTitle>
+              <CardAction>
+                <Link href="/announcements" className="rounded-md text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring">
+                  See all
+                </Link>
+              </CardAction>
             </CardHeader>
             <CardContent>
               {(announcementsResult.data ?? []).length === 0 ? (

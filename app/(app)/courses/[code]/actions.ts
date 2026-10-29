@@ -38,6 +38,7 @@ export async function setAnnouncementFlag(formData: FormData): Promise<void> {
     .eq("id", announcementId);
   if (error) throw new Error("Could not update the announcement.");
   revalidatePath("/(app)/courses/[code]", "page");
+  revalidatePath("/announcements");
   revalidatePath("/");
 }
 

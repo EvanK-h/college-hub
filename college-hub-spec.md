@@ -305,7 +305,7 @@ Apple-style restraint on the warm Canvas Hub palette. Tokens live in `app/global
 | Tint | `primary` (wine light, Golden Batter dark), `ring` | Buttons, links, focus rings, the app icon | Decoration, headings, eyebrows, status |
 | Label | `accent` (Golden Batter tint) | Neutral labels: co-op term, swap relevance (graded by rank) | Status or warnings |
 | Status | `status-planned`, `status-in-progress`, `status-done`, `status-due-soon`, `status-overdue` | Course and assignment state | Categories |
-| Category | `course-*` (six course types) | The bar, faint card tint and legend dot that mark a course's type | Status |
+| Category | `course-*` (six course types) | The bar and legend dot that mark a course's type (cards stay plain `card`) | Status |
 | Error | `destructive` (= `status-overdue`) | Form errors, destructive actions, overdue work | — |
 
 **Status palette.** Shared by courses (Phase 1) and assignments (Phases 2–3), so the same hue always means the same thing.

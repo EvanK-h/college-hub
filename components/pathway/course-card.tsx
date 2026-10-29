@@ -6,7 +6,8 @@ import type { PathwayCourse } from "@/lib/pathway/summarize";
 
 // The card sits inside a button (the dialog trigger), so it uses spans: a button can only
 // contain phrasing content. Cards in finished terms sit flat (no shadow) so the plan reads as a
-// timeline: what is behind you recedes.
+// timeline: what is behind you recedes. The bar alone marks the course type; a tinted fill made
+// the board read pink (CS core is most of the plan) and maroon in dark mode.
 export function CourseCard({
   course,
   termId,
@@ -45,7 +46,7 @@ export function CourseCardBody({
   return (
     <span
       className={cn(
-        "flex items-stretch gap-3 rounded-xl bg-[color-mix(in_oklch,var(--course)_4%,var(--card))] p-3 text-card-foreground transition-shadow",
+        "flex items-stretch gap-3 rounded-xl bg-card p-3 text-card-foreground transition-shadow",
         past ? "ring-1 ring-separator group-hover/course:shadow-card" : "shadow-card group-hover/course:shadow-raised",
         categoryClass(course.type.color),
       )}

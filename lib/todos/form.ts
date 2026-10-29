@@ -32,3 +32,19 @@ export function parseTodoToggle(formData: FormData) {
 export function parseTodoId(formData: FormData) {
   return z.uuid().safeParse(formData.get("todoId"));
 }
+
+// Undo of a delete puts the same row back, so it keeps its place in the list. The row comes back
+// from the browser, so it is checked like any other input.
+const restoredTodoSchema = z.object({
+  id: z.uuid(),
+  title: newTodoSchema.shape.title,
+  course_id: z.uuid().nullable(),
+  due_on: z.iso.date().nullable(),
+  created_at: z.iso.datetime({ offset: true }),
+});
+
+export type RestoredTodo = z.infer<typeof restoredTodoSchema>;
+
+export function parseRestoredTodo(input: unknown) {
+  return restoredTodoSchema.safeParse(input);
+}

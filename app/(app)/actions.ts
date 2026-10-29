@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isStale } from "@/lib/sync/format";
 import { formatDay } from "@/lib/timetable/format";
 import { runTimetableSync } from "@/lib/timetable/run-sync";
-import { parseNewTodo, parseTodoId, parseTodoToggle } from "@/lib/todos/form";
+import { parseNewTodo, parseRestoredTodo, parseTodoId, parseTodoToggle, type RestoredTodo } from "@/lib/todos/form";
 
 export type TodoFormState = {
   status: "idle" | "saved" | "error";
@@ -52,13 +52,32 @@ export async function setTodoDone(formData: FormData): Promise<void> {
   revalidatePath("/");
 }
 
-export async function deleteTodo(formData: FormData): Promise<void> {
+/** Deletes a to-do and returns the row, so the toast's Undo can put it back (restoreTodo). */
+export async function deleteTodo(formData: FormData): Promise<RestoredTodo | null> {
   const parsed = parseTodoId(formData);
-  if (!parsed.success) return;
+  if (!parsed.success) return null;
 
   const supabase = await createClient();
-  const { error } = await supabase.from("todos").delete().eq("id", parsed.data);
+  const { data, error } = await supabase.from("todos").delete().eq("id", parsed.data).select("id, title, course_id, due_on, created_at").maybeSingle();
   if (error) throw new Error("Could not delete the to-do.");
+  revalidatePath("/");
+  return data;
+}
+
+/** Undo for a delete: inserts the same row again, with its id and creation time. */
+export async function restoreTodo(input: unknown): Promise<void> {
+  const parsed = parseRestoredTodo(input);
+  if (!parsed.success) return;
+  const supabase = await createClient();
+
+  // As in addTodo: reading the course through RLS proves it is yours.
+  if (parsed.data.course_id) {
+    const { data: course } = await supabase.from("courses").select("id").eq("id", parsed.data.course_id).maybeSingle();
+    if (!course) return;
+  }
+
+  const { error } = await supabase.from("todos").insert(parsed.data);
+  if (error) throw new Error("Could not restore the to-do.");
   revalidatePath("/");
 }
 

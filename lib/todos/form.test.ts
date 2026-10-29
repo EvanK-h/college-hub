@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseNewTodo, parseTodoId, parseTodoToggle } from "./form";
+import { parseNewTodo, parseRestoredTodo, parseTodoId, parseTodoToggle } from "./form";
 
 const ID = "3f2b8c1e-5a47-4d0e-9b1c-7a6d2e8f4c10";
 
@@ -53,5 +53,20 @@ describe("parseTodoId", () => {
     expect(parseTodoId(form({ todoId: ID })).success).toBe(true);
     expect(parseTodoId(form({ todoId: "1" })).success).toBe(false);
     expect(parseTodoId(form({})).success).toBe(false);
+  });
+});
+
+describe("parseRestoredTodo", () => {
+  const row = { id: ID, title: "Revise chapter 3", course_id: null, due_on: "2026-11-02", created_at: "2026-10-29T14:03:11.123456+00:00" };
+
+  it("accepts a deleted row as the database returned it", () => {
+    expect(parseRestoredTodo(row).success).toBe(true);
+  });
+
+  it("rejects a row that isn't a to-do", () => {
+    expect(parseRestoredTodo({ ...row, id: "nope" }).success).toBe(false);
+    expect(parseRestoredTodo({ ...row, title: "" }).success).toBe(false);
+    expect(parseRestoredTodo({ ...row, due_on: "soon" }).success).toBe(false);
+    expect(parseRestoredTodo("a string").success).toBe(false);
   });
 });

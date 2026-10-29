@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { SegmentedNav } from "@/components/segmented-nav";
 
-// The Plan section's own pages, one level under the main nav's "Plan".
+// The Plan section's own pages, one level under the main nav's "Plan". The prerequisite graph is
+// a view of Pathway, not a page of its own.
 const PLAN_PAGES = [
   { href: "/pathway", label: "Pathway" },
   { href: "/pathway/requirements", label: "Requirements" },
   { href: "/pathway/swaps", label: "Swaps" },
-  { href: "/pathway/graph", label: "Prerequisites" },
   { href: "/pathway/plans", label: "What-if" },
 ] as const;
 

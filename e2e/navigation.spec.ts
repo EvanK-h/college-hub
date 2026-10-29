@@ -35,3 +35,22 @@ test("moves between the Plan section's pages", async ({ page }) => {
   // Still inside Plan in the main nav.
   await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Plan" })).toHaveAttribute("aria-current", "page");
 });
+
+test("switches the pathway between its board and graph", async ({ page }) => {
+  await page.goto("/pathway");
+  const toggle = page.getByRole("navigation", { name: "Pathway view" });
+  await expect(toggle.getByRole("link", { name: "Board" })).toHaveAttribute("aria-current", "page");
+
+  await toggle.getByRole("link", { name: "Graph" }).click();
+  await expect(page).toHaveURL(/\/pathway\?view=graph$/);
+  await expect(toggle.getByRole("link", { name: "Graph" })).toHaveAttribute("aria-current", "page");
+  // A course is a node you can select to trace its chain.
+  await expect(page.getByRole("button", { name: /QA 2100/ }).filter({ visible: true })).toBeVisible();
+  // Still Pathway in the Plan section's control.
+  await expect(page.getByRole("navigation", { name: "Plan" }).getByRole("link", { name: "Pathway" })).toHaveAttribute("aria-current", "page");
+
+  // The graph's old address lands on the same view.
+  await page.goto("/pathway/graph");
+  await expect(page).toHaveURL(/\/pathway\?view=graph$/);
+});
+

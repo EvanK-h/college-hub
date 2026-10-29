@@ -150,6 +150,6 @@ export async function applyPlan(planId: string): Promise<PlanFormState> {
   const { error } = await supabase.rpc("apply_plan", { p_plan: planId });
   if (error) return { status: "error", message: `Nothing was changed: ${error.message}.` };
 
-  for (const path of ["/pathway", "/pathway/requirements", "/pathway/swaps", "/pathway/graph", "/pathway/plans"]) revalidatePath(path);
+  for (const path of ["/pathway", "/pathway/requirements", "/pathway/swaps", "/pathway/plans"]) revalidatePath(path);
   redirect("/pathway");
 }

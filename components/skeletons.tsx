@@ -174,30 +174,6 @@ export function CardListSkeleton({ count = 3, lines = 4 }: { count?: number; lin
   );
 }
 
-export function GraphSkeleton() {
-  return (
-    <Skeleton className="gap-4">
-      <div className="flex justify-between">
-        <Bone className="h-4 w-80 max-w-full" />
-        <Bone className="h-8 w-32 rounded-full" />
-      </div>
-      <div className="flex gap-18 overflow-hidden">
-        {Array.from({ length: 5 }, (_, column) => (
-          <div key={column} className="flex w-42 shrink-0 flex-col gap-3.5">
-            <Bone className="h-4 w-28" />
-            {Array.from({ length: 5 - (column % 3) }, (_, node) => (
-              <div key={node} className="flex h-[3.625rem] flex-col justify-center gap-1.5 rounded-xl bg-card p-2 shadow-card">
-                <Bone className="h-3.5 w-16" />
-                <Bone className="h-3 w-28" />
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </Skeleton>
-  );
-}
-
 export function CalendarSkeleton() {
   return (
     <Skeleton>

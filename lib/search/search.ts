@@ -40,7 +40,7 @@ const PAGES: { label: string; href: string; keywords: string }[] = [
   { label: "Pathway", href: "/pathway", keywords: "plan degree terms board" },
   { label: "Requirements", href: "/pathway/requirements", keywords: "audit progress attributes nupath" },
   { label: "Swaps", href: "/pathway/swaps", keywords: "swap options electives focus relevance" },
-  { label: "Prerequisites", href: "/pathway/graph", keywords: "graph prereqs chain" },
+  { label: "Prerequisites", href: "/pathway?view=graph", keywords: "graph prereqs chain" },
   { label: "What-if plans", href: "/pathway/plans", keywords: "plans compare scenarios" },
   { label: "Settings", href: "/settings", keywords: "sync canvas feed appearance theme dark light" },
 ];

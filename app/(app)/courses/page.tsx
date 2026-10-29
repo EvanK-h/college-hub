@@ -1,13 +1,14 @@
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ChevronRight, CircleAlert, Megaphone } from "lucide-react";
+import { CourseCardLink } from "@/components/courses/course-morph";
 import { CourseCode } from "@/components/courses/course-code";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { StatusIcon } from "@/components/pathway/status-icon";
 import { CoursesSkeleton } from "@/components/skeletons";
 import { formatDueIn } from "@/lib/assignments/status";
-import { coursePath } from "@/lib/courses/slug";
+import { coursePath, courseSlug, courseTitleName } from "@/lib/courses/slug";
 import { summarizeCourse, type CourseSummary } from "@/lib/courses/summary";
 import { PATHWAY_COURSE_COLUMNS, summarizeTerms, type PathwayCourse, type TermSummary } from "@/lib/pathway/summarize";
 import { loadSetup } from "@/lib/setup/load";
@@ -93,7 +94,13 @@ async function Courses() {
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
             <li key={course.id}>
-              <CourseCard course={course} summary={summarizeCourse(course.id, data, now, setup.profile.gradeScale)} now={now} timeZone={timeZone} />
+              <CourseCard
+                course={course}
+                termName={current?.name ?? ""}
+                summary={summarizeCourse(course.id, data, now, setup.profile.gradeScale)}
+                now={now}
+                timeZone={timeZone}
+              />
             </li>
           ))}
         </ul>
@@ -154,15 +161,28 @@ function TermList({ terms }: { terms: TermSummary[] }) {
   );
 }
 
-function CourseCard({ course, summary, now, timeZone }: { course: PathwayCourse; summary: CourseSummary; now: Date; timeZone: string }) {
+function CourseCard({
+  course,
+  termName,
+  summary,
+  now,
+  timeZone,
+}: {
+  course: PathwayCourse;
+  termName: string;
+  summary: CourseSummary;
+  now: Date;
+  timeZone: string;
+}) {
   const { grade, nextDue, nextClass, overdue, unread } = summary;
   const when = (iso: string) => `${formatDay(new Date(iso), timeZone)} ${formatTime(new Date(iso), timeZone)}`;
 
   return (
-    // The whole card is the link; the bar on the left is the course's type, as on the pathway.
-    <Link
+    // The whole card is the link; the bar on the left is the course's type, as on the pathway. Its
+    // title grows into the course page's title as it opens (course-morph).
+    <CourseCardLink
       href={coursePath(course.code)}
-      transitionTypes={["nav-forward"]}
+      course={{ slug: courseSlug(course.code), code: course.code, title: course.title, color: course.type.color, typeName: course.type.name, termName }}
       className={cn(
         "press flex h-full gap-3 rounded-2xl bg-card p-4 shadow-card hover:shadow-raised focus-visible:outline-2 focus-visible:outline-ring",
         categoryClass(course.type.color),
@@ -173,7 +193,9 @@ function CourseCard({ course, summary, now, timeZone }: { course: PathwayCourse;
         <span className="flex items-start justify-between gap-3">
           <span className="min-w-0">
             <CourseCode code={course.code} />
-            <span className="mt-1.5 block text-headline">{course.title}</span>
+            <ViewTransition name={courseTitleName(courseSlug(course.code))} share="course-morph" default="none">
+              <span className="mt-1.5 block text-headline">{course.title}</span>
+            </ViewTransition>
             <span className="sr-only">, {course.type.name}</span>
           </span>
           {grade && (
@@ -224,6 +246,6 @@ function CourseCard({ course, summary, now, timeZone }: { course: PathwayCourse;
           </span>
         )}
       </span>
-    </Link>
+    </CourseCardLink>
   );
 }

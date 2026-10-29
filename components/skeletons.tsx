@@ -202,10 +202,12 @@ export function CoursesSkeleton() {
   );
 }
 
-export function CourseSkeleton() {
+/** `header` replaces the header's bones when the real one is already known (see course-morph). */
+export function CourseSkeleton({ header }: { header?: (bones: ReactNode) => ReactNode }) {
+  const bones = <HeaderBones actions={1} />;
   return (
     <Skeleton>
-      <HeaderBones actions={1} />
+      {header ? header(bones) : bones}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex flex-col gap-4">
           <Bone className="h-6 w-36" />

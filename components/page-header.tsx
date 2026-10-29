@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { ViewTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
@@ -7,7 +7,8 @@ import { ChevronLeft } from "lucide-react";
 // `nav` sits right under the title, for a section's own pages; `children` sits under the
 // description, for legends or summaries. `eyebrow` is for context the title doesn't give (a
 // course's code and term), not for repeating the section's name. `marker` sits beside the title,
-// such as a course's type bar.
+// such as a course's type bar. `shareName` names the title for a shared view transition (a
+// Courses card growing into its course page).
 export function PageHeader({
   title,
   eyebrow,
@@ -15,6 +16,7 @@ export function PageHeader({
   back,
   nav,
   marker,
+  shareName,
   children,
 }: {
   title: string;
@@ -23,6 +25,7 @@ export function PageHeader({
   back?: { href: string; label: string };
   nav?: ReactNode;
   marker?: ReactNode;
+  shareName?: string;
   children?: ReactNode;
 }) {
   return (
@@ -41,10 +44,10 @@ export function PageHeader({
       {marker ? (
         <div className="flex items-stretch gap-3">
           {marker}
-          <LargeTitle>{title}</LargeTitle>
+          <LargeTitle shareName={shareName}>{title}</LargeTitle>
         </div>
       ) : (
-        <LargeTitle>{title}</LargeTitle>
+        <LargeTitle shareName={shareName}>{title}</LargeTitle>
       )}
       {nav && <div className="mt-1">{nav}</div>}
       {description && <p className="max-w-prose text-base text-muted-foreground">{description}</p>}
@@ -56,10 +59,17 @@ export function PageHeader({
 // A page's h1. On a phone, once it scrolls under the header, a small copy shows in the header's
 // middle (`collapsed-title` in globals.css), so a long page still says where you are. The copy is
 // fixed over the header, hidden from screen readers and clicks; the h1 is the real title.
-export function LargeTitle({ children }: { children: string }) {
+export function LargeTitle({ children, shareName }: { children: string; shareName?: string }) {
+  const title = <h1 className="text-large-title large-title-timeline">{children}</h1>;
   return (
     <>
-      <h1 className="text-large-title large-title-timeline">{children}</h1>
+      {shareName ? (
+        <ViewTransition name={shareName} share="course-morph" default="none">
+          {title}
+        </ViewTransition>
+      ) : (
+        title
+      )}
       <p
         aria-hidden
         className="collapsed-title pointer-events-none fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-center px-24 text-headline sm:hidden"

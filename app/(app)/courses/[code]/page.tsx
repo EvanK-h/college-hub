@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/assignments/status-pill";
 import { AnnouncementList } from "@/components/courses/announcement-list";
 import { GradeBreakdown } from "@/components/courses/grade-breakdown";
 import { GradeCalculator } from "@/components/courses/grade-calculator";
+import { ClearPendingCourse, PendingCourseHeader } from "@/components/courses/course-morph";
 import { NotesForm } from "@/components/courses/notes-form";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { CourseSkeleton } from "@/components/skeletons";
@@ -13,7 +14,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ASSIGNMENT_KIND_LABELS, assignmentStatus, formatDueIn } from "@/lib/assignments/status";
 import { canvasCourseUrl } from "@/lib/canvas/links";
-import { codeFromSlug } from "@/lib/courses/slug";
+import { codeFromSlug, courseSlug, courseTitleName } from "@/lib/courses/slug";
 import { courseGrade, gradeContributions, letterGrade, namesItsWeight, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
 import { loadSetup } from "@/lib/setup/load";
 import { categoryClass } from "@/lib/setup/setup";
@@ -30,7 +31,7 @@ const ANNOUNCEMENT_LIMIT = 20;
 export default function CoursePage({ params }: PageProps<"/courses/[code]">) {
   return (
     <main className={PAGE_CLASS}>
-      <Suspense fallback={<CourseSkeleton />}>
+      <Suspense fallback={<CourseSkeleton header={(bones) => <PendingCourseHeader fallback={bones} />} />}>
         {params.then(({ code }) => (
           <Course slug={code} />
         ))}
@@ -106,6 +107,7 @@ async function Course({ slug }: { slug: string }) {
         back={{ href: "/courses", label: "Courses" }}
         eyebrow={[course.code, course.type?.name, course.terms?.name].filter(Boolean).join(" · ")}
         title={course.title}
+        shareName={courseTitleName(courseSlug(course.code))}
         // The course type's bar, as on its pathway card and course card.
         marker={<span aria-hidden className={cn("w-1.5 shrink-0 rounded-full bg-(--course)", categoryClass(course.type?.color ?? 5))} />}
       >
@@ -121,6 +123,7 @@ async function Course({ slug }: { slug: string }) {
           </a>
         )}
       </PageHeader>
+      <ClearPendingCourse />
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <section aria-labelledby="assignments-heading" className="flex flex-col gap-4">

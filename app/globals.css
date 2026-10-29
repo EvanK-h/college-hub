@@ -386,10 +386,27 @@
     200ms ease-out 100ms both vt-fade,
     350ms var(--ease-spring) both vt-slide;
 }
+/* A Courses card's title grows into the course page's title: the group moves and scales on the
+   spring while the two snapshots cross-fade. Text scales from its top-left, not stretched. */
+::view-transition-group(.course-morph) {
+  animation-duration: 400ms;
+  animation-timing-function: var(--ease-spring);
+}
+::view-transition-old(.course-morph),
+::view-transition-new(.course-morph) {
+  height: 100%;
+  width: auto;
+  object-fit: none;
+  object-position: left top;
+}
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(*),
   ::view-transition-new(*) {
     --vt-offset: 0px;
+  }
+  /* No travel: the title cross-fades where it lands. */
+  ::view-transition-group(.course-morph) {
+    animation-duration: 0s;
   }
 }
 

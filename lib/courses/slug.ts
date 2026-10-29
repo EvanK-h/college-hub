@@ -13,3 +13,8 @@ export function codeFromSlug(slug: string): string | null {
 export function coursePath(code: string): string {
   return `/courses/${courseSlug(code)}`;
 }
+
+/** The view-transition name a Courses card's title shares with its course page's title. */
+export function courseTitleName(slug: string): string {
+  return `course-title-${slug}`;
+}

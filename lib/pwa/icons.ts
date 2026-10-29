@@ -5,6 +5,8 @@
 // - "full": fills the square; the platform applies its own mask (iOS home screen, Android
 //   maskable icons). Maskable icons keep the mark inside the central 80% safe zone.
 
+import { CHROME_COLOURS } from "@/lib/theme";
+
 export type IconSpec = { size: number; shape: "rounded" | "full"; markScale: number };
 
 export const ICONS: Record<string, IconSpec> = {
@@ -16,5 +18,5 @@ export const ICONS: Record<string, IconSpec> = {
 };
 
 // Image generation can't read CSS variables, so these mirror --primary and --primary-foreground
-// (light theme) and --background in app/globals.css.
-export const ICON_COLORS = { mark: "#fdfaf3", tile: "#843217", background: "#f7f4ef" };
+// (light theme) in app/globals.css; the background is the light CHROME_COLOURS.
+export const ICON_COLORS = { mark: "#fdfaf3", tile: "#843217", background: CHROME_COLOURS.light };

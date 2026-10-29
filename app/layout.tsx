@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { THEME_SCRIPT } from "@/lib/theme";
+import { CHROME_COLOURS, THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,11 +13,11 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "College Hub", statusBarStyle: "default" },
 };
 
-// Tints the browser chrome to match --background in each theme. Metadata cannot read CSS variables, so these mirror globals.css.
+// Tints the browser chrome to match --background in each theme (CHROME_COLOURS mirrors globals.css).
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f4ef" },
-    { media: "(prefers-color-scheme: dark)", color: "#100b08" },
+    { media: "(prefers-color-scheme: light)", color: CHROME_COLOURS.light },
+    { media: "(prefers-color-scheme: dark)", color: CHROME_COLOURS.dark },
   ],
 };
 

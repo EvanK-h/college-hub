@@ -2,14 +2,12 @@
 
 import { useSyncExternalStore } from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
-import { parseTheme, THEME_STORAGE_KEY, THEMES, type Theme } from "@/lib/theme";
+import { CHROME_COLOURS as CHROME, parseTheme, THEME_STORAGE_KEY, THEMES, type Theme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 const LABELS: Record<Theme, string> = { system: "System", light: "Light", dark: "Dark" };
 const ICONS = { system: Monitor, light: Sun, dark: Moon } satisfies Record<Theme, unknown>;
 
-// Browser chrome colours, mirroring --background (see the viewport in app/layout.tsx).
-const CHROME: Record<Exclude<Theme, "system">, string> = { light: "#f7f4ef", dark: "#100b08" };
 
 // Subscribers re-read the choice when it changes in this tab or another one.
 const listeners = new Set<() => void>();

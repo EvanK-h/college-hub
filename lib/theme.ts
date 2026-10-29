@@ -7,6 +7,12 @@ export type Theme = (typeof THEMES)[number];
 
 export const THEME_STORAGE_KEY = "theme";
 
+/**
+ * --background from globals.css as hex, for what can't read CSS variables: the theme-color metas
+ * that tint the browser chrome, and the PWA manifest. A test keeps them in step with the tokens.
+ */
+export const CHROME_COLOURS = { light: "#f5f2ee", dark: "#100e0c" } as const;
+
 export function parseTheme(value: string | null | undefined): Theme {
   return THEMES.find((theme) => theme === value) ?? "system";
 }

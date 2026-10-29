@@ -22,13 +22,16 @@ import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-// The view and date come from the URL, so they are runtime data inside a Suspense boundary.
+// The view and date come from the URL, so they are runtime data inside a Suspense boundary. The
+// URL arrives before the data, so a second boundary shows the skeleton of the view you asked for.
 export default function CalendarPage({ searchParams }: PageProps<"/calendar">) {
   return (
     <main className={PAGE_CLASS}>
       <Suspense fallback={<CalendarSkeleton />}>
         {searchParams.then((params) => (
-          <Calendar searchParams={params} />
+          <Suspense fallback={<CalendarSkeleton view={params.view === "week" ? "week" : "month"} />}>
+            <Calendar searchParams={params} />
+          </Suspense>
         ))}
       </Suspense>
     </main>

@@ -174,17 +174,42 @@ export function CardListSkeleton({ count = 3, lines = 4 }: { count?: number; lin
   );
 }
 
-export function CalendarSkeleton() {
+/** Shaped like the view it stands in for: the month grid or week grid, or their phone forms. */
+export function CalendarSkeleton({ view = "month" }: { view?: "month" | "week" }) {
   return (
     <Skeleton>
       <HeaderBones actions={3} />
-      <div className="grid grid-cols-7 gap-1">
-        {Array.from({ length: 35 }, (_, index) => (
-          <div key={index} className="h-28 rounded-xl bg-card p-2 shadow-card">
-            <Bone className="size-6 rounded-full" />
+      {view === "month" ? (
+        <>
+          <div className="hidden grid-cols-7 gap-1 md:grid">
+            {Array.from({ length: 35 }, (_, index) => (
+              <div key={index} className="h-28 rounded-xl bg-card p-2 shadow-card">
+                <Bone className="size-6 rounded-full" />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+          <div className="grid grid-cols-7 gap-y-3 rounded-2xl bg-card p-3 shadow-card md:hidden">
+            {Array.from({ length: 35 }, (_, index) => (
+              <Bone key={index} className="mx-auto size-8 rounded-full" />
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <CardBone className="hidden h-[28rem] md:flex">
+            <div className="grid grid-cols-7 gap-4 pl-12">
+              {Array.from({ length: 7 }, (_, index) => (
+                <Bone key={index} className="h-4 w-14" />
+              ))}
+            </div>
+          </CardBone>
+          <div className="flex flex-col gap-3 md:hidden">
+            {Array.from({ length: 4 }, (_, index) => (
+              <TextCard key={index} lines={2} />
+            ))}
+          </div>
+        </>
+      )}
     </Skeleton>
   );
 }

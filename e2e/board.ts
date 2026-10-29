@@ -6,13 +6,16 @@ export function termColumn(page: Page, name: string): Locator {
 }
 
 /**
- * Drags a course by its grip handle onto a term column. The pointer moves in small steps, as a
- * hand would: dnd-kit only starts a drag after the pointer has moved a few pixels.
+ * Drags a course by the card itself (near its code, away from the grip) onto a term column. The
+ * pointer moves in small steps, as a hand would: dnd-kit only starts a drag after the pointer has
+ * moved a few pixels, and a press that never moves stays a click.
  */
 export async function dragCourse(page: Page, code: string, toTerm: string) {
-  const handle = page.getByRole("button", { name: `Move ${code}` });
-  await handle.scrollIntoViewIfNeeded();
-  const from = await handle.boundingBox();
+  // The grip's parent is the draggable card.
+  const card = page.getByRole("button", { name: `Move ${code}` }).locator("..");
+  await card.scrollIntoViewIfNeeded();
+  const box = await card.boundingBox();
+  const from = box && { x: box.x + 20, y: box.y + 10, width: 40, height: 20 };
   const column = termColumn(page, toTerm);
   await column.scrollIntoViewIfNeeded();
   const to = await column.boundingBox();

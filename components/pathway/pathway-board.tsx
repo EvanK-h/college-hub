@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useEffect, useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
+  defaultDropAnimationSideEffects,
   useDraggable,
   useDroppable,
   useSensor,
@@ -14,28 +16,47 @@ import {
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
+  type DropAnimation,
 } from "@dnd-kit/core";
 import { CircleAlert, GripVertical } from "lucide-react";
+import { MotionConfig, motion, useReducedMotion } from "motion/react";
 import { moveCourse } from "@/app/(app)/pathway/actions";
 import { CourseCard, CourseCardBody } from "@/components/pathway/course-card";
+import type { CourseDetails } from "@/components/pathway/edit-course-dialog";
 import { TermColumn } from "@/components/pathway/term-column";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { checkMove, describeProblem, type CreditLimits, type PlanPrereq, type TermKind } from "@/lib/pathway/move-checks";
+import { coursePath } from "@/lib/courses/slug";
+import { checkMove, describeProblem, prereqChecks, type CreditLimits, type PlanPrereq, type TermKind } from "@/lib/pathway/move-checks";
 import { summarizeTerms, type PathwayCourse, type TermSummary } from "@/lib/pathway/summarize";
+import { categoryClass, type CourseTypeInfo } from "@/lib/setup/setup";
 import { cn } from "@/lib/utils";
 
 type Move = { courseId: string; termId: number };
 type PendingMove = Move & { problems: string[] };
 
-// The pathway as a drag-and-drop board. Planned courses move by their grip handle (pointer, touch
-// or keyboard: Space to pick up, arrows to move, Space to drop). Each move is checked against
-// prerequisites, co-op terms and term credit limits before it is saved; a clean move saves at once,
-// a move with problems asks first. Clicking a card still opens its edit dialog.
+// The card settles into its slot on the same critically damped curve as --ease-spring in
+// globals.css; the Web Animations API that dnd-kit uses can't read a CSS variable.
+const DROP_ANIMATION: DropAnimation = {
+  duration: 300,
+  easing:
+    "linear(0, 0.058, 0.181, 0.321, 0.456, 0.574, 0.672, 0.751, 0.813, 0.861, 0.897, 0.924, 0.945, 0.96, 0.971, 0.979, 0.985, 0.989, 0.992, 0.994, 0.996, 0.997, 0.998, 0.999, 1)",
+  sideEffects: defaultDropAnimationSideEffects({ styles: { active: { opacity: "0.4" } } }),
+};
+
+// The pathway as a drag-and-drop board. A planned course moves by dragging the card itself (after
+// 6 px with a mouse, or a short press on touch, so a tap still opens its edit dialog) or from the
+// keyboard by its grip: Space to pick up, arrows to move, Space to drop. Each move is checked
+// against prerequisites, co-op terms and term credit limits before it is saved; a clean move saves
+// at once, a move with problems asks first.
+//
+// The board opens on the current term, with finished terms folded to summaries. With
+// `courseTypes`, a legend above it doubles as a filter: pressing a type dims every other card.
 //
 // What-if plans reuse the board with their own `onMove` (saving to the plan, not the courses)
 // and `editable={false}`, since the edit dialog changes the real course. `labels` puts a chip on
-// a card, such as "Swap for CS 4805". `limits` and `creditUnit` come from the profile.
+// a card, such as "Swap for CS 4805". `requirements` names what each course counts towards, for the
+// edit dialog. `limits` and `creditUnit` come from the profile.
 export function PathwayBoard({
   terms,
   prereqs,
@@ -44,6 +65,8 @@ export function PathwayBoard({
   onMove = moveCourse,
   editable = true,
   labels = {},
+  courseTypes,
+  requirements = {},
 }: {
   terms: TermSummary[];
   prereqs: PlanPrereq[];
@@ -52,6 +75,8 @@ export function PathwayBoard({
   onMove?: (move: Move) => Promise<{ ok: boolean }>;
   editable?: boolean;
   labels?: Record<string, string>;
+  courseTypes?: CourseTypeInfo[];
+  requirements?: Record<string, string[]>;
 }) {
   // Where each course is, as the server last said; moves show at once and settle when it confirms.
   const saved = useMemo(() => new Map(terms.flatMap((term) => term.courses.map((course) => [course.id, term.id] as const))), [terms]);
@@ -61,6 +86,18 @@ export function PathwayBoard({
   const [overTermId, setOverTermId] = useState<number | null>(null);
   const [pending, setPending] = useState<PendingMove | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<ReadonlySet<number>>(new Set());
+  const [highlight, setHighlight] = useState<string | null>(null);
+  const reduceMotion = useReducedMotion();
+  const scroller = useRef<HTMLOListElement>(null);
+
+  // Open with the current term in view: if it starts off-screen, scroll it to the start.
+  useEffect(() => {
+    const list = scroller.current;
+    const current = list?.querySelector<HTMLElement>('[aria-current="step"]');
+    if (!list || !current || current.offsetLeft + current.offsetWidth <= list.clientWidth) return;
+    list.scrollLeft = current.offsetLeft - parseFloat(getComputedStyle(list).scrollPaddingLeft || "0");
+  }, []);
 
   const allCourses = useMemo(() => terms.flatMap((term) => term.courses), [terms]);
   const board = useMemo(
@@ -93,8 +130,10 @@ export function PathwayBoard({
     checkMove(plan, courseId, termId).map((problem) => describeProblem(problem, termName(termId), creditUnit));
 
   const sensors = useSensors(
-    // A short distance before a drag starts, so a tap on the handle isn't a drag.
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    // A short distance before a mouse drag starts, so a click still opens the card. On touch, a
+    // short press picks the card up, so a swipe still scrolls the board.
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
     useSensor(KeyboardSensor),
   );
 
@@ -135,6 +174,18 @@ export function PathwayBoard({
   const preview = activeId !== null && overTermId !== null && placement.get(activeId) !== overTermId ? problemsFor(activeId, overTermId) : null;
   const activeCourse = activeId ? allCourses.find((course) => course.id === activeId) : undefined;
   const termOptions = terms.map(({ id, name }) => ({ id, name }));
+  const detailsFor = (course: PathwayCourse): CourseDetails => ({
+    requirements: requirements[course.id] ?? [],
+    prereqs: prereqChecks(plan, course.id),
+    // Co-op placements are entries in the plan, not courses with a page.
+    href: course.type.coop ? undefined : coursePath(course.code),
+  });
+  const toggle = (termId: number) =>
+    setExpanded((current) => {
+      const next = new Set(current);
+      if (!next.delete(termId)) next.add(termId);
+      return next;
+    });
 
   return (
     <>
@@ -143,10 +194,13 @@ export function PathwayBoard({
           {error}
         </p>
       )}
+      {courseTypes && courseTypes.length > 1 && <LegendFilter types={courseTypes} highlight={highlight} onChange={setHighlight} />}
       {/* A fixed id, so dnd-kit's generated aria ids match between server and client renders. */}
       <DndContext
         id="pathway-board"
         sensors={sensors}
+        // Scroll the board near its edges, gently: the defaults race past columns.
+        autoScroll={{ acceleration: 6, threshold: { x: 0.12, y: 0.1 } }}
         accessibility={{
           announcements,
           screenReaderInstructions: {
@@ -165,6 +219,7 @@ export function PathwayBoard({
             bleeds to the page edges and snaps to columns so a flick lands on a whole term.
             `relative` keeps the cards' absolutely positioned sr-only labels inside the scroll box. */}
         <ol
+          ref={scroller}
           aria-label="Terms"
           tabIndex={0}
           className="relative -mx-4 flex snap-x snap-proximity scroll-px-4 items-start gap-3 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:scroll-px-6 sm:px-6"
@@ -175,6 +230,10 @@ export function PathwayBoard({
               term={term}
               creditUnit={creditUnit}
               preview={overTermId === term.id ? preview : null}
+              limit={limits[term.kind as TermKind]}
+              // A finished term folds to a summary unless opened, or while a course is dragged over it.
+              collapsed={term.phase === "past" && !expanded.has(term.id) && overTermId !== term.id}
+              onToggle={term.phase === "past" ? () => toggle(term.id) : undefined}
             >
               {term.courses.map((course) => (
                 <li key={course.id}>
@@ -184,6 +243,8 @@ export function PathwayBoard({
                     terms={termOptions}
                     past={term.phase === "past"}
                     checkTerm={(termId) => problemsFor(course.id, termId)}
+                    details={editable ? detailsFor(course) : undefined}
+                    dimmed={highlight !== null && course.type.id !== highlight}
                     editable={editable}
                     label={labels[course.id]}
                     creditUnit={creditUnit}
@@ -193,9 +254,14 @@ export function PathwayBoard({
             </DroppableTerm>
           ))}
         </ol>
-        <DragOverlay>
+        {/* The card you grabbed, lifted: same face, a little larger, a deeper shadow. */}
+        <DragOverlay dropAnimation={reduceMotion ? null : DROP_ANIMATION}>
           {activeCourse ? (
-            <div className="w-60 rotate-1 rounded-xl bg-card p-3 text-sm font-semibold shadow-raised">{activeCourse.code}</div>
+            <MotionConfig reducedMotion="user">
+              <motion.div initial={{ scale: 1 }} animate={{ scale: 1.03 }} transition={{ type: "spring", bounce: 0, duration: 0.25 }} className="cursor-grabbing">
+                <CourseCardBody course={activeCourse} label={labels[activeCourse.id]} creditUnit={creditUnit} className="shadow-raised" />
+              </motion.div>
+            </MotionConfig>
           ) : null}
         </DragOverlay>
       </DndContext>
@@ -235,15 +301,51 @@ export function PathwayBoard({
   );
 }
 
+/** The course types as pressable chips: pressing one dims the others; pressing it again clears it. */
+function LegendFilter({ types, highlight, onChange }: { types: CourseTypeInfo[]; highlight: string | null; onChange: (id: string | null) => void }) {
+  return (
+    // One scrolling row on phones, wrapping from tablet width.
+    <ul aria-label="Course types" className="-mx-4 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+      {types.map((type) => {
+        const pressed = highlight === type.id;
+        return (
+          <li key={type.id} className="shrink-0">
+            <button
+              type="button"
+              aria-pressed={pressed}
+              onClick={() => onChange(pressed ? null : type.id)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-ring",
+                pressed ? "bg-foreground text-background" : "bg-fill-tertiary text-muted-foreground hover:bg-fill-secondary hover:text-foreground",
+                highlight !== null && !pressed && "opacity-60",
+                categoryClass(type.color),
+              )}
+            >
+              <span aria-hidden className="size-2 rounded-full bg-(--course) ring-1 ring-card/60" />
+              {type.name}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function DroppableTerm({
   term,
   creditUnit,
   preview,
+  limit,
+  collapsed,
+  onToggle,
   children,
 }: {
   term: TermSummary;
   creditUnit: string;
   preview: string[] | null;
+  limit?: number;
+  collapsed: boolean;
+  onToggle?: () => void;
   children: React.ReactNode;
 }) {
   const { setNodeRef } = useDroppable({ id: term.id });
@@ -251,6 +353,9 @@ function DroppableTerm({
     <TermColumn
       term={term}
       creditUnit={creditUnit}
+      limit={limit}
+      collapsed={collapsed}
+      onToggle={onToggle}
       ref={setNodeRef}
       drop={preview === null ? null : preview.length === 0 ? "ok" : "problem"}
       notice={
@@ -277,6 +382,8 @@ function DraggableCourse({
   terms,
   past,
   checkTerm,
+  details,
+  dimmed,
   editable,
   label,
   creditUnit,
@@ -286,6 +393,8 @@ function DraggableCourse({
   terms: { id: number; name: string }[];
   past: boolean;
   checkTerm: (termId: number) => string[];
+  details?: CourseDetails;
+  dimmed: boolean;
   editable: boolean;
   label?: string;
   creditUnit: string;
@@ -293,11 +402,22 @@ function DraggableCourse({
   // Done and in-progress courses are history; only planned ones move.
   const movable = course.status === "planned";
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({ id: course.id, disabled: !movable });
+  // The whole card answers the mouse and touch; the grip is where the keyboard picks it up.
+  const pick = (keyboard: boolean) => Object.fromEntries(Object.entries(listeners ?? {}).filter(([name]) => (name === "onKeyDown") === keyboard));
 
   return (
-    <div ref={setNodeRef} className={cn("relative", isDragging && "opacity-40")}>
+    <div
+      ref={setNodeRef}
+      {...(movable ? pick(false) : {})}
+      className={cn(
+        "relative transition-opacity",
+        // No text selection or iOS callout while a press is becoming a drag.
+        movable && "select-none [-webkit-touch-callout:none]",
+        isDragging ? "opacity-40" : dimmed && "opacity-35",
+      )}
+    >
       {editable ? (
-        <CourseCard course={course} termId={termId} terms={terms} past={past} checkTerm={checkTerm} creditUnit={creditUnit} />
+        <CourseCard course={course} termId={termId} terms={terms} past={past} checkTerm={checkTerm} details={details} creditUnit={creditUnit} />
       ) : (
         <CourseCardBody course={course} past={past} label={label} creditUnit={creditUnit} />
       )}
@@ -306,7 +426,7 @@ function DraggableCourse({
           ref={setActivatorNodeRef}
           type="button"
           {...attributes}
-          {...listeners}
+          {...pick(true)}
           aria-label={`Move ${course.code}`}
           className="absolute right-1.5 bottom-1.5 flex size-7 cursor-grab touch-none items-center justify-center rounded-lg text-tertiary-foreground hover:bg-fill-secondary hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring active:cursor-grabbing"
         >

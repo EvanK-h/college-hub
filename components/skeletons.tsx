@@ -111,13 +111,18 @@ export function DashboardSkeleton() {
   );
 }
 
-export function LegendSkeleton() {
-  return <Bone className="mt-2 h-4 w-96 max-w-full" />;
-}
-
 export function BoardSkeleton() {
   return (
-    <Skeleton>
+    <Skeleton className="gap-5">
+      <div className="flex flex-col gap-2">
+        <Bone className="h-4 w-96 max-w-full" />
+        <Bone className="h-1.5 w-full rounded-full" />
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {Array.from({ length: 5 }, (_, index) => (
+          <Bone key={index} className="h-6 w-24 rounded-full" />
+        ))}
+      </div>
       <TermColumns />
     </Skeleton>
   );

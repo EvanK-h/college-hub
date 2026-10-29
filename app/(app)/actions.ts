@@ -100,7 +100,8 @@ const RESULTS_PER_KIND = 5;
 /**
  * ⌘K search over courses, assignments and announcements (pages are matched in the browser).
  * Read with the user's session, so RLS limits it to your own data. Each result links into the
- * app: a course to its page, an assignment or announcement to that section of its course page.
+ * app: a course to its page, an assignment to its course page's assignments, an announcement to
+ * itself on its course page (opened there by OpenAnnouncementFromHash).
  */
 export async function search(query: string): Promise<SearchResult[]> {
   const pattern = typeof query === "string" ? searchPattern(query.slice(0, 100)) : null;
@@ -136,7 +137,7 @@ export async function search(query: string): Promise<SearchResult[]> {
   }
   for (const item of announcements.data ?? []) {
     if (!item.courses) continue;
-    results.push({ id: item.id, kind: "announcement", label: item.title, detail: item.courses.code, href: `${coursePath(item.courses.code)}#announcements-heading` });
+    results.push({ id: item.id, kind: "announcement", label: item.title, detail: item.courses.code, href: `${coursePath(item.courses.code)}#announcement-${item.id}` });
   }
   return results;
 }

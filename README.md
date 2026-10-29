@@ -85,3 +85,7 @@ supabase gen types typescript --local > lib/database.types.ts
 ```
 
 `CLAUDE.md` holds the project's working rules (security, data and sync rules, code conventions).
+
+## License
+
+[MIT](LICENSE)

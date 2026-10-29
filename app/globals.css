@@ -50,6 +50,8 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand: var(--brand);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -122,12 +124,16 @@
   --secondary-foreground: var(--foreground);
   --muted: var(--fill-tertiary);
 
-  /* Tint: wine in light, Golden Batter in dark. Reserved for things you can act on, focus and
-     the app icon. A wine dark primary was measured and rejected: it lands on the due-soon and
+  /* Tint: wine in light, Golden Batter in dark. Reserved for things you can act on and focus.
+     A wine dark primary was measured and rejected: it lands on the due-soon and
      overdue hues. */
   --primary: light-dark(oklch(0.43 0.12 38), oklch(0.87 0.065 82));
   --primary-foreground: light-dark(oklch(0.985 0.01 85), oklch(0.2 0.03 55));
   --ring: var(--primary);
+  /* Brand: the app icon is wine with a light glyph in both themes. It's identity, not tint, so it
+     doesn't follow the dark primary. */
+  --brand: oklch(0.43 0.12 38);
+  --brand-foreground: oklch(0.985 0.01 85);
   /* Golden Batter tint for neutral labels (co-op term, swap relevance). */
   --accent: light-dark(oklch(0.925 0.04 82), oklch(0.32 0.03 75));
   --accent-foreground: light-dark(oklch(0.28 0.04 55), oklch(0.93 0.045 82));

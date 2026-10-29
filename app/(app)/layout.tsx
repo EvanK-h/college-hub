@@ -17,7 +17,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
       <header className="material-bar scroll-edge sticky top-0 z-40">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
           <Link href="/" className="press flex shrink-0 items-center gap-2 rounded-lg font-semibold tracking-tight">
-            <span className="flex size-8 items-center justify-center rounded-[0.6rem] bg-primary text-primary-foreground shadow-card">
+            <span className="flex size-8 items-center justify-center rounded-[0.6rem] bg-brand text-brand-foreground shadow-card">
               <GraduationCap aria-hidden className="size-[1.125rem]" />
             </span>
             College Hub

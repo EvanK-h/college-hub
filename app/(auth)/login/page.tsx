@@ -10,7 +10,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-12">
       <header className="flex flex-col items-center gap-4 text-center">
-        <span className="flex size-16 items-center justify-center rounded-[1.1rem] bg-primary text-primary-foreground shadow-raised">
+        <span className="flex size-16 items-center justify-center rounded-[1.1rem] bg-brand text-brand-foreground shadow-raised">
           <GraduationCap aria-hidden className="size-8" />
         </span>
         <div className="flex flex-col gap-1.5">

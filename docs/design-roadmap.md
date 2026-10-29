@@ -10,6 +10,8 @@ Principles used throughout, from Apple's HIG and WWDC talks: wayfinding (where a
 
 ## 0. Bugs and quick fixes (small, no design decision)
 
+**Done 29 Oct 2026.** Two changes from the plan below: terms have no dates yet, so 0.3 marks work as Missed once it is more than 30 days overdue (see the 2026-10-29 decision), and missed rows are muted in place rather than collapsed under a "Past" disclosure. 0.4 shows the date in the app's format behind a button that opens the native picker, which keeps the browser's own date entry.
+
 | # | Where | Problem | Fix |
 |---|---|---|---|
 | 0.1 | `components/main-nav.tsx:28` | `active = pathname === href`, so `/courses/*`, `/pathway/plans/*` and `/calendar?…` subpages highlight no tab. You lose "where am I" on exactly the deep pages. | Match the longest prefix: a link is active when `pathname === href` or `pathname.startsWith(href + "/")`, and the longest matching href wins (so `/pathway/requirements` beats `/pathway`). Courses should light up Dashboard, or a Courses tab once it exists (§2.2). |

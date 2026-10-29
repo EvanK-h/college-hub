@@ -169,12 +169,23 @@ function MonthView({
                 const exams = live.filter((s) => s.kind === "exam");
                 const otherEvents = live.filter((s) => !s.courses && s.kind !== "exam");
                 return (
-                  <td key={day} className={cn("h-28 rounded-xl bg-card p-2 align-top shadow-card", day < today && "bg-fill-tertiary shadow-none")}>
+                  // Days behind you sit flat on the page; today and the days ahead are cards. The whole
+                  // cell opens that week: the link's ::after covers it, and the cell shows its focus.
+                  <td
+                    key={day}
+                    className={cn(
+                      "relative h-28 rounded-xl p-2 align-top transition-shadow has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring",
+                      day < today
+                        ? "text-muted-foreground ring-1 ring-separator ring-inset hover:bg-fill-tertiary"
+                        : "bg-card shadow-card hover:shadow-raised",
+                    )}
+                  >
                     <Link
                       href={href({ view: "week", date: day })}
                       aria-current={day === today ? "date" : undefined}
                       className={cn(
-                        "inline-flex size-6 items-center justify-center rounded-full text-sm tabular-nums underline-offset-4 hover:underline",
+                        "inline-flex size-6 items-center justify-center rounded-full text-sm tabular-nums after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none",
+                        day < today && "text-tertiary-foreground",
                         day === today && "font-semibold ring-2 ring-foreground",
                       )}
                     >

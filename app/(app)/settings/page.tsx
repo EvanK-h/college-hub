@@ -8,6 +8,7 @@ import { SyncCard } from "@/components/settings/sync-card";
 import { SyncHistory } from "@/components/settings/sync-history";
 import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
 import { SyncNowForm } from "@/components/settings/sync-now-form";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { canvasSettingsUrl } from "@/lib/canvas/links";
@@ -34,6 +35,13 @@ export default function SettingsPage() {
       <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
         <SyncSections />
       </Suspense>
+      <section aria-labelledby="appearance" className="flex flex-col gap-3">
+        <h2 id="appearance" className="text-title-3">
+          Appearance
+        </h2>
+        <ThemeToggle />
+        <p className="text-sm text-muted-foreground">Saved on this device. System follows your device&rsquo;s light or dark setting.</p>
+      </section>
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { THEME_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,7 +24,11 @@ export const viewport: Viewport = {
 // The system font (SF Pro on Apple devices) ships optical sizing and tuned tracking, so no web font is loaded.
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
+    // suppressHydrationWarning: the theme script may add a class to <html> before React hydrates.
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );

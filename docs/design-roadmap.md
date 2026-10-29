@@ -6,6 +6,24 @@ Principles used throughout, from Apple's HIG and WWDC talks: wayfinding (where a
 
 **What already works and should stay:** the colour-role system and its ΔE discipline, the translucent header with its scroll-edge hairline, press feedback on pointer-down, the spring-sampled `--ease-spring`, handling of all three `prefers-*` settings, status shapes that never rely on colour alone, and the ⌘K palette's combobox semantics. Most of what follows is about information architecture and hierarchy, not the visual language.
 
+## Still open
+
+Everything that was deferred or left out while building the sections below, so none of it gets lost. Tick an item off when it's built and note where; when something is deferred, add it here.
+
+- [ ] §1.6 Smaller colour notes.
+- [ ] §2.4 Collapsing large title.
+- [ ] §2.5 The command palette becomes a command palette (actions as well as search).
+- [ ] §4.2 Month view and §4.3 Keyboard shortcuts for the calendar.
+- [ ] Announcements inbox ("See all" on Today), from §3. With the toasts in §8.2.
+- [ ] Mark an announcement read when it's opened, from §3. With §8.2.
+- [ ] Undo for to-dos, from §3. With §8.2.
+- [ ] The course edit dialog as a bottom sheet on phones, from §5.3. With §6.2 / §8.5.
+- [ ] "New plan" dialog as a bottom sheet on phones, from §5.7. With §6.2 / §8.5.
+- [ ] Rubber-banding at the prerequisite graph's edges, from §5.6. Needs the pan to move a transform rather than native scroll, so it can overshoot. With §8.4.
+- [ ] Merge the graph into the board as a "Board | Graph" toggle, from §5.6. **Decision**: it removes a Plan tab.
+
+Decided against, not open: an amber step on the term credit meter (the profile has one limit per kind, see "Pathway board, as built").
+
 ---
 
 ## 0. Bugs and quick fixes (small, no design decision)
@@ -220,6 +238,8 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 - Add context: requirements this course satisfies, prerequisites (met or unmet), and a link to the course page when one exists.
 - On phone it becomes a bottom sheet (§6.2).
 - Grow the dialog from the card (set `transform-origin` from the trigger's rect), so it reads as the card opening rather than a box appearing in the middle.
+
+**Done 29 Oct 2026 (§5.4–5.7)**; see "Requirements, swaps, graph and what-if plans, as built" in the decision log. Changes from the plan below: requirement chips link to the course page (not the board); the graph pans with momentum but doesn't rubber-band, because it pans by native scrolling, which stops at the edges; the graph stays its own page (merging it into the board is still open); and "New plan" opens a dialog, which becomes a sheet on phones with §6.2.
 
 ### 5.4 Requirements
 

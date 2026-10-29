@@ -415,3 +415,28 @@
 - A link goes to the course page (not for co-op placements).
 - The dialog grows from the card that opened it: its transform origin is the card's offset from the viewport centre, starting at half size, and it shrinks back the same way.
 
+## 2026-10-29: Requirements, swaps, graph and what-if plans, as built
+
+**Requirements.**
+- The headline areas (and the attribute set, NUpath) keep the large rings. The other areas sit below as a compact grid of small rings with the label beside them.
+- Captions say what's left ("1 in progress · 1 to go", or "Complete"; `ringCaption`), and one legend line explains the arcs.
+- Every ring links to its section. NUpath gets a section of its own, listing each code with its status.
+- "Show unmet only" is a plain checkbox. Met rows and fully met sections hide with CSS (`group-has-[#unmet-only:checked]`), so the filter needs no client code.
+- Course chips are `text-sm` and link to the course page; co-op placements stay plain text.
+
+**Swaps.**
+- Each swap is a disclosure row, for example "PHIL 1115 Introduction to Logic, for ECON 2350 · Spring 2027", with the ranked focus's relevance pill. The other focus's relevance moves inside the row on phones. Opening a row shows the details and the two reasons.
+- The focus toggle is labelled "Rank for".
+- "Try in a what-if plan" (`trySwap`) opens the plan named "Try <code>" if one exists. Otherwise it copies the real plan into a new plan with the swap taken in. If the swap can't go in, the new plan is deleted again. It shares its checks with the plan page's swap form (`insertSwap`). A swap offered for several courses gets one button per course.
+
+**Prerequisite graph.**
+- After the first barycentre pass, the layout sweeps back (by what each course unlocks) and forward again. Each sweep is kept only if it lowers the count of crossing arrows between neighbouring columns (`crossings`).
+- Hovering a node with a mouse lights up its chain like a selection does. A click still selects, and a selection wins over a hover.
+- Dragging the background with a mouse pans 1:1. On release, a flick decelerates to Apple's projected resting point: decay of 0.998 per millisecond, so it starts at the pointer's velocity. Touch and trackpads keep their native scrolling. There's no rubber band, because the pan is native scrolling and stops at the edges.
+- "Fit to width" scales the canvas to the screen. It only appears when the graph is wider than the screen.
+
+**What-if plans.**
+- The list is one card of rows: the name and change count open the plan, Compare compares it with the current plan, and a ⋯ menu (Base UI `Menu`) holds Rename and Delete, each in its own dialog.
+- "New plan" is the page's primary button and opens the form in a dialog. "Compare two plans" folds into a disclosure, shown once there are two plans.
+- A plan's page has an accent strip pinned under the header: "What-if plan · 2 changes · your real plan is unchanged", with Make active and Discard. The change count now leaves out unchanged courses, matching the list.
+

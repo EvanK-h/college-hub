@@ -21,6 +21,10 @@ import { dayKey, formatDay, formatTime, formatTimeRange, shortLocation } from "@
 import { SESSION_TYPE_LABELS, sessionLabel } from "@/lib/timetable/kind";
 import { cn } from "@/lib/utils";
 
+// The auto-sync and the refresh button run their Server Actions under this page's limit, so give
+// a sync room to finish (as on Settings).
+export const maxDuration = 60;
+
 const DUE_LIMIT = 8;
 const TODO_LIMIT = 6;
 const ANNOUNCEMENT_LIMIT = 3;

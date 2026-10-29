@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { StatusPill } from "@/components/assignments/status-pill";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { CalendarSkeleton } from "@/components/skeletons";
+import { TODAY_MARKER_CLASS } from "@/components/today-marker";
 import { buttonVariants } from "@/components/ui/button";
 import { assignmentStatus } from "@/lib/assignments/status";
 import { neighbours, parseCalendarParams, viewRange, type CalendarView } from "@/lib/calendar/params";
@@ -187,7 +188,7 @@ function MonthView({
                       className={cn(
                         "inline-flex size-6 items-center justify-center rounded-full text-sm tabular-nums after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none",
                         day < today && "text-tertiary-foreground",
-                        day === today && "font-semibold ring-2 ring-foreground",
+                        day === today && TODAY_MARKER_CLASS,
                       )}
                     >
                       {Number(day.slice(8))}
@@ -233,10 +234,13 @@ function WeekView({ days, today, timeZone, now }: { days: Day[]; today: string; 
         <li
           key={day.day}
           aria-current={day.day === today ? "date" : undefined}
-          className={cn("flex flex-col gap-2 rounded-2xl bg-card p-3 shadow-card", day.day === today && "ring-2 ring-foreground")}
+          className="flex flex-col gap-2 rounded-2xl bg-card p-3 shadow-card"
         >
-          <h2 className="text-sm font-semibold">
-            {WEEKDAYS[index]?.slice(0, 3)} {Number(day.day.slice(8))}
+          <h2 className="flex items-center gap-1 text-sm font-semibold">
+            {WEEKDAYS[index]?.slice(0, 3)}
+            <span className={cn("inline-flex size-6 items-center justify-center rounded-full tabular-nums", day.day === today && TODAY_MARKER_CLASS)}>
+              {Number(day.day.slice(8))}
+            </span>
           </h2>
           {day.sessions.length === 0 && day.due.length === 0 && <p className="text-xs text-tertiary-foreground">Free</p>}
           <ul className="flex flex-col gap-2 text-xs">

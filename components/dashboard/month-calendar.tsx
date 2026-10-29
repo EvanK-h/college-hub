@@ -1,10 +1,11 @@
 import { monthGrid } from "@/lib/dashboard/agenda";
+import { TODAY_MARKER_CLASS } from "@/components/today-marker";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 /**
- * A compact month: today is ringed, days with deadlines get a dot and exam days a bar (neutral
+ * A compact month: today is filled, days with deadlines get a dot and exam days a bar (neutral
  * marks told apart by shape: these are kinds of event, not statuses). Classes are
  * not marked; they fall on nearly every weekday, so a mark would say nothing.
  */
@@ -54,7 +55,7 @@ export function MonthCalendar({
                   <span
                     className={cn(
                       "relative mx-auto flex size-7 flex-col items-center justify-center rounded-full tabular-nums",
-                      day === today && "font-semibold ring-2 ring-foreground",
+                      day === today && TODAY_MARKER_CLASS,
                       day < today && "text-tertiary-foreground",
                     )}
                     aria-current={day === today ? "date" : undefined}
@@ -62,8 +63,8 @@ export function MonthCalendar({
                     {Number(day.slice(8))}
                     {label && <span className="sr-only">, {label}</span>}
                     <span aria-hidden className="absolute bottom-0.5 flex gap-0.5">
-                      {due > 0 && <span className="size-1 rounded-full bg-muted-foreground" />}
-                      {exam && <span className="h-1 w-2 rounded-full bg-foreground" />}
+                      {due > 0 && <span className={cn("size-1 rounded-full", day === today ? "bg-background" : "bg-muted-foreground")} />}
+                      {exam && <span className={cn("h-1 w-2 rounded-full", day === today ? "bg-background" : "bg-foreground")} />}
                     </span>
                   </span>
                 </td>

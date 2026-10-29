@@ -17,6 +17,9 @@ export function AddTodoForm({ courses }: { courses: { id: string; code: string }
   const id = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, pending] = useActionState(addTodo, IDLE);
+  // The course and date fields show once you start a to-do (focus anywhere in the form, or a
+  // title typed), so an idle card is one line rather than three.
+  const [hasTitle, setHasTitle] = useState(false);
 
   // Clear the form after each successful add, ready for the next one.
   useEffect(() => {
@@ -24,19 +27,27 @@ export function AddTodoForm({ courses }: { courses: { id: string; code: string }
   }, [state]);
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-2">
+    <form ref={formRef} action={formAction} onReset={() => setHasTitle(false)} className="group/todo flex flex-col gap-2">
       <div className="flex gap-2">
         <Label htmlFor={`${id}-title`} className="sr-only">
           New to-do
         </Label>
-        <Input id={`${id}-title`} name="title" placeholder="Add a to-do" maxLength={200} required className="h-9 flex-1" />
+        <Input
+          id={`${id}-title`}
+          name="title"
+          placeholder="Add a to-do"
+          maxLength={200}
+          required
+          onChange={(event) => setHasTitle(event.target.value !== "")}
+          className="h-9 flex-1"
+        />
         {/* Return adds it too. A quiet icon rather than a filled button: adding a to-do is a small,
             frequent action, and a page has at most one filled (primary) button. */}
         <Button type="submit" variant="ghost" size="icon" disabled={pending} aria-label="Add to-do">
           <Plus aria-hidden />
         </Button>
       </div>
-      <div className="flex gap-2">
+      <div className={cn("gap-2 group-focus-within/todo:flex", hasTitle ? "flex" : "hidden")}>
         <Label htmlFor={`${id}-course`} className="sr-only">
           Course
         </Label>

@@ -332,3 +332,15 @@
 **Your data.** `data/mine` (gitignored, with everything else under `data/` except `data/example`) is exported from your database and replaces the Notion CSVs and the one-off importers (`import-notion`, `import-prereqs`, `import-ai-relevance`). The import check (56 courses, 171 SH, 53 SH transfer, 31 requirements, 32 swaps) now runs against it. `data/example` is an invented biology student at an invented school with no preset. A database test imports each folder for a throwaway user and checks that it exports back unchanged.
 
 **Terms per owner.** Term names were unique across all owners, which kept two students from both having a "Fall 2026" in one database. They are now unique per owner (`20261029113600_terms_names_per_owner`). The e2e user's plan is also a data folder (`e2e/data`), imported by the seed with term ids from 900, and its terms drop the "Test" prefix.
+
+## 2026-10-29: Design roadmap: structure, dashboard, calendar and course colours
+
+**Decision.** Adopt the four structural changes in `docs/design-roadmap.md`, to be built in the order it lists:
+- **Navigation.** Four places replace the seven flat tabs: Today, Calendar, Courses (a new `/courses` index of this term's courses) and Plan. Plan has its own second-level control for Board, Requirements, Swaps, Prerequisites and What-if. Settings becomes a gear button. On a phone the four places move to a bottom tab bar.
+- **Today.** The dashboard is rebuilt around a Now / Next strip (next class, next deadline, next exam) and one agenda list for the coming week, with to-dos and announcements beside it. The mini month and the separate Today, Due and This-week cards go.
+- **Calendar.** The week view becomes a time grid (sessions as blocks sized by duration, deadlines in an all-day strip). The list stays as a day or agenda view on a phone.
+- **Course colours.** Colour keeps marking course *type* only. Current courses are told apart by a code badge, not a per-course hue: the ΔE budget between the status and category palettes has no room for 6–8 more hues.
+
+**Why.** The review found the app's visual language sound and its structure the weak point: seven tabs that aren't peers (four are views of the plan), no way to browse courses, a dashboard whose five equal cards give nothing priority and show empty panels on quiet days, and a week view that can't show free time or clashes.
+
+**Also: "Missed" assignments.** Work more than 30 days past its deadline without a submission is shown as Missed (neutral grey, a circle-with-a-dash icon), not Overdue. Canvas copies old assignments into new courses (a 2024 lab showed as "Overdue · 753 d ago"), and a red status that never clears stops meaning "act now". Comparing with the term's start date would be more precise, but terms have no dates yet (2026-10-25 decision), so it is a fixed age.

@@ -132,7 +132,7 @@ export function CommandPalette() {
               aria-autocomplete="list"
               aria-label="Search courses, assignments, announcements and pages"
               placeholder="Search courses, assignments, announcements…"
-              className="h-12 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
+              className="h-12 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-tertiary-foreground"
             />
           </div>
 

@@ -24,7 +24,7 @@ export function NotesForm({ courseId, notes }: { courseId: string; notes: string
         rows={5}
         maxLength={10_000}
         placeholder="Office hours, exam rooms, what to revise…"
-        className="w-full resize-y rounded-xl border border-input bg-card px-3 py-2 text-sm focus-visible:border-ring focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none dark:bg-muted"
+        className="w-full resize-y rounded-xl border border-input bg-card px-3 py-2 text-sm placeholder:text-tertiary-foreground dark:placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-4 focus-visible:ring-ring/25 focus-visible:outline-none dark:bg-muted"
       />
       <div className="flex items-center justify-between gap-3">
         <p

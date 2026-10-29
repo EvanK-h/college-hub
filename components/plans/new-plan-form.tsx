@@ -17,7 +17,7 @@ export function NewPlanForm({ plans }: { plans: { id: string; name: string }[] }
     <form action={formAction} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
       <div className="grid gap-1.5">
         <Label htmlFor="plan-name">Name</Label>
-        <Input id="plan-name" name="name" required maxLength={60} placeholder="CY 4770 instead of CS 4805" aria-describedby="plan-error" />
+        <Input id="plan-name" name="name" required maxLength={60} placeholder="e.g. CY 4770 instead of CS 4805" aria-describedby="plan-error" />
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor="plan-from">Start from</Label>

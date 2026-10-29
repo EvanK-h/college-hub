@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { matchPages, searchPattern } from "./search";
+import { matchActions, matchPages, pageAt, searchPattern } from "./search";
 
 describe("searchPattern", () => {
   it("wraps the query for ILIKE", () => {
@@ -25,3 +25,25 @@ describe("matchPages", () => {
     expect(matchPages("dashboard").map((r) => r.label)).toEqual(["Today"]);
   });
 });
+
+describe("matchActions", () => {
+  it("lists every action with no query, and matches names or keywords", () => {
+    expect(matchActions("").length).toBeGreaterThan(3);
+    expect(matchActions("dark").map((r) => r.label)).toEqual(["Use dark appearance"]);
+    expect(matchActions("canvas").map((r) => "action" in r && r.action)).toEqual(["sync"]);
+    expect(matchActions("zzz")).toEqual([]);
+  });
+});
+
+describe("pageAt", () => {
+  it("names listed pages and course pages", () => {
+    expect(pageAt("/pathway/swaps")).toEqual({ href: "/pathway/swaps", label: "Swaps" });
+    expect(pageAt("/courses/cs-2100")).toEqual({ href: "/courses/cs-2100", label: "CS 2100" });
+  });
+
+  it("skips pages it can't name", () => {
+    expect(pageAt("/pathway/plans/0b0c")).toBeNull();
+    expect(pageAt("/courses/not-a-course")).toBeNull();
+  });
+});
+

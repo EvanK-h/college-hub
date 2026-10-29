@@ -543,3 +543,11 @@ Choosing a date keeps the month (`?date=`, without scrolling to the top); a mont
 - They're named in the buttons' tooltips and `aria-keyshortcuts`.
 - They're ignored while typing in a field, with a modifier held (so ⌘← stays the browser's), or inside a dialog such as ⌘K.
 
+## 2026-10-29: The prerequisite graph is a view of Pathway
+
+The board and the graph show the same thing laid out the same way, by term: one as cards to drag, the other as the arrows between them. So the graph is no longer a page of its own. It's Pathway's second view, behind a "Board | Graph" control under the progress bar.
+- **URL:** `/pathway?view=graph`.
+- **Same data:** both views load the same terms and prerequisites, and the graph is built from the terms the board already loads.
+- **Navigation:** the control uses links, so each view has its own URL and switching doesn't scroll to the top. The Plan section's control drops from five items to four (Pathway, Requirements, Swaps, What-if). ⌘K's "Prerequisites" opens the Graph view.
+- **Old links:** `/pathway/graph` permanently redirects to the Graph view.
+

@@ -21,7 +21,7 @@ Everything that was deferred or left out while building the sections below, so n
 - [x] "New plan" dialog as a bottom sheet on phones, from §5.7. Built with §8.5.
 - [x] Rubber-banding at the prerequisite graph's edges, from §5.6. Built with §8.4: past an end the canvas itself moves (`rubberband`) and springs back.
 - [ ] Shared-element morph from a Courses card into the course page's header, from §8.4. React only pairs the two when the course page renders in the same commit as the navigation, and it streams in behind a skeleton today; it needs the page (or its header) to render without suspending first.
-- [ ] Merge the graph into the board as a "Board | Graph" toggle, from §5.6. **Decision**: it removes a Plan tab.
+- [x] Merge the graph into the board as a "Board | Graph" toggle, from §5.6. Decided and built 29 Oct 2026: `/pathway?view=graph`, and the Plan control loses "Prerequisites".
 
 Decided against, not open: an amber step on the term credit meter (the profile has one limit per kind, see "Pathway board, as built").
 
@@ -246,7 +246,7 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 - On phone it becomes a bottom sheet (§8.5).
 - Grow the dialog from the card (set `transform-origin` from the trigger's rect), so it reads as the card opening rather than a box appearing in the middle.
 
-**Done 29 Oct 2026 (§5.4–5.7)**; see "Requirements, swaps, graph and what-if plans, as built" in the decision log. Changes from the plan below: requirement chips link to the course page (not the board); the graph pans with momentum but doesn't rubber-band, because it pans by native scrolling, which stops at the edges; the graph stays its own page (merging it into the board is still open); and "New plan" opens a dialog, which becomes a sheet on phones with §8.5.
+**Done 29 Oct 2026 (§5.4–5.7)**; see "Requirements, swaps, graph and what-if plans, as built" in the decision log. Changes from the plan below: requirement chips link to the course page (not the board); the graph pans with momentum but doesn't rubber-band, because it pans by native scrolling, which stops at the edges; the graph stayed its own page at first (it was merged into Pathway later the same day, see the Still open list); and "New plan" opens a dialog, which becomes a sheet on phones with §8.5.
 
 ### 5.4 Requirements
 

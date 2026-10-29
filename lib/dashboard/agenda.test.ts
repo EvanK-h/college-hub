@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   addDays,
+  currentOrNext,
+  dayLabel,
   daysBetween,
   dueSoon,
+  foldFreeDays,
   formatCountdown,
   monthGrid,
+  nextDue,
   nextExam,
+  recentlyOverdue,
   sessionsOn,
   weekAgenda,
   type AgendaAssignment,
@@ -142,5 +147,80 @@ describe("monthGrid", () => {
 
   it("handles February in a leap year", () => {
     expect(monthGrid(2028, 2).flat().filter(Boolean)).toHaveLength(29);
+  });
+});
+
+describe("currentOrNext", () => {
+  const at = (hours: number) => new Date(Date.parse("2026-11-02T12:00:00Z") + hours * 3_600_000).toISOString();
+  const session = (id: string, start: number, end: number, cancelled = false) => ({ id, starts_at: at(start), ends_at: at(end), kind: "lecture", cancelled });
+  const now = new Date("2026-11-02T12:00:00Z");
+
+  it("prefers the class under way", () => {
+    expect(currentOrNext([session("next", 1, 2), session("now", -1, 1)], now)).toEqual({ session: session("now", -1, 1), live: true });
+  });
+
+  it("otherwise takes the next one, skipping finished and cancelled classes", () => {
+    const result = currentOrNext([session("done", -3, -1), session("off", 1, 2, true), session("later", 3, 4)], now);
+    expect(result).toEqual({ session: session("later", 3, 4), live: false });
+  });
+
+  it("is null with nothing ahead", () => {
+    expect(currentOrNext([session("done", -3, -1)], now)).toBeNull();
+  });
+});
+
+describe("nextDue and recentlyOverdue", () => {
+  const now = new Date("2026-11-02T12:00:00Z");
+  const due = (id: string, days: number, overrides: Partial<AgendaAssignment> = {}): AgendaAssignment => ({
+    id,
+    kind: "assignment",
+    due_at: new Date(now.getTime() + days * 86_400_000).toISOString(),
+    workflow_state: "unsubmitted",
+    score: null,
+    submitted_at: null,
+    progress: "not_started",
+    ...overrides,
+  });
+  const list = [due("late", -2), due("ancient", -30), due("handed-in", 1, { workflow_state: "submitted" }), due("far", 40), due("soon", 2)];
+
+  it("finds the soonest unfinished deadline ahead, however far", () => {
+    expect(nextDue(list, now)?.id).toBe("soon");
+    expect(nextDue([due("far", 40)], now)?.id).toBe("far");
+    expect(nextDue([due("late", -2)], now)).toBeNull();
+  });
+
+  it("lists only last week's missed deadlines", () => {
+    expect(recentlyOverdue(list, now).map((assignment) => assignment.id)).toEqual(["late"]);
+  });
+});
+
+describe("foldFreeDays", () => {
+  const day = (date: string, busy: boolean) => ({ day: date, sessions: busy ? ["class"] : [], due: [] as string[] });
+
+  it("folds runs of empty days after today into one entry", () => {
+    const entries = foldFreeDays([
+      day("2026-10-29", false),
+      day("2026-10-30", false),
+      day("2026-10-31", false),
+      day("2026-11-01", false),
+      day("2026-11-02", true),
+      day("2026-11-03", false),
+      day("2026-11-04", true),
+    ]);
+    expect(entries.map((entry) => (entry.kind === "day" ? entry.day : `${entry.from}…${entry.to}`))).toEqual([
+      "2026-10-29",
+      "2026-10-30…2026-11-01",
+      "2026-11-02",
+      "2026-11-03…2026-11-03",
+      "2026-11-04",
+    ]);
+  });
+});
+
+describe("dayLabel", () => {
+  it("names today and tomorrow, and dates the rest", () => {
+    expect(dayLabel("2026-10-29", "2026-10-29")).toBe("Today");
+    expect(dayLabel("2026-10-30", "2026-10-29")).toBe("Tomorrow");
+    expect(dayLabel("2026-11-02", "2026-10-29")).toBe("Mon 2 Nov");
   });
 });

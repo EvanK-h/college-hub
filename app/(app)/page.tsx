@@ -1,9 +1,10 @@
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CircleAlert, Clock, FileText, NotebookPen } from "lucide-react";
 import { StatusPill } from "@/components/assignments/status-pill";
+import { CourseCode } from "@/components/courses/course-code";
 import { AutoSync } from "@/components/dashboard/auto-sync";
-import { MonthCalendar } from "@/components/dashboard/month-calendar";
 import { TodoList } from "@/components/dashboard/todo-list";
 import { PAGE_CLASS } from "@/components/page-header";
 import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
@@ -13,36 +14,73 @@ import { excerpt } from "@/lib/announcements/text";
 import { assignmentStatus, formatDueIn } from "@/lib/assignments/status";
 import { canvasSettingsUrl } from "@/lib/canvas/links";
 import { coursePath } from "@/lib/courses/slug";
-import { addDays, daysBetween, dueSoon, formatCountdown, nextExam, sessionsOn, weekAgenda } from "@/lib/dashboard/agenda";
+import {
+  addDays,
+  currentOrNext,
+  dayLabel,
+  daysBetween,
+  foldFreeDays,
+  formatCountdown,
+  nextDue,
+  nextExam,
+  OVERDUE_WINDOW_DAYS,
+  recentlyOverdue,
+  weekAgenda,
+} from "@/lib/dashboard/agenda";
 import { PATHWAY_COURSE_COLUMNS, summarizeTerms } from "@/lib/pathway/summarize";
-import { categoryClass } from "@/lib/setup/setup";
 import { createClient } from "@/lib/supabase/server";
 import { formatRelativeTime, isStale } from "@/lib/sync/format";
-import { dayKey, formatDay, formatTime, formatTimeRange, shortLocation } from "@/lib/timetable/format";
-import { SESSION_TYPE_LABELS, sessionLabel } from "@/lib/timetable/kind";
+import { dayKey, formatDay, formatTime, shortLocation } from "@/lib/timetable/format";
+import { SESSION_TYPE_LABELS } from "@/lib/timetable/kind";
 import { cn } from "@/lib/utils";
 
 // The auto-sync and the refresh button run their Server Actions under this page's limit, so give
 // a sync room to finish (as on Settings).
 export const maxDuration = 60;
 
-const DUE_LIMIT = 8;
+const AGENDA_DAYS = 7;
+// How far ahead "next due" and "next exam" look.
+const LOOKAHEAD_DAYS = 120;
 const TODO_LIMIT = 6;
 const ANNOUNCEMENT_LIMIT = 3;
 
-export default function DashboardPage() {
+export default function TodayPage() {
   return (
     <main className={cn(PAGE_CLASS, "gap-6")}>
       <Suspense fallback={<DashboardSkeleton />}>
-        <Dashboard />
+        <Today />
       </Suspense>
     </main>
   );
 }
 
-type CourseRef = { code: string; type: { color: number } | null } | null;
+type CourseRef = { code: string } | null;
+type Session = {
+  id: string;
+  kind: keyof typeof SESSION_TYPE_LABELS;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  location: string | null;
+  cancelled: boolean;
+  courses: CourseRef;
+};
+type Assignment = {
+  id: string;
+  title: string;
+  kind: string;
+  due_at: string | null;
+  html_url: string;
+  workflow_state: string | null;
+  score: number | null;
+  submitted_at: string | null;
+  progress: "not_started" | "in_progress";
+  courses: CourseRef;
+};
 
-async function Dashboard() {
+// What's happening now and next, then the week as one agenda, with to-dos and unread
+// announcements beside it (the 2026-10-29 design roadmap decision).
+async function Today() {
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   // The proxy already redirects signed-out visitors; this is a second check in case it is ever bypassed.
@@ -60,29 +98,29 @@ async function Dashboard() {
   const timeZone = terms.find((term) => term.id === currentTerm?.id)?.time_zone ?? "UTC";
   const today = dayKey(now, timeZone);
 
-  // One window covers this month (for the calendar) and the coming week, with a day's slack at
-  // each end for time zones.
-  const windowStart = `${addDays(`${today.slice(0, 8)}01`, -1)}T00:00:00Z`;
-  const windowEnd = `${addDays(today, 40)}T00:00:00Z`;
+  // From a week back (for overdue work) to well ahead (for the next deadline and exam), with a
+  // day's slack at each end for time zones.
+  const windowStart = `${addDays(today, -OVERDUE_WINDOW_DAYS - 1)}T00:00:00Z`;
+  const windowEnd = `${addDays(today, LOOKAHEAD_DAYS)}T00:00:00Z`;
 
   const [sessionsResult, assignmentsResult, announcementsResult, unreadResult, todosResult, lastRunResult, lastSuccessResult] =
     await Promise.all([
       supabase
         .from("class_sessions")
-        .select("id, kind, title, starts_at, ends_at, location, cancelled, courses(code, type:course_types(color))")
+        .select("id, kind, title, starts_at, ends_at, location, cancelled, courses(code)")
         .gte("starts_at", windowStart)
         .lt("starts_at", windowEnd)
         .order("starts_at"),
       supabase
         .from("assignments")
-        .select("id, title, kind, due_at, html_url, workflow_state, score, submitted_at, progress, courses(code, type:course_types(color))")
+        .select("id, title, kind, due_at, html_url, workflow_state, score, submitted_at, progress, courses(code)")
         .eq("deleted_in_canvas", false)
         .gte("due_at", windowStart)
         .lt("due_at", windowEnd)
         .order("due_at"),
       supabase
         .from("announcements")
-        .select("id, title, message, posted_at, courses(code, type:course_types(color))")
+        .select("id, title, message, posted_at, courses(code)")
         .eq("deleted_in_canvas", false)
         .eq("read", false)
         .order("posted_at", { ascending: false })
@@ -109,29 +147,27 @@ async function Dashboard() {
     if (result.error) throw new Error(`Loading the dashboard failed: ${result.error.message}`);
   }
 
-  const sessions = sessionsResult.data ?? [];
-  const assignments = assignmentsResult.data ?? [];
-  const todaySessions = sessionsOn(sessions, today, timeZone);
-  const due = dueSoon(assignments, now);
+  const sessions: Session[] = sessionsResult.data ?? [];
+  const assignments: Assignment[] = assignmentsResult.data ?? [];
+  // "Next class" means your courses' classes; other timetable events still show in the agenda.
+  const nextClass = currentOrNext(
+    sessions.filter((session) => session.courses),
+    now,
+  );
+  const due = nextDue(assignments, now);
+  const overdue = recentlyOverdue(assignments, now);
   const exam = nextExam(sessions, assignments, now);
   const examItem = exam && (exam.source === "session" ? sessions.find((s) => s.id === exam.id) : assignments.find((a) => a.id === exam.id));
-  const week = weekAgenda(sessions, assignments, addDays(today, 1), timeZone, 6);
-
-  const deadlines = new Map<string, number>();
-  for (const assignment of assignments) {
-    if (!assignment.due_at) continue;
-    const day = dayKey(new Date(assignment.due_at), timeZone);
-    deadlines.set(day, (deadlines.get(day) ?? 0) + 1);
-  }
-  const examDays = new Set([
-    ...sessions.filter((s) => s.kind === "exam" && !s.cancelled).map((s) => dayKey(new Date(s.starts_at), timeZone)),
-    ...assignments.filter((a) => a.kind === "exam" && a.due_at).map((a) => dayKey(new Date(a.due_at ?? ""), timeZone)),
-  ]);
+  const agenda = foldFreeDays(weekAgenda(sessions, assignments, today, timeZone, AGENDA_DAYS));
 
   const lastRun = lastRunResult.data;
   const lastSuccessAt = lastSuccessResult.data?.finished_at ?? null;
   const currentCourses = (currentTerm?.courses ?? []).map((course) => ({ id: course.id, code: course.code }));
   const todos = (todosResult.data ?? []).map((todo) => ({ ...todo, course: todo.courses }));
+  const when = (iso: string) => {
+    const date = new Date(iso);
+    return `${dayLabel(dayKey(date, timeZone), today)} ${formatTime(date, timeZone)}`;
+  };
 
   return (
     <>
@@ -152,90 +188,122 @@ async function Dashboard() {
         <TokenExpiredBanner detectedAt={lastRun.finished_at ?? lastRun.started_at} timeZone={timeZone} settingsUrl={canvasSettingsUrl()} />
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="flex flex-col gap-4">
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Today</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {todaySessions.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No classes today.</p>
-              ) : (
-                <ul className="flex flex-col gap-2.5">
-                  {todaySessions.map((session) => {
-                    const course = session.courses;
-                    const over = new Date(session.ends_at) < now;
-                    return (
-                      <li key={session.id} className={cn("flex gap-3 text-sm", (over || session.cancelled) && "text-muted-foreground")}>
-                        <span className="w-24 shrink-0 tabular-nums">
-                          {formatTimeRange(new Date(session.starts_at), new Date(session.ends_at), timeZone)}
-                        </span>
-                        <span className="min-w-0">
-                          {course ? <CourseLink course={course} /> : <span className="font-medium">{session.title}</span>}
-                          <span
-                            title={session.location ?? undefined}
-                            className={cn("block text-xs text-tertiary-foreground", session.cancelled && "line-through")}
-                          >
-                            {[course && SESSION_TYPE_LABELS[session.kind], session.location && shortLocation(session.location)].filter(Boolean).join(" · ")}
-                          </span>
-                          {session.cancelled && <span className="text-xs">Cancelled</span>}
-                        </span>
-                      </li>
-                    );
-                  })}
+      {/* Now / Next: never an empty card; when there's nothing, it says so in one line. */}
+      <section aria-label="Now and next" className="grid gap-3 md:grid-cols-3">
+        <Tile icon={Clock} label={nextClass?.live ? "Now" : "Next class"}>
+          {nextClass?.session.courses ? (
+            <>
+              <TileTitle href={coursePath(nextClass.session.courses.code)}>
+                {nextClass.session.courses.code} {SESSION_TYPE_LABELS[nextClass.session.kind].toLowerCase()}
+              </TileTitle>
+              <TileDetail title={nextClass.session.location ?? undefined}>
+                {[
+                  nextClass.live ? `Until ${formatTime(new Date(nextClass.session.ends_at), timeZone)}` : when(nextClass.session.starts_at),
+                  nextClass.session.location && shortLocation(nextClass.session.location),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </TileDetail>
+            </>
+          ) : (
+            <TileEmpty>No classes coming up.</TileEmpty>
+          )}
+        </Tile>
+
+        <Tile icon={FileText} label="Next due">
+          {due ? (
+            <>
+              <TileTitle href={due.html_url} external>
+                {due.title}
+              </TileTitle>
+              <TileDetail>
+                {[due.courses?.code, due.due_at && when(due.due_at), due.due_at && formatDueIn(due.due_at, now)].filter(Boolean).join(" · ")}
+              </TileDetail>
+            </>
+          ) : (
+            <TileEmpty>Nothing due.</TileEmpty>
+          )}
+          {overdue.length > 0 && (
+            <a href="#overdue" className="mt-1 flex w-max items-center gap-1 text-sm font-medium text-status-overdue underline-offset-4 hover:underline">
+              <CircleAlert aria-hidden className="size-4" />
+              {overdue.length} overdue
+            </a>
+          )}
+        </Tile>
+
+        <Tile icon={NotebookPen} label="Next exam">
+          {exam && examItem ? (
+            <>
+              <TileTitle href={examItem.courses ? coursePath(examItem.courses.code) : undefined}>
+                {capitalize(formatCountdown(daysBetween(today, dayKey(new Date(exam.at), timeZone))))}
+              </TileTitle>
+              <TileDetail>{[examItem.courses?.code ?? examItem.title, when(exam.at)].join(" · ")}</TileDetail>
+            </>
+          ) : (
+            <TileEmpty>No exams scheduled.</TileEmpty>
+          )}
+        </Tile>
+      </section>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <section aria-labelledby="agenda-heading" className="flex flex-col gap-3">
+          <h2 id="agenda-heading" className="px-1 text-title-3">
+            This week
+          </h2>
+          <ol className="divide-y divide-separator overflow-hidden rounded-2xl bg-card shadow-card">
+            {overdue.length > 0 && (
+              <li id="overdue" className="scroll-mt-20 px-4 py-3">
+                <h3 className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-status-overdue">
+                  <CircleAlert aria-hidden className="size-4" />
+                  Overdue
+                </h3>
+                <ul className="flex flex-col gap-1.5">
+                  {overdue.map((assignment) => (
+                    <DueRow key={assignment.id} assignment={assignment} now={now} time={assignment.due_at ? formatDay(new Date(assignment.due_at), timeZone) : ""} />
+                  ))}
                 </ul>
-              )}
-              {exam && examItem && (
-                <div className="mt-4 rounded-xl bg-fill-tertiary p-3">
-                  <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Next exam</p>
-                  <p className="mt-1 text-headline">
-                    {formatCountdown(daysBetween(today, dayKey(new Date(exam.at), timeZone)))}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {examItem.courses?.code ?? examItem.title} · {formatDay(new Date(exam.at), timeZone)} {formatTime(new Date(exam.at), timeZone)}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          <Card size="sm">
-            <CardContent>
-              <MonthCalendar today={today} deadlines={deadlines} exams={examDays} />
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card size="sm">
-          <CardHeader>
-            <CardTitle>Due</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {due.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nothing due in the next three days.</p>
-            ) : (
-              <ul className="flex flex-col gap-3">
-                {due.slice(0, DUE_LIMIT).map((assignment) => (
-                  <li key={assignment.id} className="flex items-start gap-3">
-                    <div className="min-w-0 flex-1 text-sm">
-                      <a href={assignment.html_url} target="_blank" rel="noopener noreferrer" className="font-medium underline-offset-4 hover:underline">
-                        {assignment.title}
-                      </a>
-                      <p className="text-xs text-tertiary-foreground">
-                        <CourseLink course={assignment.courses} plain /> ·{" "}
-                        {assignment.due_at && `${formatDay(new Date(assignment.due_at), timeZone)} ${formatTime(new Date(assignment.due_at), timeZone)} · ${formatDueIn(assignment.due_at, now)}`}
-                      </p>
-                    </div>
-                    <StatusPill status={assignmentStatus(assignment, now)} />
-                  </li>
-                ))}
-              </ul>
+              </li>
             )}
-            {due.length > DUE_LIMIT && <p className="mt-3 text-xs text-tertiary-foreground">And {due.length - DUE_LIMIT} more this week.</p>}
-          </CardContent>
-        </Card>
+            {agenda.map((entry) =>
+              entry.kind === "free" ? (
+                <li key={entry.from} className="flex items-baseline justify-between gap-3 px-4 py-2.5 text-sm">
+                  <span className="text-muted-foreground">
+                    {entry.from === entry.to ? dayLabel(entry.from, today) : `${dayLabel(entry.from, today)} – ${dayLabel(entry.to, today)}`}
+                  </span>
+                  <span className="text-tertiary-foreground">Free</span>
+                </li>
+              ) : (
+                <li key={entry.day} aria-current={entry.day === today ? "date" : undefined} className="px-4 py-3">
+                  <h3 className="mb-1.5 text-sm font-semibold">
+                    {dayLabel(entry.day, today)}
+                    {entry.day === today && (
+                      <span className="ml-1.5 font-normal text-muted-foreground">{formatDay(new Date(`${entry.day}T12:00:00Z`), "UTC")}</span>
+                    )}
+                  </h3>
+                  {entry.sessions.length === 0 && entry.due.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nothing scheduled.</p>
+                  ) : (
+                    <ul className="flex flex-col gap-1.5">
+                      {entry.sessions.map((session) => (
+                        <SessionRow key={session.id} session={session} now={now} timeZone={timeZone} />
+                      ))}
+                      {entry.due.map((assignment) => (
+                        <DueRow
+                          key={assignment.id}
+                          assignment={assignment}
+                          now={now}
+                          time={assignment.due_at ? formatTime(new Date(assignment.due_at), timeZone) : ""}
+                        />
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ),
+            )}
+          </ol>
+        </section>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 lg:pt-10">
           <Card size="sm">
             <CardHeader>
               <CardTitle>To-dos</CardTitle>
@@ -263,7 +331,8 @@ async function Dashboard() {
                     return (
                       <li key={announcement.id} className="text-sm">
                         {course ? (
-                          <Link href={coursePath(course.code)} className="font-medium underline-offset-4 hover:underline">
+                          // Opens this announcement on its course page (see OpenAnnouncementFromHash).
+                          <Link href={`${coursePath(course.code)}#announcement-${announcement.id}`} className="font-medium underline-offset-4 hover:underline">
                             {announcement.title}
                           </Link>
                         ) : (
@@ -282,65 +351,95 @@ async function Dashboard() {
           </Card>
         </div>
       </div>
-
-      {/* Below the fold: the rest of the week, day by day. */}
-      <section aria-labelledby="week-heading" className="flex flex-col gap-3 pt-4">
-        <h2 id="week-heading" className="text-title-3">
-          This week
-        </h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {week.map(({ day, sessions: daySessions, due: dayDue }) => (
-            <Card key={day} size="sm">
-              <CardHeader>
-                <CardTitle>{formatDay(new Date(`${day}T12:00:00Z`), "UTC")}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-1.5 text-sm">
-                {daySessions.length === 0 && dayDue.length === 0 && <p className="text-muted-foreground">Free.</p>}
-                {daySessions.map((session) => (
-                  <p key={session.id} className={cn(session.cancelled && "text-muted-foreground line-through")}>
-                    <span className="tabular-nums">{formatTime(new Date(session.starts_at), timeZone)}</span>{" "}
-                    {sessionLabel(session)}
-                    {session.location && (
-                      <span title={session.location} className="text-tertiary-foreground">
-                        {" "}
-                        · {shortLocation(session.location)}
-                      </span>
-                    )}
-                  </p>
-                ))}
-                {dayDue.map((assignment) => (
-                  <p key={assignment.id} className="flex items-center gap-2">
-                    <span className="min-w-0 flex-1 truncate">
-                      <span className="text-tertiary-foreground">Due </span>
-                      {assignment.title}
-                    </span>
-                    <StatusPill status={assignmentStatus(assignment, now)} />
-                  </p>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
     </>
   );
 }
 
-/** A course code linking to its page, with its type's colour dot. */
-function CourseLink({ course, plain = false }: { course: CourseRef; plain?: boolean }) {
-  if (!course) return null;
+function Tile({ icon: Icon, label, children }: { icon: typeof Clock; label: string; children: ReactNode }) {
   return (
-    <Link
-      href={coursePath(course.code)}
-      className={cn("inline-flex items-center gap-1.5 underline-offset-4 hover:underline", !plain && "font-medium", categoryClass(course.type?.color ?? 0))}
-    >
-      {!plain && <span aria-hidden className="size-2 rounded-full bg-(--course)" />}
-      {course.code}
+    <div className="flex min-w-0 flex-col gap-0.5 rounded-2xl bg-card p-4 shadow-card">
+      <p className="mb-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Icon aria-hidden className="size-4" />
+        {label}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function TileTitle({ href, external = false, children }: { href?: string; external?: boolean; children: ReactNode }) {
+  const className = "truncate text-headline underline-offset-4 hover:underline";
+  if (!href) return <p className="truncate text-headline">{children}</p>;
+  return external ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+      {children}
+    </a>
+  ) : (
+    <Link href={href} className={className}>
+      {children}
     </Link>
   );
 }
 
-/** "Tuesday 27 October". */
+function TileDetail({ title, children }: { title?: string; children: ReactNode }) {
+  return (
+    <p title={title} className="truncate text-sm text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+function TileEmpty({ children }: { children: ReactNode }) {
+  return <p className="text-headline font-normal text-muted-foreground">{children}</p>;
+}
+
+/** A class or event in the agenda: time, what it is, where. Finished and cancelled ones recede. */
+function SessionRow({ session, now, timeZone }: { session: Session; now: Date; timeZone: string }) {
+  const over = new Date(session.ends_at) < now;
+  return (
+    <li className={cn("grid grid-cols-[6.5rem_minmax(0,1fr)] items-baseline gap-2 text-sm", (over || session.cancelled) && "text-muted-foreground")}>
+      <span className="tabular-nums">
+        {formatTime(new Date(session.starts_at), timeZone)}–{formatTime(new Date(session.ends_at), timeZone)}
+      </span>
+      <span className={cn("min-w-0 truncate", session.cancelled && "line-through")} title={session.location ?? undefined}>
+        {session.courses ? (
+          <>
+            <Link href={coursePath(session.courses.code)} className="underline-offset-4 hover:underline">
+              <CourseCode code={session.courses.code} />
+            </Link>{" "}
+            <span className="font-medium">{SESSION_TYPE_LABELS[session.kind]}</span>
+          </>
+        ) : (
+          <span className="font-medium">{session.title}</span>
+        )}
+        {session.location && <span className="text-tertiary-foreground"> · {shortLocation(session.location)}</span>}
+      </span>
+      {session.cancelled && <span className="col-start-2 -mt-1 text-xs">Cancelled</span>}
+    </li>
+  );
+}
+
+/** A deadline in the agenda: when, what, which course, and its status. */
+function DueRow({ assignment, now, time }: { assignment: Assignment; now: Date; time: string }) {
+  return (
+    <li className="grid grid-cols-[6.5rem_minmax(0,1fr)_auto] items-center gap-2 text-sm">
+      <span className="text-tertiary-foreground tabular-nums">Due {time}</span>
+      <span className="min-w-0 truncate">
+        {assignment.courses && <CourseCode code={assignment.courses.code} className="mr-1.5" />}
+        <a href={assignment.html_url} target="_blank" rel="noopener noreferrer" className="font-medium underline-offset-4 hover:underline">
+          {assignment.title}
+        </a>
+      </span>
+      <StatusPill status={assignmentStatus(assignment, now)} />
+    </li>
+  );
+}
+
+/** "Thursday 29 October". */
 function formatLongDay(date: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone }).format(date);
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }

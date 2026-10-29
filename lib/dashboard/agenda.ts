@@ -2,7 +2,7 @@
 // ("due soon", "today", "next exam") are tested in one place. Days are calendar days in the term's
 // time zone, never UTC days.
 import { isFinished, type StatusInput } from "@/lib/assignments/status";
-import { dayKey } from "@/lib/timetable/format";
+import { dayKey, formatDay } from "@/lib/timetable/format";
 
 const HOUR_MS = 3_600_000;
 const DAY_MS = 24 * HOUR_MS;
@@ -106,4 +106,52 @@ export function monthGrid(year: number, month: number): (string | null)[][] {
   ];
   while (cells.length % 7 !== 0) cells.push(null);
   return Array.from({ length: cells.length / 7 }, (_, week) => cells.slice(week * 7, week * 7 + 7));
+}
+
+/** The class under way, or failing that the next one to start; cancelled sessions don't count. */
+export function currentOrNext<T extends AgendaSession>(sessions: readonly T[], now: Date): { session: T; live: boolean } | null {
+  const session = sessions
+    .filter((candidate) => !candidate.cancelled && new Date(candidate.ends_at) > now)
+    .sort((a, b) => a.starts_at.localeCompare(b.starts_at))[0];
+  return session ? { session, live: new Date(session.starts_at) <= now } : null;
+}
+
+/** The soonest unfinished assignment whose deadline is still ahead. */
+export function nextDue<T extends AgendaAssignment>(assignments: readonly T[], now: Date): T | null {
+  return (
+    assignments
+      .filter((assignment) => assignment.due_at && new Date(assignment.due_at) >= now && !isFinished(assignment))
+      .sort((a, b) => (a.due_at ?? "").localeCompare(b.due_at ?? ""))[0] ?? null
+  );
+}
+
+/** Unfinished work whose deadline passed in the last week, oldest first. */
+export function recentlyOverdue<T extends AgendaAssignment>(assignments: readonly T[], now: Date): T[] {
+  return dueSoon(assignments, now).filter((assignment) => new Date(assignment.due_at ?? "") < now);
+}
+
+export type AgendaEntry<S, A> = { kind: "day"; day: string; sessions: S[]; due: A[] } | { kind: "free"; from: string; to: string };
+
+/**
+ * The days from `weekAgenda`, with each run of empty days folded into one "free" entry, so a quiet
+ * weekend is one line rather than two empty cards. The first day (today) always shows on its own.
+ */
+export function foldFreeDays<S, A>(days: readonly { day: string; sessions: S[]; due: A[] }[]): AgendaEntry<S, A>[] {
+  const entries: AgendaEntry<S, A>[] = [];
+  for (const [index, day] of days.entries()) {
+    const empty = day.sessions.length === 0 && day.due.length === 0;
+    const last = entries.at(-1);
+    if (empty && index > 0 && last?.kind === "free") last.to = day.day;
+    else if (empty && index > 0) entries.push({ kind: "free", from: day.day, to: day.day });
+    else entries.push({ kind: "day", ...day });
+  }
+  return entries;
+}
+
+/** "Today", "Tomorrow" or "Mon 2 Nov", for a "YYYY-MM-DD" day. */
+export function dayLabel(day: string, today: string): string {
+  const offset = daysBetween(today, day);
+  if (offset === 0) return "Today";
+  if (offset === 1) return "Tomorrow";
+  return formatDay(new Date(`${day}T12:00:00Z`), "UTC");
 }

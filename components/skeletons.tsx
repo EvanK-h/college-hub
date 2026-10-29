@@ -88,14 +88,22 @@ export function DashboardSkeleton() {
   return (
     <Skeleton className="gap-6">
       <HeaderBones />
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="flex flex-col gap-4">
-          <TextCard lines={2} />
-          <CardBone className="h-64" />
+      <div className="grid gap-3 md:grid-cols-3">
+        {Array.from({ length: 3 }, (_, index) => (
+          <CardBone key={index} className="gap-2 p-4">
+            <Bone className="h-3.5 w-20" />
+            <Bone className="h-5 w-40" />
+            <Bone className="h-3.5 w-32" />
+          </CardBone>
+        ))}
+      </div>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="flex flex-col gap-3">
+          <Bone className="h-6 w-28" />
+          <TextCard lines={8} />
         </div>
-        <TextCard lines={6} className="lg:min-h-96" />
-        <div className="flex flex-col gap-4">
-          <TextCard lines={3} />
+        <div className="flex flex-col gap-4 lg:pt-10">
+          <TextCard lines={2} />
           <TextCard lines={5} />
         </div>
       </div>

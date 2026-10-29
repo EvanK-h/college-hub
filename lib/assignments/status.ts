@@ -1,9 +1,10 @@
 import type { Database } from "@/lib/database.types";
 
-export type AssignmentStatus = "done" | "overdue" | "due_soon" | "in_progress" | "not_started";
+export type AssignmentStatus = "done" | "missed" | "overdue" | "due_soon" | "in_progress" | "not_started";
 
 export const ASSIGNMENT_STATUS_LABELS: Record<AssignmentStatus, string> = {
   done: "Done",
+  missed: "Missed",
   overdue: "Overdue",
   due_soon: "Due soon",
   in_progress: "In progress",
@@ -19,6 +20,9 @@ export type StatusInput = {
 };
 
 const DUE_SOON_HOURS = 72;
+// Past this, unsubmitted work is history rather than something to act on (often an old assignment
+// Canvas copied into a new course), so it stops showing as overdue. See the 2026-10-29 decision.
+const MISSED_AFTER_DAYS = 30;
 // Canvas's states that mean "handed in" (pending_review is a submitted quiz awaiting marking).
 const SUBMITTED_STATES = new Set(["submitted", "graded", "pending_review"]);
 
@@ -32,12 +36,14 @@ export function isFinished(assignment: Pick<StatusInput, "workflow_state" | "sco
 /**
  * The status shown for an assignment, derived at display time and never stored. Canvas's state and
  * your own progress are combined, taking whichever is further along; a deadline that is close or
- * past outranks "in progress", since that is what needs attention.
+ * past outranks "in progress", since that is what needs attention. Work long past its deadline is
+ * "missed": still unsubmitted, but no longer flagged red.
  */
 export function assignmentStatus(assignment: StatusInput, now: Date): AssignmentStatus {
   if (isFinished(assignment)) return "done";
   if (assignment.due_at) {
     const hoursLeft = (new Date(assignment.due_at).getTime() - now.getTime()) / 3_600_000;
+    if (hoursLeft < -MISSED_AFTER_DAYS * 24) return "missed";
     if (hoursLeft < 0) return "overdue";
     if (hoursLeft <= DUE_SOON_HOURS) return "due_soon";
   }

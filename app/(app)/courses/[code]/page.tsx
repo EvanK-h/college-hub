@@ -9,7 +9,7 @@ import { NotesForm } from "@/components/courses/notes-form";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ASSIGNMENT_KIND_LABELS, assignmentStatus, formatDueIn, isFinished } from "@/lib/assignments/status";
+import { ASSIGNMENT_KIND_LABELS, assignmentStatus, formatDueIn } from "@/lib/assignments/status";
 import { canvasCourseUrl } from "@/lib/canvas/links";
 import { codeFromSlug } from "@/lib/courses/slug";
 import { courseGrade, letterGrade, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
@@ -145,6 +145,8 @@ async function Course({ slug }: { slug: string }) {
                     <ul className="divide-y divide-separator">
                       {inGroup.map((assignment) => {
                         const status = assignmentStatus(assignment, now);
+                        // Still worth starting: not handed in, and not long past its deadline.
+                        const open = status !== "done" && status !== "missed";
                         return (
                           <li key={assignment.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
                             <div className="min-w-0 flex-1 basis-56">
@@ -152,7 +154,7 @@ async function Course({ slug }: { slug: string }) {
                                 href={assignment.html_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="font-medium underline-offset-4 hover:underline"
+                                className={cn("font-medium underline-offset-4 hover:underline", status === "missed" && "text-muted-foreground")}
                               >
                                 {assignment.title}
                               </a>
@@ -161,7 +163,7 @@ async function Course({ slug }: { slug: string }) {
                                   ASSIGNMENT_KIND_LABELS[assignment.kind],
                                   assignment.due_at &&
                                     `Due ${formatDay(new Date(assignment.due_at), timeZone)} ${formatTime(new Date(assignment.due_at), timeZone)}`,
-                                  assignment.due_at && !isFinished(assignment) && formatDueIn(assignment.due_at, now),
+                                  assignment.due_at && open && formatDueIn(assignment.due_at, now),
                                 ]
                                   .filter(Boolean)
                                   .join(" · ")}
@@ -175,7 +177,7 @@ async function Course({ slug }: { slug: string }) {
                                   : null}
                             </p>
                             <StatusPill status={status} />
-                            {!isFinished(assignment) && <ProgressToggle id={assignment.id} inProgress={assignment.progress === "in_progress"} />}
+                            {open && <ProgressToggle id={assignment.id} inProgress={assignment.progress === "in_progress"} />}
                           </li>
                         );
                       })}

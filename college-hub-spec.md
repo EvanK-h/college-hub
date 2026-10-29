@@ -317,8 +317,9 @@ Apple-style restraint on the warm Canvas Hub palette. Tokens live in `app/global
 | Done | Green (145) | `done` (check) | Submitted or graded: filled green pill |
 | Due soon | Amber (70) | — | Due within 72 hours and not submitted |
 | Overdue | Red (27) | — | Past due and not submitted |
+| Missed | Neutral grey | — | Over 30 days past due and not submitted: outline pill with a circle-minus icon |
 
-Due soon and overdue are derived at display time from `due_at` and the displayed status, never stored. Each status colour passes 4.5:1 on cards in both themes, so it can colour text as well as icons and arcs.
+Due soon, overdue and missed are derived at display time from `due_at` and the displayed status, never stored. Each status colour passes 4.5:1 on cards in both themes, so it can colour text as well as icons and arcs.
 
 **Course types** use hues no status uses (rose 350 CS core, teal 195 AI concentration, violet 300 Physics minor, olive 90 Major support, neutral grey General elective, dark stone Co-op / program). Each is at least 10 ΔE (OKLab ×100) from every status colour and from the others. A new category must pass the same check.
 

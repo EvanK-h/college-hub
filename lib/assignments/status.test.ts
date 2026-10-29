@@ -30,6 +30,12 @@ describe("assignmentStatus", () => {
 
   it("is overdue once the deadline has passed without a submission", () => {
     expect(assignmentStatus(assignment({ due_at: hoursFromNow(-1) }), now)).toBe("overdue");
+    expect(assignmentStatus(assignment({ due_at: hoursFromNow(-24 * 30) }), now)).toBe("overdue");
+  });
+
+  it("is missed, not overdue, more than 30 days after the deadline", () => {
+    expect(assignmentStatus(assignment({ due_at: hoursFromNow(-24 * 30 - 1) }), now)).toBe("missed");
+    expect(assignmentStatus(assignment({ due_at: hoursFromNow(-24 * 753), progress: "in_progress" }), now)).toBe("missed");
   });
 
   it.each([

@@ -300,3 +300,9 @@
 **Theme toggle.** System / Light / Dark under Settings → Appearance. It is a per-device preference, so it is kept in `localStorage`, not the database or a cookie: a cookie would make the root layout read request data and stop every page shell from prerendering. A one-line script in `<head>` applies a saved choice before the page paints, so there is no flash of the other theme. `globals.css` already honoured a `.light` / `.dark` class on `<html>`; the toggle sets it, and pins the browser-chrome colour to match.
 
 **⌘K search.** A header button (and ⌘K / Ctrl+K) opens a search over pages, courses, assignments and announcements, with up to five results per kind. Pages match in the browser; the rest come from a Server Action reading with the user's session, so RLS applies. Typed text is stripped of ILIKE wildcards and PostgREST's filter separators before it reaches the query. Results open inside the app (a course page, or its Assignments or Announcements section), not Canvas. It follows the ARIA combobox pattern, with focus staying in the input and the highlighted result announced. It was built by hand rather than with a command-menu library, since it needs only one input and one list.
+
+## 2026-10-29: Session reads wait for the request (`connection()`)
+
+**Decision.** `lib/supabase/server.ts` awaits `connection()` before building the client.
+
+**Why.** With `partialPrefetching`, Next pre-renders each route's App Shell, including the parts that read `cookies()`, and refuses the clock while doing it. The Supabase auth client calls `Date.now()` as soon as it is built, so every page logged "encountered the unstable value `Date.now()` while prerendering" (first seen 2026-10-27, and in every e2e server log). Everything read through this client is per-request, so nothing is lost by waiting for the request: the prefetched shell shows each page's Suspense fallback, and the data streams in as before.

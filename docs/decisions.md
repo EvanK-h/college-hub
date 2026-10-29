@@ -473,3 +473,20 @@
   - `/announcements` lists every course's announcements, newest first with course codes, and is reached from "See all" on Today's card and from ⌘K.
   - It isn't a fifth tab: it's a level below Today, with a back link.
 
+## 2026-10-29: Type scale and motion
+
+**Type.** A `text-footnote` token (13px) is now the smallest size for content people read: announcement excerpts, swap details, the phone week list, graph and plan titles, drop warnings, sync errors and grade parts. `text-xs` (12px) stays for metadata (counts, times, pills, badges) and for the calendar's week and month grids, where space is set by time and date. Uppercase labels are now only page eyebrows: the swap reasons, sync card and history headings, and ⌘K's group labels are sentence case. The rule is in the spec's Visual design section.
+
+**Page transitions.** React's `<ViewTransition>` wraps the page content in the app layout, with `default="none"`. It animates only navigations whose `Link` carries a transition type:
+- `nav-tab` (the nav, tab bar, Plan's sub-nav and the settings button) is a quick cross-fade.
+- `nav-forward` (a course card, a plan, "See all") pushes the new page in from the right.
+- `nav-back` (the back links) pushes it the other way.
+
+Browser back and forward, Server Action refreshes and optimistic updates carry no type, so they don't animate. The old page leaves fast and the new one arrives a beat later. Slides are 40px on `--ease-spring`, and reduced motion keeps the fades without the slide. Browsers without the API just navigate.
+
+**Lists and rings.**
+- To-dos animate in and out with `motion` (`popLayout`: the row leaving fades while the rows below slide up). No `overflow: hidden`, which would have clipped focus rings and the enlarged tap targets.
+- The requirement rings draw in on a page's first open and not on later visits in the session (`RingsDrawn` marks the document after the draw).
+
+**Graph physics.** `project` and `rubberband` (Apple's formulas) are pure functions in `lib/motion/physics.ts` with tests. Panning past the graph's ends moves the canvas with growing resistance and springs back on release, which closes the rubber-band item left open in §5.6.
+

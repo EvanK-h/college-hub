@@ -51,11 +51,15 @@ export function WeekGrid({
       })),
     ),
   );
-  const [firstHour, lastHour] = hourRange(timed.flat());
+  const nowMinutes = minutesOfDay(now, timeZone);
+  // This week's grid also reaches the current time, so the now line is never off the end.
+  const [firstHour, lastHour] = hourRange([
+    ...timed.flat(),
+    ...(days.some((day) => day.day === today) ? [{ start: nowMinutes, end: nowMinutes + 30 }] : []),
+  ]);
   const hours = Array.from({ length: lastHour - firstHour }, (_, index) => firstHour + index);
   const top = (minutes: number) => ((minutes - firstHour * 60) / 60) * HOUR_PX;
   const hasDeadlines = days.some((day) => day.due.length > 0);
-  const nowMinutes = minutesOfDay(now, timeZone);
   const columns = "grid grid-cols-[3.25rem_repeat(7,minmax(0,1fr))]";
 
   return (

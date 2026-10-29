@@ -29,8 +29,9 @@ const IDLE: CourseUpdateState = { status: "idle", message: "" };
 const STATUSES = Object.keys(COURSE_STATUS_LABELS) as CourseStatus[];
 
 // The trigger is whatever the server renders as `children` (the course card), so the card
-// itself can stay a Server Component. The dialog grows out of the card that opened it: its
-// transform origin is set from the card's position, so it reads as the card opening.
+// itself can stay a Server Component. From tablet width the dialog grows out of the card that
+// opened it: its transform origin is set from the card's position, so it reads as the card
+// opening. On a phone it's a bottom sheet, like every dialog.
 export function EditCourseDialog({
   course,
   terms,
@@ -85,7 +86,7 @@ export function EditCourseDialog({
       >
         {children}
       </DialogTrigger>
-      <DialogContent style={{ transformOrigin: origin }} className="data-ending-style:scale-75 data-starting-style:scale-50">
+      <DialogContent style={{ transformOrigin: origin }} className="sm:data-ending-style:scale-75 sm:data-starting-style:scale-50">
         <DialogHeader>
           <DialogTitle>{course.code}</DialogTitle>
           <DialogDescription>{course.title}</DialogDescription>

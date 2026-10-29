@@ -113,7 +113,7 @@ export function CommandPalette() {
           if (!next) reset();
         }}
       >
-        <DialogContent className="top-[12vh] translate-y-0 gap-0 overflow-hidden p-0 sm:max-w-lg" showCloseButton={false}>
+        <DialogContent className="gap-0 overflow-hidden p-0 sm:top-[12vh] sm:max-w-lg sm:translate-y-0" showCloseButton={false}>
           <DialogTitle className="sr-only">Search</DialogTitle>
           <div className="flex items-center gap-2 border-b border-separator px-4">
             <Search aria-hidden className="size-4 shrink-0 text-muted-foreground" />

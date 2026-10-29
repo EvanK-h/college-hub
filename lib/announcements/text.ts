@@ -48,9 +48,12 @@ export function htmlToText(html: string | null): string {
     .trim();
 }
 
-/** The first `length` characters of the text, cut at a word, for previews. */
+/**
+ * The first `length` characters of the text, cut at a word, for previews. A leading bullet is
+ * dropped: Canvas often wraps a whole message in a list, and on one line the "•" reads as noise.
+ */
 export function excerpt(html: string | null, length = 160): string {
-  const text = htmlToText(html).replace(/\s+/g, " ");
+  const text = htmlToText(html).replace(/\s+/g, " ").replace(/^•\s*/, "");
   if (text.length <= length) return text;
   const cut = text.slice(0, length);
   return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), length - 20)).trimEnd()}…`;

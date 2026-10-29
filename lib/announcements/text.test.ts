@@ -35,6 +35,10 @@ describe("excerpt", () => {
     expect(excerpt("<p>One</p><p>Two</p>")).toBe("One Two");
   });
 
+  it("drops a leading bullet but keeps the rest", () => {
+    expect(excerpt("<ul><li>Hello everyone</li><li>Bring a laptop</li></ul>")).toBe("Hello everyone • Bring a laptop");
+  });
+
   it("cuts long text at a word", () => {
     const long = `<p>${"word ".repeat(60)}</p>`;
     const short = excerpt(long, 50);

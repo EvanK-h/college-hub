@@ -197,6 +197,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* With viewport-fit=cover, keep content clear of a landscape iPhone's notch. */
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
     /* Ease light/dark switches instead of jumping brightness. */
     transition: background-color 300ms ease, color 300ms ease;
   }

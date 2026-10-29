@@ -22,5 +22,7 @@ export function PageHeader({
   );
 }
 
-// Keeps every page on the same column width and rhythm under the header.
-export const PAGE_CLASS = "mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 pt-8 pb-16 sm:px-6 sm:pt-10";
+// Keeps every page on the same column width and rhythm under the header. On a phone the bottom
+// padding also clears the tab bar (3.5rem plus the home indicator's inset).
+export const PAGE_CLASS =
+  "mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 pt-8 pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-10 sm:pb-16";

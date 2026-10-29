@@ -2,10 +2,13 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { CommandPalette } from "@/components/command-palette";
-import { MainNav } from "@/components/main-nav";
+import { MainNav, SettingsLink, TabBar } from "@/components/main-nav";
 
 // Shared shell for every signed-in page. The proxy and each page already guard access.
 // The header is a translucent layer: pages scroll underneath it instead of below a solid strip.
+// On a phone the places move to a tab bar at the bottom (TabBar), and the header keeps the name,
+// search and settings. The tab bar sits outside the header: the header's backdrop-filter would
+// make it the containing block for anything fixed inside it.
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <>
@@ -15,19 +18,26 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <span className="flex size-8 items-center justify-center rounded-[0.6rem] bg-primary text-primary-foreground shadow-card">
               <GraduationCap aria-hidden className="size-[1.125rem]" />
             </span>
-            <span className="hidden sm:inline">College Hub</span>
-            <span className="sr-only sm:hidden">College Hub</span>
+            College Hub
           </Link>
-          {/* min-w-0 lets the nav scroll sideways instead of pushing search off the screen. */}
+          {/* min-w-0 lets the nav scroll sideways rather than push search off a narrow screen. */}
           <div className="min-w-0 flex-1">
             <Suspense fallback={null}>
               <MainNav />
             </Suspense>
           </div>
-          <CommandPalette />
+          <div className="flex shrink-0 items-center gap-2">
+            <CommandPalette />
+            <Suspense fallback={null}>
+              <SettingsLink />
+            </Suspense>
+          </div>
         </div>
       </header>
       {children}
+      <Suspense fallback={null}>
+        <TabBar />
+      </Suspense>
     </>
   );
 }

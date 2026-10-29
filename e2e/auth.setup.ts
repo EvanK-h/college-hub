@@ -19,7 +19,7 @@ setup("signs in with a magic link", async ({ page }) => {
 
   await page.goto(await waitForMagicLink());
   await expect(page).toHaveURL(/localhost:\d+\/$/);
-  await expect(page.getByRole("link", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Today" })).toBeVisible();
 
   await page.context().storageState({ path: "e2e/.auth/user.json" });
 });

@@ -2,62 +2,77 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MotionConfig, motion } from "motion/react";
+import { BookOpen, CalendarDays, Route, Settings, Sun } from "lucide-react";
+import { SegmentedNav } from "@/components/segmented-nav";
 import { activeHref } from "@/lib/navigation/active";
 import { cn } from "@/lib/utils";
 
-const LINKS = [
-  { href: "/", label: "Dashboard" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/pathway", label: "Pathway" },
-  { href: "/pathway/requirements", label: "Requirements" },
-  { href: "/pathway/swaps", label: "Swaps" },
-  { href: "/pathway/graph", label: "Prerequisites" },
-  { href: "/settings", label: "Settings" },
+// The app's four places (see the 2026-10-29 navigation decision). Plan's own pages (requirements,
+// swaps, prerequisites, what-if plans) sit under /pathway and have their own control, `PlanNav`.
+// Settings is a utility, so it is a gear button rather than a fifth place.
+const SECTIONS = [
+  { href: "/", label: "Today", Icon: Sun },
+  { href: "/calendar", label: "Calendar", Icon: CalendarDays },
+  { href: "/courses", label: "Courses", Icon: BookOpen },
+  { href: "/pathway", label: "Plan", Icon: Route },
 ] as const;
-const HREFS = LINKS.map((link) => link.href);
+const HREFS = SECTIONS.map((section) => section.href);
 
-// Critically damped (no overshoot): the pill is moved by a click, not thrown, so it should settle, not bounce.
-const PILL_SPRING = { type: "spring", bounce: 0, duration: 0.35 } as const;
-
-// Client component because it reads the current path and animates the active pill between links.
+/** The places as a segmented control in the header, from small-tablet width up. */
 export function MainNav() {
-  const pathname = usePathname();
-  // Course pages are reached from the dashboard, so they count as part of it until Courses has a tab.
-  const current = activeHref(pathname, HREFS, pathname.startsWith("/courses/") ? "/" : null);
+  return <SegmentedNav links={SECTIONS} label="Main" layoutId="main-nav-pill" className="hidden sm:block" />;
+}
 
+/**
+ * The places as a tab bar along the bottom on a phone, where the thumb is. A translucent layer,
+ * like the header, that clears the home indicator. The current place takes the tint: a tab is
+ * something you act on, and Apple's tab bars mark the selected one that way.
+ */
+export function TabBar() {
+  const current = activeHref(usePathname(), HREFS);
   return (
-    // "user" swaps the spring for an instant change when the OS asks for reduced motion.
-    <MotionConfig reducedMotion="user">
-      <nav aria-label="Main" className="-mx-1 overflow-x-auto px-1 [scrollbar-width:none]">
-        <ul className="flex w-max gap-0.5 rounded-full bg-fill-secondary p-1">
-          {LINKS.map(({ href, label }) => {
-            const active = current === href;
-            return (
-              <li key={href} className="relative">
-                {active && (
-                  <motion.span
-                    layoutId="main-nav-pill"
-                    transition={PILL_SPRING}
-                    className="absolute inset-0 rounded-full bg-card shadow-card"
-                    aria-hidden
-                  />
+    <nav
+      aria-label="Main"
+      className="material-bar fixed inset-x-0 bottom-0 z-40 border-t border-separator pb-[env(safe-area-inset-bottom)] sm:hidden"
+    >
+      <ul className="mx-auto grid max-w-md grid-cols-4">
+        {SECTIONS.map(({ href, label, Icon }) => {
+          const active = current === href;
+          return (
+            <li key={href}>
+              <Link
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "press flex h-14 flex-col items-center justify-center gap-0.5 text-[0.6875rem] font-medium focus-visible:outline-offset-[-4px]",
+                  active ? "text-primary" : "text-muted-foreground",
                 )}
-                <Link
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "press relative block rounded-full px-3 py-1.5 text-sm font-medium focus-visible:outline-offset-0 sm:px-3.5",
-                    active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </MotionConfig>
+              >
+                <Icon aria-hidden className="size-6" strokeWidth={active ? 2.25 : 1.75} />
+                {label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
+/** The gear at the end of the header. It reads as pressed while you're on Settings. */
+export function SettingsLink() {
+  const active = usePathname().startsWith("/settings");
+  return (
+    <Link
+      href="/settings"
+      aria-label="Settings"
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "press flex size-8 shrink-0 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-ring",
+        active ? "bg-card text-foreground shadow-card" : "bg-fill-secondary text-muted-foreground hover:text-foreground",
+      )}
+    >
+      <Settings aria-hidden className="size-[1.125rem]" />
+    </Link>
   );
 }

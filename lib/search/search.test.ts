@@ -22,5 +22,6 @@ describe("matchPages", () => {
     expect(matchPages("").length).toBeGreaterThan(5);
     expect(matchPages("cal").map((r) => r.label)).toEqual(["Calendar"]);
     expect(matchPages("dark").map((r) => r.label)).toEqual(["Settings"]);
+    expect(matchPages("dashboard").map((r) => r.label)).toEqual(["Today"]);
   });
 });

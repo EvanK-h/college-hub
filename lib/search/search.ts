@@ -24,7 +24,7 @@ export function searchPattern(query: string): string | null {
 }
 
 const PAGES: { label: string; href: string; keywords: string }[] = [
-  { label: "Dashboard", href: "/", keywords: "home today agenda todos" },
+  { label: "Today", href: "/", keywords: "dashboard home agenda todos" },
   { label: "Calendar", href: "/calendar", keywords: "timetable schedule classes week month" },
   { label: "Courses", href: "/courses", keywords: "classes grades canvas term" },
   { label: "Pathway", href: "/pathway", keywords: "plan degree terms board" },

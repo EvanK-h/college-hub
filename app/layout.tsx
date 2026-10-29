@@ -14,7 +14,10 @@ export const metadata: Metadata = {
 };
 
 // Tints the browser chrome to match --background in each theme (CHROME_COLOURS mirrors globals.css).
+// viewport-fit=cover lets the phone tab bar reach the bottom edge and pad itself clear of the home
+// indicator with env(safe-area-inset-bottom); the body pads the side insets (globals.css).
 export const viewport: Viewport = {
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: CHROME_COLOURS.light },
     { media: "(prefers-color-scheme: dark)", color: CHROME_COLOURS.dark },

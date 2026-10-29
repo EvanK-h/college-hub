@@ -14,9 +14,9 @@ Everything that was deferred or left out while building the sections below, so n
 - [ ] §2.4 Collapsing large title.
 - [ ] §2.5 The command palette becomes a command palette (actions as well as search).
 - [ ] §4.2 Month view and §4.3 Keyboard shortcuts for the calendar.
-- [ ] Announcements inbox ("See all" on Today), from §3. With the toasts in §8.2.
-- [ ] Mark an announcement read when it's opened, from §3. With §8.2.
-- [ ] Undo for to-dos, from §3. With §8.2.
+- [x] Announcements inbox ("See all" on Today), from §3. Built with §8.2: `/announcements`.
+- [x] Mark an announcement read when it's opened, from §3. Built with §8.2 (`AnnouncementItem`).
+- [x] Undo for to-dos, from §3. Built with §8.2: done and delete both undo from the toast.
 - [ ] The course edit dialog as a bottom sheet on phones, from §5.3. With §8.5.
 - [ ] "New plan" dialog as a bottom sheet on phones, from §5.7. With §8.5.
 - [ ] Rubber-banding at the prerequisite graph's edges, from §5.6. Needs the pan to move a transform rather than native scroll, so it can overshoot. With §8.4.
@@ -301,6 +301,8 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 **Done 29 Oct 2026** (`components/skeletons.tsx`; the pulse runs only when motion is allowed). Every page showed a bare "Loading…" paragraph, so the layout jumped when data arrived. Give each Suspense boundary a **skeleton** shaped like its content (card outlines with `bg-fill-tertiary` bars and a slow, reduced-motion-safe shimmer). Share them as `components/skeletons.tsx`.
 
 ### 8.2 Feedback and forgiveness
+
+**Done 29 Oct 2026**; see "Toasts, Undo and the inbox" in the decision log. Toasts went where an action has something to undo (to-dos, board moves). Marking an announcement read, setting progress and saving notes change visibly in place, so they have no toast.
 
 - One **toast** system (bottom-centre, a material surface) for completion feedback and **Undo**: to-do done or deleted, announcement read, assignment status, notes saved, course moved on the board.
 - **Optimistic updates** for every one-field Server Action form (to-dos, flags, progress), so the UI changes on press.

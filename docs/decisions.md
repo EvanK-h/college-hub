@@ -458,3 +458,18 @@
 - **History shows the latest 5 runs.** "Show all 20 runs" is a checkbox drawn as a link; the older rows hide with CSS until it's checked.
 - **Login.** After sending, the form becomes "Check your email" with the address and "Send again", which counts down 30 seconds so a double tap can't send two emails, plus "Use a different email". The wording still never says whether the address may sign in.
 
+## 2026-10-29: Toasts, Undo and the inbox
+
+- **Toasts without a new dependency.** `Toaster` wraps the signed-in shell and `useToast()` shows one toast at a time, bottom centre on the translucent material, above the tab bar on phones. It's built on `motion` (a critically damped rise, a fade under reduced motion), which the app already uses, rather than adding a toast library. A toast lasts 4s, or 6s with an action. It stays while the pointer or focus is on it, and is announced politely.
+- **Undo instead of asking.**
+  - A to-do ticked done or deleted leaves the list at once (`useOptimistic`), and the toast offers Undo.
+  - Deleting returns the row, and Undo re-inserts it with the same id and creation time (`restoreTodo`, validated like any other input, with the course read through RLS), so it comes back in its place.
+  - A course moved on the board gets "Moved CS 3000 to Fall 2027 · Undo", which moves it straight back without the checks.
+- **Still confirmed:** deleting a what-if plan and making one active. Both are hard to reverse, and an undo for them would need the plan's rows kept somewhere.
+- **No toast where the change shows in place:** marking an announcement read, setting an assignment's progress, saving notes.
+- **Announcements.**
+  - Opening an unread announcement marks it read, as opening a mail does, and "Mark unread" sits right under it.
+  - Both flags change at once and the server catches up.
+  - `/announcements` lists every course's announcements, newest first with course codes, and is reached from "See all" on Today's card and from ⌘K.
+  - It isn't a fifth tab: it's a level below Today, with a back link.
+

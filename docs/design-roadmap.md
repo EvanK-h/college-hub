@@ -264,7 +264,7 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 
 ### 8.1 Loading states
 
-Every page shows a bare "Loading…" paragraph, so the layout jumps when data arrives. Give each Suspense boundary a **skeleton** shaped like its content (card outlines with `bg-fill-tertiary` bars and a slow, reduced-motion-safe shimmer). Share them as `components/skeletons.tsx`.
+**Done 29 Oct 2026** (`components/skeletons.tsx`; the pulse runs only when motion is allowed). Every page showed a bare "Loading…" paragraph, so the layout jumped when data arrived. Give each Suspense boundary a **skeleton** shaped like its content (card outlines with `bg-fill-tertiary` bars and a slow, reduced-motion-safe shimmer). Share them as `components/skeletons.tsx`.
 
 ### 8.2 Feedback and forgiveness
 

@@ -7,6 +7,7 @@ import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { PathwayBoard } from "@/components/pathway/pathway-board";
 import { ConfirmAction } from "@/components/plans/confirm-action";
 import { PlanSwapForm, type SwapChoiceGroup } from "@/components/plans/plan-swap-form";
+import { PlanSkeleton } from "@/components/skeletons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { describeProblem, planProblems } from "@/lib/pathway/move-checks";
 import { buildPlan, comparePlans, parseSwapCourse, swapItemId, type PlanItem } from "@/lib/plans/build";
@@ -20,7 +21,7 @@ import { createClient } from "@/lib/supabase/server";
 export default function PlanPage({ params }: PageProps<"/pathway/plans/[id]">) {
   return (
     <main className={PAGE_CLASS}>
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>{params.then(({ id }) => <Plan id={id} />)}</Suspense>
+      <Suspense fallback={<PlanSkeleton />}>{params.then(({ id }) => <Plan id={id} />)}</Suspense>
     </main>
   );
 }

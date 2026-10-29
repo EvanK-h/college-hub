@@ -7,6 +7,7 @@ import { MonthCalendar } from "@/components/dashboard/month-calendar";
 import { TodoList } from "@/components/dashboard/todo-list";
 import { PAGE_CLASS } from "@/components/page-header";
 import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
+import { DashboardSkeleton } from "@/components/skeletons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { excerpt } from "@/lib/announcements/text";
 import { assignmentStatus, formatDueIn } from "@/lib/assignments/status";
@@ -32,7 +33,7 @@ const ANNOUNCEMENT_LIMIT = 3;
 export default function DashboardPage() {
   return (
     <main className={cn(PAGE_CLASS, "gap-6")}>
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+      <Suspense fallback={<DashboardSkeleton />}>
         <Dashboard />
       </Suspense>
     </main>

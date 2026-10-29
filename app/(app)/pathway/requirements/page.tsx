@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { ProgressRing } from "@/components/pathway/progress-ring";
 import { StatusIcon } from "@/components/pathway/status-icon";
+import { RequirementsSkeleton } from "@/components/skeletons";
 import { summarizeAreas } from "@/lib/pathway/areas";
 import { summarizeAttributes } from "@/lib/pathway/attributes";
 import { loadSetup } from "@/lib/setup/load";
@@ -12,7 +13,7 @@ export default function RequirementsPage() {
   return (
     <main className={PAGE_CLASS}>
       <PageHeader eyebrow="Degree plan" title="Requirements" />
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+      <Suspense fallback={<RequirementsSkeleton />}>
         <Requirements />
       </Suspense>
     </main>

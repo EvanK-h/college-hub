@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { NewPlanForm } from "@/components/plans/new-plan-form";
+import { CardListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NATIVE_SELECT_CLASS } from "@/components/ui/native-select";
@@ -18,7 +19,7 @@ export default function PlansPage() {
         title="What-if plans"
         description="Save a copy of your plan, move courses and try swaps freely, then compare. Your real plan stays as it is until you make a what-if plan the active one."
       />
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+      <Suspense fallback={<CardListSkeleton count={2} lines={2} />}>
         <Plans />
       </Suspense>
     </main>

@@ -7,6 +7,7 @@ import { AnnouncementList } from "@/components/courses/announcement-list";
 import { GradeCalculator } from "@/components/courses/grade-calculator";
 import { NotesForm } from "@/components/courses/notes-form";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { CourseSkeleton } from "@/components/skeletons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ASSIGNMENT_KIND_LABELS, assignmentStatus, formatDueIn } from "@/lib/assignments/status";
@@ -27,7 +28,7 @@ const ANNOUNCEMENT_LIMIT = 20;
 export default function CoursePage({ params }: PageProps<"/courses/[code]">) {
   return (
     <main className={PAGE_CLASS}>
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+      <Suspense fallback={<CourseSkeleton />}>
         {params.then(({ code }) => (
           <Course slug={code} />
         ))}

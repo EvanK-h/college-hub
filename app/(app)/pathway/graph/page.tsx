@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { PrereqGraphView } from "@/components/pathway/prereq-graph";
+import { GraphSkeleton } from "@/components/skeletons";
 import { buildPrereqGraph } from "@/lib/pathway/graph";
 import { loadSetup } from "@/lib/setup/load";
 import { createClient } from "@/lib/supabase/server";
@@ -14,7 +15,7 @@ export default function GraphPage() {
         title="Prerequisites"
         description="Each arrow runs from a requirement to the course that needs it, laid out by term. Select a course to trace its chain."
       />
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+      <Suspense fallback={<GraphSkeleton />}>
         <Graph />
       </Suspense>
     </main>

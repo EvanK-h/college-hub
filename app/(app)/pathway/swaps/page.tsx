@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { FocusToggle } from "@/components/pathway/focus-toggle";
+import { CardListSkeleton } from "@/components/skeletons";
 import { FOCUS_COOKIE, parseFocus, relevanceFor, sortByFocus, type Rated } from "@/lib/pathway/focus";
 import { RELEVANCE_LABELS, type Relevance } from "@/lib/pathway/labels";
 import { buildSwapGroups, type Swap, type SwapWithReplaces } from "@/lib/pathway/swaps";
@@ -25,7 +26,7 @@ export default function SwapsPage() {
   return (
     <main className={PAGE_CLASS}>
       <PageHeader eyebrow="Degree plan" title="Swap options" />
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+      <Suspense fallback={<CardListSkeleton />}>
         <Swaps />
       </Suspense>
     </main>

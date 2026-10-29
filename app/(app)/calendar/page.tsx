@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { StatusPill } from "@/components/assignments/status-pill";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { CalendarSkeleton } from "@/components/skeletons";
 import { buttonVariants } from "@/components/ui/button";
 import { assignmentStatus } from "@/lib/assignments/status";
 import { neighbours, parseCalendarParams, viewRange, type CalendarView } from "@/lib/calendar/params";
@@ -21,7 +22,7 @@ const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satur
 export default function CalendarPage({ searchParams }: PageProps<"/calendar">) {
   return (
     <main className={PAGE_CLASS}>
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+      <Suspense fallback={<CalendarSkeleton />}>
         {searchParams.then((params) => (
           <Calendar searchParams={params} />
         ))}

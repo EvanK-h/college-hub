@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CircleAlert } from "lucide-react";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { CompareSkeleton } from "@/components/skeletons";
 import { buttonVariants } from "@/components/ui/button";
 import { describeProblem, planProblems, type CreditLimits, type PlanProblem } from "@/lib/pathway/move-checks";
 import { buildPlan, comparePlans, type ItemChange, type PlanItem } from "@/lib/plans/build";
@@ -17,7 +18,7 @@ import { cn } from "@/lib/utils";
 export default function ComparePage({ searchParams }: PageProps<"/pathway/plans/compare">) {
   return (
     <main className={PAGE_CLASS}>
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+      <Suspense fallback={<CompareSkeleton />}>
         {searchParams.then((params) => (
           <Compare a={parsePlanRef(params.a)} b={parsePlanRef(params.b)} all={params.all === "1"} />
         ))}

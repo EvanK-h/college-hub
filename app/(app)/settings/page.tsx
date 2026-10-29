@@ -8,6 +8,7 @@ import { SyncCard } from "@/components/settings/sync-card";
 import { SyncHistory } from "@/components/settings/sync-history";
 import { TokenExpiredBanner } from "@/components/settings/token-expired-banner";
 import { SyncNowForm } from "@/components/settings/sync-now-form";
+import { CourseLinksSkeleton, SettingsSkeleton } from "@/components/skeletons";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,7 +33,7 @@ export default function SettingsPage() {
           </Button>
         </form>
       </PageHeader>
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+      <Suspense fallback={<SettingsSkeleton />}>
         <SyncSections />
       </Suspense>
       <section aria-labelledby="appearance" className="flex flex-col gap-3">
@@ -128,7 +129,7 @@ async function SyncSections() {
           Course links{currentTerm ? ` · ${currentTerm.name}` : ""}
         </h2>
         {/* Its own boundary: this one calls Canvas, so a slow answer must not hold up the rest. */}
-        <Suspense fallback={<p className="text-sm text-muted-foreground">Loading Canvas courses…</p>}>
+        <Suspense fallback={<CourseLinksSkeleton />}>
           <CourseLinks term={currentTerm ? { id: currentTerm.id, name: currentTerm.name } : null} />
         </Suspense>
       </section>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { courseGrade, groupGrades, letterGrade, neededForTarget, type GradeGroup, type GradeItem } from "./calculator";
+import { courseGrade, groupGrades, letterGrade, namesItsWeight, neededForTarget, type GradeGroup, type GradeItem } from "./calculator";
 
 // A weighted course: homework 40%, exams 60%. All numbers are invented and worked by hand.
 const weightedGroups: GradeGroup[] = [
@@ -129,5 +129,17 @@ describe("letterGrade", () => {
     [0, "F"],
   ])("%d → %s", (percent, letter) => {
     expect(letterGrade(percent)).toBe(letter);
+  });
+});
+
+describe("namesItsWeight", () => {
+  it.each([
+    ["Set Exercises 1 (25%)", true],
+    ["AE4 - Project (20 %)", true],
+    ["Exams (12.5%)", true],
+    ["Homework", false],
+    ["25% of the grade", false],
+  ])("%s → %s", (name, expected) => {
+    expect(namesItsWeight(name)).toBe(expected);
   });
 });

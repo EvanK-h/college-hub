@@ -144,3 +144,8 @@ export function letterGrade(percent: number, scale: GradeScale = DEFAULT_GRADE_S
 export function letterTargets(scale: GradeScale = DEFAULT_GRADE_SCALE): { letter: string; minimum: number }[] {
   return scale.map(([minimum, letter]) => ({ letter, minimum }));
 }
+
+/** True when a group's name already states its weight, as in "Set Exercises 1 (25%)". */
+export function namesItsWeight(name: string): boolean {
+  return /\(\s*\d+(\.\d+)?\s*%\s*\)\s*$/.test(name);
+}

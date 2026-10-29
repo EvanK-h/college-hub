@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ASSIGNMENT_KIND_LABELS, assignmentStatus, formatDueIn } from "@/lib/assignments/status";
 import { canvasCourseUrl } from "@/lib/canvas/links";
 import { codeFromSlug } from "@/lib/courses/slug";
-import { courseGrade, letterGrade, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
+import { courseGrade, letterGrade, namesItsWeight, type GradeGroup, type GradeItem } from "@/lib/grades/calculator";
 import { loadSetup } from "@/lib/setup/load";
 import { createClient } from "@/lib/supabase/server";
 import { formatDay, formatTime, formatTimeRange } from "@/lib/timetable/format";
@@ -132,7 +132,7 @@ async function Course({ slug }: { slug: string }) {
                     <h3 className="text-headline">{group.name}</h3>
                     <p className="text-xs text-tertiary-foreground tabular-nums">
                       {[
-                        grade.weighted && group.weight ? `${group.weight}% of grade` : null,
+                        grade.weighted && group.weight && !namesItsWeight(group.name) ? `${group.weight}% of grade` : null,
                         totals?.percent != null ? `${totals.percent.toFixed(1)}% so far` : null,
                       ]
                         .filter(Boolean)

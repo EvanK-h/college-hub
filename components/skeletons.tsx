@@ -187,6 +187,19 @@ export function CalendarSkeleton() {
   );
 }
 
+export function CoursesSkeleton() {
+  return (
+    <Skeleton>
+      <HeaderBones />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }, (_, index) => (
+          <TextCard key={index} lines={3} />
+        ))}
+      </div>
+    </Skeleton>
+  );
+}
+
 export function CourseSkeleton() {
   return (
     <Skeleton>

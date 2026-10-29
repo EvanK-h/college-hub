@@ -44,6 +44,7 @@ npm run export -- data/mine --email <you>   # write the database back out to a d
 app/
   (auth)/login/            magic-link sign-in
   (app)/page.tsx           dashboard
+  (app)/courses/           this term's courses, then every other term's
   (app)/courses/[code]/    course page + grade calculator
   (app)/pathway/           plan, requirements/, swaps/
   (app)/calendar/

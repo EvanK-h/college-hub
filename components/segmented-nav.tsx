@@ -51,6 +51,7 @@ export function SegmentedNav({
                 )}
                 <Link
                   href={href}
+                  transitionTypes={["nav-tab"]}
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "press relative block rounded-full px-3 py-1.5 text-sm font-medium focus-visible:outline-offset-0 sm:px-3.5",

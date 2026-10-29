@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { CommandPalette } from "@/components/command-palette";
@@ -36,7 +36,12 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           </div>
         </div>
       </header>
-      {children}
+      {/* Page changes animate by the kind of link that caused them (globals.css): tabs cross-fade,
+          going a level down pushes in from the right, a back link pushes the other way. Anything
+          else, such as a Server Action refreshing the page, doesn't animate. */}
+      <ViewTransition default="none" update={{ "nav-tab": "nav-tab", "nav-forward": "nav-forward", "nav-back": "nav-back", default: "none" }}>
+        {children}
+      </ViewTransition>
       <Suspense fallback={null}>
         <TabBar />
       </Suspense>

@@ -70,6 +70,7 @@ async function Plans() {
               <li key={plan.id} className="flex items-center gap-2 py-2 pr-3 pl-4">
                 <Link
                   href={`/pathway/plans/${plan.id}`}
+                  transitionTypes={["nav-forward"]}
                   className="-my-1 -ml-2 flex min-w-0 flex-1 flex-col rounded-lg px-2 py-1 hover:bg-fill-tertiary focus-visible:outline-2 focus-visible:outline-ring sm:flex-row sm:items-baseline sm:gap-3"
                 >
                   <span className="truncate text-headline">{plan.name}</span>

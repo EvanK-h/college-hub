@@ -321,7 +321,7 @@ async function Today() {
                 )}
               </CardTitle>
               <CardAction>
-                <Link href="/announcements" className="rounded-md text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring">
+                <Link href="/announcements" transitionTypes={["nav-forward"]} className="rounded-md text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring">
                   See all
                 </Link>
               </CardAction>

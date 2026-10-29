@@ -30,6 +30,7 @@ export function PageHeader({
       {back && (
         <Link
           href={back.href}
+          transitionTypes={["nav-back"]}
           className="press -ml-1 flex w-max items-center gap-0.5 rounded-lg pr-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
         >
           <ChevronLeft aria-hidden className="size-4" />

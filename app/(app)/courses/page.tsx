@@ -138,6 +138,7 @@ function TermList({ terms }: { terms: TermSummary[] }) {
               <li key={course.id}>
                 <Link
                   href={coursePath(course.code)}
+                  transitionTypes={["nav-forward"]}
                   className="-mx-2 flex items-center gap-2 rounded-lg px-2 py-1 text-sm hover:bg-fill-tertiary focus-visible:outline-2 focus-visible:outline-ring"
                 >
                   <StatusIcon status={course.status} className="size-3.5 shrink-0" />
@@ -161,6 +162,7 @@ function CourseCard({ course, summary, now, timeZone }: { course: PathwayCourse;
     // The whole card is the link; the bar on the left is the course's type, as on the pathway.
     <Link
       href={coursePath(course.code)}
+      transitionTypes={["nav-forward"]}
       className={cn(
         "press flex h-full gap-3 rounded-2xl bg-card p-4 shadow-card hover:shadow-raised focus-visible:outline-2 focus-visible:outline-ring",
         categoryClass(course.type.color),

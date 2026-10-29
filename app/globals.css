@@ -266,6 +266,52 @@
   }
 }
 
+/* Page transitions, typed by the link (see the app layout). The old page leaves quickly and the new
+   one arrives a beat later, so they don't compete. Pushes slide 40px on the spring curve;
+   reduced motion keeps the fades and drops the slide. */
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-slide {
+  from {
+    translate: var(--vt-offset) 0;
+  }
+}
+::view-transition-old(.nav-tab) {
+  animation: 120ms ease-out both vt-fade reverse;
+}
+::view-transition-new(.nav-tab) {
+  animation: 180ms ease-out 60ms both vt-fade;
+}
+::view-transition-old(.nav-forward),
+::view-transition-new(.nav-back) {
+  --vt-offset: -40px;
+}
+::view-transition-new(.nav-forward),
+::view-transition-old(.nav-back) {
+  --vt-offset: 40px;
+}
+::view-transition-old(.nav-forward),
+::view-transition-old(.nav-back) {
+  animation:
+    150ms ease-in both vt-fade reverse,
+    350ms var(--ease-spring) both vt-slide reverse;
+}
+::view-transition-new(.nav-forward),
+::view-transition-new(.nav-back) {
+  animation:
+    200ms ease-out 100ms both vt-fade,
+    350ms var(--ease-spring) both vt-slide;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    --vt-offset: 0px;
+  }
+}
+
 @media (prefers-reduced-transparency: reduce) {
   .material-bar {
     background-color: var(--background);

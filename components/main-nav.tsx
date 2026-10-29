@@ -42,6 +42,7 @@ export function TabBar() {
             <li key={href}>
               <Link
                 href={href}
+                transitionTypes={["nav-tab"]}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "press flex h-14 flex-col items-center justify-center gap-0.5 text-[0.6875rem] font-medium focus-visible:outline-offset-[-4px]",
@@ -65,6 +66,7 @@ export function SettingsLink() {
   return (
     <Link
       href="/settings"
+      transitionTypes={["nav-tab"]}
       aria-label="Settings"
       aria-current={active ? "page" : undefined}
       className={cn(

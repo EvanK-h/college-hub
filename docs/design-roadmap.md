@@ -17,8 +17,8 @@ Everything that was deferred or left out while building the sections below, so n
 - [ ] Announcements inbox ("See all" on Today), from §3. With the toasts in §8.2.
 - [ ] Mark an announcement read when it's opened, from §3. With §8.2.
 - [ ] Undo for to-dos, from §3. With §8.2.
-- [ ] The course edit dialog as a bottom sheet on phones, from §5.3. With §6.2 / §8.5.
-- [ ] "New plan" dialog as a bottom sheet on phones, from §5.7. With §6.2 / §8.5.
+- [ ] The course edit dialog as a bottom sheet on phones, from §5.3. With §8.5.
+- [ ] "New plan" dialog as a bottom sheet on phones, from §5.7. With §8.5.
 - [ ] Rubber-banding at the prerequisite graph's edges, from §5.6. Needs the pan to move a transform rather than native scroll, so it can overshoot. With §8.4.
 - [ ] Merge the graph into the board as a "Board | Graph" toggle, from §5.6. **Decision**: it removes a Plan tab.
 
@@ -215,7 +215,7 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 
 ## 5. Plan (pathway and friends)
 
-**Done 29 Oct 2026 (§5.1–5.3)**; see "Pathway board, as built" in the decision log. Changes from the plan below: the profile has one credit limit per term kind, so the meter has no amber step (neutral up to the limit, red over it); the board only scrolls to the current term when it would start off-screen, since a folded transfer column leaves it in view; and the phone bottom sheet waits for §6.2.
+**Done 29 Oct 2026 (§5.1–5.3)**; see "Pathway board, as built" in the decision log. Changes from the plan below: the profile has one credit limit per term kind, so the meter has no amber step (neutral up to the limit, red over it); the board only scrolls to the current term when it would start off-screen, since a folded transfer column leaves it in view; and the phone bottom sheet waits for §8.5.
 
 ### 5.1 Pathway board
 
@@ -239,7 +239,7 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 - On phone it becomes a bottom sheet (§6.2).
 - Grow the dialog from the card (set `transform-origin` from the trigger's rect), so it reads as the card opening rather than a box appearing in the middle.
 
-**Done 29 Oct 2026 (§5.4–5.7)**; see "Requirements, swaps, graph and what-if plans, as built" in the decision log. Changes from the plan below: requirement chips link to the course page (not the board); the graph pans with momentum but doesn't rubber-band, because it pans by native scrolling, which stops at the edges; the graph stays its own page (merging it into the board is still open); and "New plan" opens a dialog, which becomes a sheet on phones with §6.2.
+**Done 29 Oct 2026 (§5.4–5.7)**; see "Requirements, swaps, graph and what-if plans, as built" in the decision log. Changes from the plan below: requirement chips link to the course page (not the board); the graph pans with momentum but doesn't rubber-band, because it pans by native scrolling, which stops at the edges; the graph stays its own page (merging it into the board is still open); and "New plan" opens a dialog, which becomes a sheet on phones with §8.5.
 
 ### 5.4 Requirements
 
@@ -270,6 +270,8 @@ Add `←` / `→` for previous and next, `T` for today, and `M` / `W` for the vi
 ---
 
 ## 6. Course page
+
+**Done 29 Oct 2026**; see "Course page, as built" in the decision log. Changes from the plan below: the grade breakdown shows once two or more groups have graded work (one group would be a single full bar); announcements moved into the main column rather than behind tabs; and the rail isn't sticky, because on a laptop it's taller than the screen.
 
 - **One assignments card**, not one card per group. Groups with a single assignment each produce a stack of five near-empty cards. Use one inset grouped list with group subheaders that carry their weight and running percentage.
 - **Status is the control.** Replace the ambiguous ghost "Start" / "Pause" text button with a status pill you can click (a menu: Not started / In progress). Canvas still owns "Done".

@@ -440,3 +440,13 @@
 - "New plan" is the page's primary button and opens the form in a dialog. "Compare two plans" folds into a disclosure, shown once there are two plans.
 - A plan's page has an accent strip pinned under the header: "What-if plan · 2 changes · your real plan is unchanged", with Make active and Discard. The change count now leaves out unchanged courses, matching the list.
 
+## 2026-10-29: Course page, as built
+
+- **One assignments card.** Each assignment group is a tinted subheader inside a single card, carrying its weight (unless the name already states it) and its percentage so far. A group with one assignment no longer makes a card of its own.
+- **The status pill is the progress control** (`ProgressMenu`). For work still open, pressing the pill offers Not started and In progress as a menu of radio items. The change shows at once (`useOptimistic`) and is saved through `setAssignmentProgress`. A close or past deadline still outranks progress in the pill, as everywhere else; the menu shows which progress is set. Done and missed work keep a plain pill, since Canvas owns Done.
+- **Where the grade comes from** (`gradeContributions`, `GradeBreakdown`). Each group that counts gets a slot as wide as its share of the grade, filled as far as it scores, so the empty part is marks lost there. Weighted courses share by weight among graded groups, points courses by graded points. A list underneath gives the same numbers ("88% of 25%"). It's neutral grey, since category hues mean course types and status hues mean states. It's hidden with fewer than two counting groups.
+- **Target as letter chips.** The target is a row of radio chips (A, A−, B+…) rather than a select. The answer names the target ("For A− (90%), average 89.3%…") and turns red when it's out of reach.
+- **Layout.** Announcements moved into the main column under assignments, so the rail is just Grade, Upcoming classes and Notes, and the page no longer ends with an empty area beside the rail.
+- **Notes autosave**, 800ms after typing pauses or when the box loses focus, with a quiet "Saving…" / "Saved." line. The Save button is gone.
+- **Type in the header.** The eyebrow names the type ("CS 1800 · CS core · Fall 2026 · London"), and the type's bar sits beside the title (`PageHeader`'s new `marker`).
+

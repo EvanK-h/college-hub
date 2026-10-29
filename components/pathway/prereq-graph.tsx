@@ -114,7 +114,7 @@ export function PrereqGraphView({ graph, chains }: { graph: PrereqGraph; chains:
                   onClick={() => setChainIndex((current) => (current === index ? null : index))}
                   className={cn(
                     "press rounded-full px-3 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-ring",
-                    chainIndex === index ? "bg-accent text-accent-foreground" : "bg-fill-secondary text-muted-foreground hover:text-foreground",
+                    chainIndex === index ? "bg-foreground text-background" : "bg-fill-secondary text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {option.name} chain
@@ -204,8 +204,10 @@ export function PrereqGraphView({ graph, chains }: { graph: PrereqGraph; chains:
                 onPointerEnter={(event) => event.pointerType === "mouse" && setHovered(node.id)}
                 onPointerLeave={() => setHovered((current) => (current === node.id ? null : current))}
                 className={cn(
-                  "absolute flex gap-2 rounded-xl p-2 text-left shadow-card transition-opacity focus-visible:outline-2 focus-visible:outline-ring",
-                  chain.has(node.id) ? "bg-accent ring-1 ring-accent-foreground/30 ring-inset" : "bg-card",
+                  "absolute flex gap-2 rounded-xl bg-card p-2 text-left shadow-card transition-opacity focus-visible:outline-2 focus-visible:outline-ring",
+                  // A chain is drawn, not filled: a ring and thicker edges, so the beige accent keeps
+                  // meaning a co-op term and a filled card doesn't read as selected.
+                  chain.has(node.id) && "ring-1 ring-accent-foreground ring-inset",
                   selected === node.id && "ring-2 ring-ring ring-inset",
                   related && !related.has(node.id) && "opacity-35",
                   categoryClass(node.color),

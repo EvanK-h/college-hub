@@ -504,3 +504,11 @@ Browser back and forward, Server Action refreshes and optimistic updates carry n
 - **Graph chain.** A shaded chain is now drawn rather than filled: chain cards stay on `card` with a 1px `accent-foreground` ring, and their edges are thicker and darker. Beige `accent` kept reading as "selected" and already means a co-op term. The chain toggle uses the board filter's pressed style (`foreground` on `background`) instead of accent.
 - **Brand colour.** The app icon (header and login) uses new `brand` / `brand-foreground` tokens: wine with a light glyph in both themes, matching the PWA icons. It's identity, not tint, so it no longer turns Golden Batter with the dark primary. `primary` is now only for things you can act on and focus.
 
+## 2026-10-29: Collapsing large title
+
+On a phone, once a page's large title scrolls under the header, a small copy fades into the header's middle and the "College Hub" wordmark fades out to make room, as in iOS. It is CSS only:
+- `LargeTitle` (in `page-header.tsx`, also used by Today) gives the h1 a view timeline, inset by the header's height and scoped at the root so the layout's header can use it.
+- The small copy is a fixed, `aria-hidden`, click-through element; the h1 stays the real title.
+
+The timeline follows the title itself, so pages with a back link or eyebrow above the title need no tuning. Pages that Next keeps mounted but hidden don't interfere, since a `display: none` title has no timeline. It is phones only: on wider screens the header's middle holds the nav, which already shows where you are. Browsers without scroll-driven animations keep the wordmark and show no small title.
+

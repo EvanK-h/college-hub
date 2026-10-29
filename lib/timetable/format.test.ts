@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayKey, formatDay, formatTimeRange, shortLocation } from "./format";
+import { dayKey, formatDay, formatTimeRange, minutesOfDay, shortLocation } from "./format";
 
 describe("timetable formatting", () => {
   it("shows a London class in local time on both sides of the clock change", () => {
@@ -26,5 +26,13 @@ describe("shortLocation", () => {
     ["ISEC 102 [40 CAP]", "ISEC 102"],
   ])("%s → %s", (location, expected) => {
     expect(shortLocation(location)).toBe(expected);
+  });
+});
+
+describe("minutesOfDay", () => {
+  it("counts from local midnight, across the clock change", () => {
+    expect(minutesOfDay(new Date("2026-10-20T09:00:00Z"), "Europe/London")).toBe(600); // 10:00 BST
+    expect(minutesOfDay(new Date("2026-10-27T09:00:00Z"), "Europe/London")).toBe(540); // 09:00 GMT
+    expect(minutesOfDay(new Date("2026-10-27T00:05:00Z"), "Europe/London")).toBe(5);
   });
 });

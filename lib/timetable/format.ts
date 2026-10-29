@@ -17,6 +17,12 @@ export function formatTime(date: Date, timeZone: string): string {
   return `${get("hour")}:${get("minute")}`;
 }
 
+/** Minutes since midnight in the zone, for placing a session on a time grid. */
+export function minutesOfDay(date: Date, timeZone: string): number {
+  const get = parts(date, timeZone, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  return Number(get("hour")) * 60 + Number(get("minute"));
+}
+
 /** "10:00 – 11:40". */
 export function formatTimeRange(start: Date, end: Date, timeZone: string): string {
   return `${formatTime(start, timeZone)} – ${formatTime(end, timeZone)}`;

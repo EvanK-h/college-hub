@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { StatusPill } from "@/components/assignments/status-pill";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
+import { WeekGrid, type GridSession } from "@/components/calendar/week-grid";
 import { CalendarSkeleton } from "@/components/skeletons";
 import { TODAY_MARKER_CLASS } from "@/components/today-marker";
 import { buttonVariants } from "@/components/ui/button";
@@ -57,7 +58,7 @@ async function Calendar({ searchParams }: { searchParams: Record<string, string 
   const [sessionsResult, assignmentsResult] = await Promise.all([
     supabase
       .from("class_sessions")
-      .select("id, kind, title, starts_at, ends_at, location, cancelled, courses(code)")
+      .select("id, kind, title, starts_at, ends_at, location, cancelled, courses(code, type:course_types(color))")
       .gte("starts_at", from)
       .lt("starts_at", to)
       .order("starts_at"),
@@ -114,14 +115,22 @@ async function Calendar({ searchParams }: { searchParams: Record<string, string 
       {view === "month" ? (
         <MonthView first={first} byDay={byDay} today={today} href={href} />
       ) : (
-        <WeekView days={days} today={today} timeZone={timeZone} now={now} />
+        <>
+          {/* A time grid from tablet width up; on a phone, the days as a list. */}
+          <div className="hidden md:block">
+            <WeekGrid days={days} today={today} timeZone={timeZone} now={now} />
+          </div>
+          <div className="md:hidden">
+            <WeekView days={days} today={today} timeZone={timeZone} now={now} />
+          </div>
+        </>
       )}
     </>
   );
 }
 
 type Day = ReturnType<typeof weekAgenda<CalendarSession, CalendarAssignment>>[number];
-type CalendarSession = { id: string; kind: keyof typeof SESSION_TYPE_LABELS; title: string; starts_at: string; ends_at: string; location: string | null; cancelled: boolean; courses: { code: string } | null };
+type CalendarSession = GridSession;
 type CalendarAssignment = {
   id: string;
   title: string;
@@ -229,7 +238,7 @@ function MonthView({
 
 function WeekView({ days, today, timeZone, now }: { days: Day[]; today: string; timeZone: string; now: Date }) {
   return (
-    <ol className="grid gap-3 md:grid-cols-7">
+    <ol className="flex flex-col gap-3">
       {days.map((day, index) => (
         <li
           key={day.day}

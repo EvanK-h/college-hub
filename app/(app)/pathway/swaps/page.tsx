@@ -6,6 +6,7 @@ import { trySwap } from "@/app/(app)/pathway/plans/actions";
 import { PAGE_CLASS, PageHeader } from "@/components/page-header";
 import { PlanNav } from "@/components/pathway/plan-nav";
 import { FocusToggle } from "@/components/pathway/focus-toggle";
+import { RelevanceMeter } from "@/components/pathway/relevance-meter";
 import { CardListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { FOCUS_COOKIE, parseFocus, relevanceFor, sortByFocus, type Rated } from "@/lib/pathway/focus";
@@ -18,7 +19,8 @@ import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 // Relevance is ranked, so the pill's strength follows the rank: the best fits stand out and the
-// weakest recede to an outline. The label carries the same information for anyone not seeing colour.
+// weakest recede to an outline. A four-dot meter tells neighbouring ranks apart, and the label
+// carries the same information for anyone not seeing colour.
 const RELEVANCE_PILL: Record<Relevance, string> = {
   high: "bg-accent font-semibold text-accent-foreground ring-1 ring-accent-foreground/30 ring-inset",
   medium: "bg-accent font-medium text-accent-foreground",
@@ -133,12 +135,14 @@ function SwapRow({
         {/* The chosen focus's relevance is the pill; the others sit beside it as plain text. */}
         <span className="flex shrink-0 items-center gap-2 text-xs">
           {others.map((option) => (
-            <span key={option.id} className="hidden text-muted-foreground sm:inline">
+            <span key={option.id} className="hidden items-center gap-1.5 text-muted-foreground sm:inline-flex">
+              <RelevanceMeter relevance={relevanceFor(swap, option.id)} />
               {option.name}: {RELEVANCE_LABELS[relevanceFor(swap, option.id)]}
             </span>
           ))}
           {chosen && (
-            <span className={cn("rounded-full px-2.5 py-0.5", RELEVANCE_PILL[relevanceFor(swap, chosen.id)])}>
+            <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5", RELEVANCE_PILL[relevanceFor(swap, chosen.id)])}>
+              <RelevanceMeter relevance={relevanceFor(swap, chosen.id)} />
               {chosen.name}: {RELEVANCE_LABELS[relevanceFor(swap, chosen.id)]}
             </span>
           )}

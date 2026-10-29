@@ -73,6 +73,14 @@ The timetable sync reads `OUTLOOK_ICS_URL` and matches events to courses by the 
 1. Create a Supabase project, then `supabase link` and `supabase db push`. In Auth settings, turn off sign-ups and add `https://<your-site>/auth/callback` to the redirect URLs.
 2. Import your folder into it. `--remote` reads the project's URL and service role key from `.env.local` and asks before writing: `npm run import -- data/mine --remote`.
 3. Import the repo into Vercel and set the environment variables above, using the hosted project's keys and your hosted user id as `OWNER_ID`. `vercel.json` schedules the daily sync.
+4. Vercel's Hobby plan only runs that cron once a day, so the database also triggers the sync every two hours (`pg_cron`). It needs your site's address and the same `CRON_SECRET`, kept in Supabase Vault rather than in a migration. Run this once in the hosted project's SQL editor:
+
+   ```sql
+   select vault.create_secret('https://<your-site>', 'sync_app_url');
+   select vault.create_secret('<your CRON_SECRET>', 'sync_cron_secret');
+   ```
+
+   Until both exist the scheduled job does nothing, so the local database stays quiet.
 
 ## Development
 

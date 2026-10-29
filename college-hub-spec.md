@@ -385,13 +385,13 @@ Five phases, each ending with something you can use; a phase is done when its la
 
 ### Phase 4: Planning tools and polish
 
-- [x] `course_prereqs` table, entered by hand from the course catalogue
+- [x] `course_prereqs` table, entered by hand from the course catalogue (AND of OR-groups, plus advisory `recommended` links; see the 2026-10-27 decisions)
 - [x] Drag-and-drop pathway with live checks
-- [x] Prerequisite graph
-- [x] Quantum / AI toggle
-- [x] Saved what-if plans and side-by-side comparison
-- [x] PWA, ⌘K search, light/dark toggle (system dark mode is done)
-- [x] Playwright end-to-end test for the main flows
+- [x] Prerequisite graph (laid out by term, without React Flow; see the 2026-10-27 decision)
+- [x] Quantum / AI toggle (re-sorts swap options only; see the 2026-10-27 decision)
+- [x] Saved what-if plans and side-by-side comparison (moves and swaps; see the 2026-10-27 decision)
+- [x] PWA, ⌘K search, light/dark toggle (installable without a service worker; see the 2026-10-29 decision)
+- [x] Playwright end-to-end tests for the main flows (separate server and invented user; see the 2026-10-29 decision)
 
 **Done when:** you've used it to plan Spring 2027 registration.
 

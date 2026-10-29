@@ -110,4 +110,4 @@ docs/decisions.md          decision log
 
 ## Current phase
 
-Phase 4 — Planning tools and polish (Phases 0–3 are done). See the spec's Phases section for the checklist; update this line when a phase is done.
+All five phases (0–4) are done. What's left is the spec's Portfolio notes (demo mode, README) and day-to-day fixes; update this line if a new phase is planned.

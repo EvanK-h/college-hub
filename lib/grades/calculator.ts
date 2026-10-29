@@ -149,3 +149,27 @@ export function letterTargets(scale: GradeScale = DEFAULT_GRADE_SCALE): { letter
 export function namesItsWeight(name: string): boolean {
   return /\(\s*\d+(\.\d+)?\s*%\s*\)\s*$/.test(name);
 }
+
+export type GradeContribution = {
+  id: number;
+  name: string;
+  /** The group's share of the current grade, in percent; the shares add up to 100. */
+  share: number;
+  /** What the group adds to the current grade, in percentage points; these add up to the grade. */
+  points: number;
+};
+
+/**
+ * Where the current grade comes from: for each group that counts yet, its share of the grade and
+ * what it contributes. A group scoring 80% with a 30% share adds 24 points. Weighted courses share
+ * by weight among the groups with graded work; points courses by graded points.
+ */
+export function gradeContributions({ weighted, groups }: CourseGrade): GradeContribution[] {
+  const counting = groups.filter((group) => group.graded > 0 && (!weighted || (group.weight ?? 0) > 0));
+  const total = counting.reduce((sum, group) => sum + (weighted ? (group.weight ?? 0) : group.graded), 0);
+  if (total === 0) return [];
+  return counting.map((group) => {
+    const share = ((weighted ? (group.weight ?? 0) : group.graded) / total) * 100;
+    return { id: group.id, name: group.name, share, points: (share * (group.percent ?? 0)) / 100 };
+  });
+}

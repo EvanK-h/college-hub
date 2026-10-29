@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { courseGrade, groupGrades, letterGrade, namesItsWeight, neededForTarget, type GradeGroup, type GradeItem } from "./calculator";
+import { courseGrade, gradeContributions, groupGrades, letterGrade, namesItsWeight, neededForTarget, type GradeGroup, type GradeItem } from "./calculator";
 
 // A weighted course: homework 40%, exams 60%. All numbers are invented and worked by hand.
 const weightedGroups: GradeGroup[] = [
@@ -141,5 +141,38 @@ describe("namesItsWeight", () => {
     ["25% of the grade", false],
   ])("%s → %s", (name, expected) => {
     expect(namesItsWeight(name)).toBe(expected);
+  });
+});
+
+describe("gradeContributions", () => {
+  it("splits a weighted grade by weight, and the points add up to the grade", () => {
+    // Homework 90% of a 40% share adds 36; exams 70% of 60% add 42; 36 + 42 = 78.
+    const parts = gradeContributions(courseGrade(weightedGroups, [graded(1, 18, 20), graded(2, 70, 100)]));
+    expect(parts.map(({ name, share, points }) => [name, share, points])).toEqual([
+      ["Homework", 40, 36],
+      ["Exams", 60, 42],
+    ]);
+  });
+
+  it("leaves out groups with nothing graded, scaling the rest up to 100", () => {
+    const parts = gradeContributions(courseGrade(weightedGroups, [graded(1, 18, 20), ungraded(2, 100)]));
+    expect(parts).toEqual([{ id: 1, name: "Homework", share: 100, points: 90 }]);
+  });
+
+  it("splits a points course by graded points", () => {
+    const groups: GradeGroup[] = [
+      { id: 1, name: "Homework", weight: null },
+      { id: 2, name: "Exams", weight: null },
+    ];
+    const parts = gradeContributions(courseGrade(groups, [graded(1, 18, 20), graded(2, 70, 80)]));
+    // 20 of 100 graded points are homework (18 earned), 80 are exams (70 earned).
+    expect(parts.map((part) => [part.share, part.points])).toEqual([
+      [20, 18],
+      [80, 70],
+    ]);
+  });
+
+  it("is empty before anything is graded", () => {
+    expect(gradeContributions(courseGrade(weightedGroups, []))).toEqual([]);
   });
 });

@@ -551,3 +551,14 @@ The board and the graph show the same thing laid out the same way, by term: one 
 - **Navigation:** the control uses links, so each view has its own URL and switching doesn't scroll to the top. The Plan section's control drops from five items to four (Pathway, Requirements, Swaps, What-if). ⌘K's "Prerequisites" opens the Graph view.
 - **Old links:** `/pathway/graph` permanently redirects to the Graph view.
 
+## 2026-10-29: Courses card to course header morph
+
+Opening a course from its Courses card grows the card's title into the course page's large title: a shared view transition (`share="course-morph"`, 400ms on the spring), while the rest of the page slides in as before.
+
+React only pairs two titles that are on screen in the same commit. The course page streams in behind a skeleton, so its real title arrives a commit too late. The fix keeps the streaming and borrows what's already known:
+- The card's link leaves the header's details (code, title, type, term) in a small client store as it's clicked.
+- The course page's skeleton draws the real header from them at once (`PendingCourseHeader`), so the morph has a target.
+- When the page streams in, its header replaces the stand-in in the same place.
+- The loaded page clears the store, so reaching a course another way (⌘K, a link) shows the usual bones rather than a stale title.
+
+The two snapshots keep their own size and cross-fade (`object-fit: none`) instead of stretching text. Under reduced motion the title doesn't travel and just cross-fades in place. The shared name comes from `courseTitleName` in `lib/courses/slug.ts`, since the server renders the card.

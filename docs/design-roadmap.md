@@ -20,7 +20,7 @@ Everything that was deferred or left out while building the sections below, so n
 - [x] The course edit dialog as a bottom sheet on phones, from §5.3. Built with §8.5: every dialog is a sheet under `sm`.
 - [x] "New plan" dialog as a bottom sheet on phones, from §5.7. Built with §8.5.
 - [x] Rubber-banding at the prerequisite graph's edges, from §5.6. Built with §8.4: past an end the canvas itself moves (`rubberband`) and springs back.
-- [ ] Shared-element morph from a Courses card into the course page's header, from §8.4. React only pairs the two when the course page renders in the same commit as the navigation, and it streams in behind a skeleton today; it needs the page (or its header) to render without suspending first.
+- [x] Shared-element morph from a Courses card into the course page's header, from §8.4. Built 29 Oct 2026: the card leaves the header's details for the skeleton, which draws the real header at once (`course-morph.tsx`).
 - [x] Merge the graph into the board as a "Board | Graph" toggle, from §5.6. Decided and built 29 Oct 2026: `/pathway?view=graph`, and the Plan control loses "Prerequisites".
 
 Decided against, not open: an amber step on the term credit meter (the profile has one limit per kind, see "Pathway board, as built").
@@ -325,7 +325,7 @@ The app leans on `text-xs` (12 px) for real content: calendar entries, swap deta
 
 ### 8.4 Motion
 
-**Done 29 Oct 2026**, except the card-to-header morph, which is on the Still open list. Page transitions are typed by the link rather than applied to every navigation; see the decision log.
+**Done 29 Oct 2026**, with the card-to-header morph following later that day (see the Still open list). Page transitions are typed by the link rather than applied to every navigation; see the decision log.
 
 - **Page transitions:** enable the View Transitions API (Next's `experimental.viewTransition`) for a quick cross-fade between tabs, plus a shared-element morph from a Courses card to the course page header. Make it a plain fade under reduced motion.
 - **List changes animate:** to-dos completing, announcements marked read, and items moving on the board use `motion`'s `layout` with the existing critically damped spring.

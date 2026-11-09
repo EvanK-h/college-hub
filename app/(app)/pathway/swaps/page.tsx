@@ -95,7 +95,7 @@ async function Swaps() {
   );
 }
 
-// A row you can scan ("PHIL 1115 · Ethics, for ECON 2350 · Spring 2027 · AI: High") that opens to the
+// A row you can scan ("PHIL 1115 · Ethics, for CS 1800 · Spring 2027 · AI: High") that opens to the
 // reasons, so a handful of options compare on one screen.
 function SwapRow({
   swap,

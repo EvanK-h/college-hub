@@ -76,11 +76,6 @@ const CATALOGUE_PREREQS: PrereqEntry[] = [
     // "and" would demand two intro courses, which no other course in the catalogue does.
     review: "The catalogue text is split across two lines with no 'or' or 'and' between them; read as one 'or' list.",
   },
-  {
-    // "Statistics for Economists": an intro programming course, which may be taken concurrently.
-    course: "ECON 2350",
-    coreq: [["CS 1100", "CS 2000", "CS 2100", "CS 2500", "DS 2000", "DS 2500", "MISM 2510"]],
-  },
   // The catalogue: "Prior completion of Calculus 2 is strongly recommended."
   { course: "MATH 2321", recommended: [["MATH 1342"]] },
   { course: "MATH 2341", recommended: [["MATH 1342"]] },

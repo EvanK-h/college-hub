@@ -87,7 +87,7 @@ docs/decisions.md          decision log
 - Derived values (requirement progress, "due in", year, effective status, weighted grades) are computed in SQL views or TypeScript — never stored.
 - Closed sets that are the same at every school are Postgres enums (course status, term kind, prereq kind, relevance, session type). Anything a school or student defines (course types, requirement areas, swap slots, attributes such as NUpath, focuses) is a per-owner table, read through `lib/setup/load.ts`; see the 2026-10-29 decision.
 - Store times as `timestamptz` in UTC. Display in the term's `time_zone` (`Europe/London` for London terms, `America/New_York` from Fall 2027). Format day names and time ranges at display time.
-- Import check: `data/mine` must have 56 courses, 171 SH total, 53 SH of transfer credit, 31 requirements and 32 swap options. Keep this as a test (it skips where the folder is absent).
+- Import check: `data/mine` must have 55 courses, 167 SH total, 53 SH of transfer credit, 31 requirements and 30 swap options. Keep this as a test (it skips where the folder is absent).
 
 ## Sync rules
 

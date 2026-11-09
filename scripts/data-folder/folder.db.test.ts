@@ -69,9 +69,9 @@ describe.skipIf(!local || FOLDERS.length === 0)("data folders against the local 
 
 // The import check from CLAUDE.md, against your own folder where it exists (it's gitignored).
 describe.skipIf(!existsSync("data/mine/profile.json"))("data/mine import check", () => {
-  it("has 56 courses, 171 SH with 53 SH of transfer credit, 31 requirements and 32 swap options", async () => {
+  it("has 55 courses, 167 SH with 53 SH of transfer credit, 31 requirements and 30 swap options", async () => {
     const { totals } = await import("./format");
-    expect(totals(readFolder("data/mine"))).toEqual({ courses: 56, credits: 171, transferCredits: 53, requirements: 31, swaps: 32 });
+    expect(totals(readFolder("data/mine"))).toEqual({ courses: 55, credits: 167, transferCredits: 53, requirements: 31, swaps: 30 });
   });
 
   it("is plain JSON in every file", () => {
